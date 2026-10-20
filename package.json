@@ -73,7 +73,8 @@
     "typecheck": "tsc --noEmit",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "check:exports": "publint && attw --pack . --profile node16",
-    "example:youbike": "tsx examples/nearest-youbike.ts"
+    "example:youbike": "tsx examples/nearest-youbike.ts",
+    "example:metro": "tsx examples/next-metro-train.ts"
   },
   "peerDependencies": {
     "@nestjs/common": "^10.0.0 || ^11.0.0 || ^12.0.0"

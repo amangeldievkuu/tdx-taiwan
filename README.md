@@ -1,5 +1,10 @@
 # tdx-taiwan
 
+[![npm](https://img.shields.io/npm/v/tdx-taiwan)](https://www.npmjs.com/package/tdx-taiwan)
+[![CI](https://github.com/amangeldievkuu/tdx-taiwan/actions/workflows/ci.yml/badge.svg)](https://github.com/amangeldievkuu/tdx-taiwan/actions/workflows/ci.yml)
+[![node](https://img.shields.io/node/v/tdx-taiwan)](https://www.npmjs.com/package/tdx-taiwan)
+[![license](https://img.shields.io/npm/l/tdx-taiwan)](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/LICENSE)
+
 TypeScript SDK for Taiwan's [TDX (Transport Data eXchange)](https://tdx.transportdata.tw) API
 — YouBike availability, bus routes and arrival estimates, and metro stations, live boards,
 timetables and fares.
@@ -58,12 +63,12 @@ for (const stop of eta) {
 }
 ```
 
-A runnable script that prints the 5 nearest YouBike stations with bikes available is in
-[`examples/nearest-youbike.ts`](examples/nearest-youbike.ts):
+Runnable scripts are in [`examples/`](examples/):
 
 ```sh
 cp .env.example .env   # then fill in your keys
-npx tsx examples/nearest-youbike.ts 25.0478 121.5170
+npx tsx examples/nearest-youbike.ts 25.0478 121.5170   # 5 nearest YouBike stations with bikes
+npx tsx examples/next-metro-train.ts KRTC R10          # next trains at a metro station
 ```
 
 ### 2. NestJS
@@ -200,6 +205,8 @@ const adult = od?.Fares.find((f) => f.TicketType === 1 && f.FareClass === 1);
 console.log(adult?.Price); // 40
 ```
 
+- [`examples/next-metro-train.ts`](examples/next-metro-train.ts) prints the next trains at a
+  station.
 - `liveBoard` `EstimateTime` is in **minutes**; bus `eta` `EstimateTime` is in seconds.
 - `liveBoard` only supports `TRTC`, `KRTC`, `TYMC` and `KLRT`; other systems get a
   `TdxApiError` (400). KRTC, TYMC and KLRT list the next train for every station. TRTC only
