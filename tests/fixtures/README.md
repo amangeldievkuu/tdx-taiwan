@@ -1,7 +1,8 @@
 # Test fixtures
 
-> 資料來源：交通部運輸資料流通服務平臺 (MOTC Transport Data eXchange, TDX). The `metro-*.json`
-> and `thsr-*.json` files contain TDX data and are used under the
+> 資料來源：交通部運輸資料流通服務平臺 (MOTC Transport Data eXchange, TDX). The `metro-*.json`,
+> `thsr-*.json`, `bus-stop-taipei.json`, `bus-position-taipei-307.json` and `bus-intercity-*.json`
+> files contain TDX data and are used under the
 > [TDX 資料授權利用條款](https://tdx.transportdata.tw/term), not this repository's MIT license.
 
 These JSON files are **hand-written, schema-derived samples**, not recorded API responses.
@@ -23,6 +24,10 @@ the documented "last train passed" case, which was not live at the time.
 The `thsr-*.json` files are trimmed the same way (THSR endpoints, 2026-10-20): two stations,
 two timetable rows (with the empty `Note: {}` TDX returns), the Taipei → Zuoying fares, a seat
 board cut to three trains that cover the `O`/`L`/`X` statuses, and the normal-day alert.
+
+The 0.4.0 bus fixtures (`bus-stop-taipei.json`, `bus-position-taipei-307.json`,
+`bus-intercity-*.json`) and `metro-alert-trtc.json` are also trimmed live responses (2026-10-20),
+fetched through the SDK; the Taipei stops show the missing `StationGroupID`.
 
 To compare against real data, add your keys to `.env` and run `npm run test:integration`,
 which exercises the same endpoints against the live API.

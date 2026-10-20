@@ -1,5 +1,12 @@
 import { ODataQuery, odata, type ODataOptions } from '../odata/query-builder.js';
-import type { BusCity, BusEstimatedTimeOfArrival, BusRoute, BusStopOfRoute } from '../types/bus.js';
+import type {
+  BusCity,
+  BusEstimatedTimeOfArrival,
+  BusPosition,
+  BusRoute,
+  BusStopInfo,
+  BusStopOfRoute,
+} from '../types/bus.js';
 import { type ListRequester, type QueryInput, segment } from './requester.js';
 
 /** Plain-object query for endpoints addressed by a route name. */
@@ -14,9 +21,36 @@ export interface RouteQueryOptions<T> extends ODataOptions<T> {
 /** A query builder (always an exact route match) or a plain options object. */
 export type RouteQueryInput<T> = ODataQuery<T> | RouteQueryOptions<T>;
 
-/** City bus (市區公車) endpoints. */
+/** City bus (市區公車) endpoints, plus InterCity coaches under `interCity`. */
 export class BusApi {
-  constructor(private readonly list: ListRequester) {}
+  /** InterCity coach (公路客運) endpoints. */
+  readonly interCity: InterCityBusApi;
+
+  constructor(private readonly list: ListRequester) {
+    this.interCity = new InterCityBusApi(list);
+  }
+
+  /**
+   * Every stop in a city. Cached with the static TTL. The list is large (about 29,000 stops
+   * for Taipei), so narrow it with `$filter` / `$select` where you can.
+   * `GET /v2/Bus/Stop/City/{City}`
+   */
+  stops(city: BusCity, query?: QueryInput<BusStopInfo>): Promise<BusStopInfo[]> {
+    return this.list(`/v2/Bus/Stop/City/${segment(city, 'city')}`, query, 'static');
+  }
+
+  /**
+   * Live positions of the vehicles on a route (A1, batch-updated). Cached with the real-time
+   * TTL. `GET /v2/Bus/RealTimeByFrequency/City/{City}/{RouteName}`
+   */
+  positions(
+    city: BusCity,
+    routeName: string,
+    query?: RouteQueryInput<BusPosition>,
+  ): Promise<BusPosition[]> {
+    const base = `/v2/Bus/RealTimeByFrequency/City/${segment(city, 'city')}`;
+    return this.list(...byRouteName(base, routeName, query), 'realtime');
+  }
 
   /**
    * Routes in a city, optionally narrowed to one route name (matched exactly by default).
@@ -68,6 +102,64 @@ export class BusApi {
     query?: RouteQueryInput<BusEstimatedTimeOfArrival>,
   ): Promise<BusEstimatedTimeOfArrival[]> {
     const base = `/v2/Bus/EstimatedTimeOfArrival/City/${segment(city, 'city')}`;
+    return this.list(...byRouteName(base, routeName, query), 'realtime');
+  }
+}
+
+/**
+ * InterCity coach (公路客運) endpoints. Route names are matched exactly by default, as for city
+ * buses: TDX treats `'9'` as a prefix and would return every `9xxx` route.
+ */
+export class InterCityBusApi {
+  constructor(private readonly list: ListRequester) {}
+
+  /**
+   * InterCity routes, optionally narrowed to one route name. Cached with the static TTL.
+   * `GET /v2/Bus/Route/InterCity[/{RouteName}]`
+   */
+  routes(query?: QueryInput<BusRoute>): Promise<BusRoute[]>;
+  routes(routeName: string, query?: RouteQueryInput<BusRoute>): Promise<BusRoute[]>;
+  routes(
+    routeNameOrQuery?: string | QueryInput<BusRoute>,
+    query?: RouteQueryInput<BusRoute>,
+  ): Promise<BusRoute[]> {
+    const base = '/v2/Bus/Route/InterCity';
+    if (typeof routeNameOrQuery === 'string') {
+      return this.list(...byRouteName(base, routeNameOrQuery, query), 'static');
+    }
+    return this.list(base, routeNameOrQuery ?? query, 'static');
+  }
+
+  /**
+   * Ordered stops of each sub-route / direction of a route. Cached with the static TTL.
+   * `GET /v2/Bus/StopOfRoute/InterCity/{RouteName}`
+   */
+  stopsOfRoute(
+    routeName: string,
+    query?: RouteQueryInput<BusStopOfRoute>,
+  ): Promise<BusStopOfRoute[]> {
+    return this.list(...byRouteName('/v2/Bus/StopOfRoute/InterCity', routeName, query), 'static');
+  }
+
+  /**
+   * Estimated time of arrival (N1, batch-updated) at each stop of a route.
+   * Cached with the real-time TTL.
+   * `GET /v2/Bus/EstimatedTimeOfArrival/InterCity/{RouteName}`
+   */
+  eta(
+    routeName: string,
+    query?: RouteQueryInput<BusEstimatedTimeOfArrival>,
+  ): Promise<BusEstimatedTimeOfArrival[]> {
+    const base = '/v2/Bus/EstimatedTimeOfArrival/InterCity';
+    return this.list(...byRouteName(base, routeName, query), 'realtime');
+  }
+
+  /**
+   * Live positions of the vehicles on a route (A1, batch-updated). Cached with the real-time
+   * TTL. `GET /v2/Bus/RealTimeByFrequency/InterCity/{RouteName}`
+   */
+  positions(routeName: string, query?: RouteQueryInput<BusPosition>): Promise<BusPosition[]> {
+    const base = '/v2/Bus/RealTimeByFrequency/InterCity';
     return this.list(...byRouteName(base, routeName, query), 'realtime');
   }
 }

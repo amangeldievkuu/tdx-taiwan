@@ -18,7 +18,12 @@ export {
   type SortDirection,
 } from './odata/query-builder.js';
 export { BikeApi } from './resources/bike.js';
-export { BusApi, type RouteQueryInput, type RouteQueryOptions } from './resources/bus.js';
+export {
+  BusApi,
+  InterCityBusApi,
+  type RouteQueryInput,
+  type RouteQueryOptions,
+} from './resources/bus.js';
 export { MetroApi } from './resources/metro.js';
 export { ThsrApi } from './resources/thsr.js';
 export { trainDate } from './resources/requester.js';

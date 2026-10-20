@@ -1,0 +1,46 @@
+[
+  {
+    "StopUID": "TPE10000",
+    "StopID": "10000",
+    "AuthorityID": "004",
+    "StopName": {
+      "Zh_tw": "蘆洲總站",
+      "En": "Luzhou Bus Terminal"
+    },
+    "StopPosition": {
+      "PositionLon": 121.465804,
+      "PositionLat": 25.089056,
+      "GeoHash": "wsqqsp2dq"
+    },
+    "StopAddress": "中正路333號同向(總站旁候車亭)(向東)",
+    "Bearing": "SE",
+    "StationID": "3698",
+    "City": "Taipei",
+    "CityCode": "TPE",
+    "LocationCityCode": "NWT",
+    "UpdateTime": "2026-10-20T14:16:10+08:00",
+    "VersionID": 8242
+  },
+  {
+    "StopUID": "TPE10001",
+    "StopID": "10001",
+    "AuthorityID": "004",
+    "StopName": {
+      "Zh_tw": "南港分局(重陽)",
+      "En": "Nangang Police Dist. (Chongyang)"
+    },
+    "StopPosition": {
+      "PositionLon": 121.596717,
+      "PositionLat": 25.055561,
+      "GeoHash": "wsqqx10p0"
+    },
+    "StopAddress": "重陽路30號(向東)",
+    "Bearing": "NE",
+    "StationID": "8627",
+    "City": "Taipei",
+    "CityCode": "TPE",
+    "LocationCityCode": "TPE",
+    "UpdateTime": "2026-10-20T14:16:10+08:00",
+    "VersionID": 8242
+  }
+]

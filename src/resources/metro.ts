@@ -1,4 +1,7 @@
 import type {
+  MetroAlert,
+  MetroAlertSystem,
+  MetroAlerts,
   MetroFirstLastTimetable,
   MetroLine,
   MetroLiveBoard,
@@ -9,11 +12,14 @@ import type {
   MetroSystem,
   MetroTimetableSystem,
 } from '../types/metro.js';
-import { type ListRequester, type QueryInput, segment } from './requester.js';
+import { type ListRequester, type ObjectRequester, type QueryInput, segment } from './requester.js';
 
 /** Metro, light rail and gondola (捷運/輕軌/纜車) endpoints. */
 export class MetroApi {
-  constructor(private readonly list: ListRequester) {}
+  constructor(
+    private readonly list: ListRequester,
+    private readonly object: ObjectRequester,
+  ) {}
 
   /**
    * Stations of a rail system. Cached with the static TTL.
@@ -77,5 +83,14 @@ export class MetroApi {
    */
   odFare(system: MetroSystem, query?: QueryInput<MetroODFare>): Promise<MetroODFare[]> {
     return this.list(`/v2/Rail/Metro/ODFare/${segment(system, 'system')}`, query, 'static');
+  }
+
+  /**
+   * Current service alerts of a rail system. Returns an object; the query applies to its
+   * `Alerts` items. Cached with the real-time TTL. Not available for NTDLRT, NTMC or NTALRT.
+   * `GET /v2/Rail/Metro/Alert/{RailSystem}`
+   */
+  alerts(system: MetroAlertSystem, query?: QueryInput<MetroAlert>): Promise<MetroAlerts> {
+    return this.object(`/v2/Rail/Metro/Alert/${segment(system, 'system')}`, query, 'realtime');
   }
 }

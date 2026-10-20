@@ -1,5 +1,7 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import {
+  type MetroAlert,
+  type MetroAlerts,
   type MetroFirstLastTimetable,
   type MetroLine,
   type MetroLiveBoard,
@@ -10,7 +12,7 @@ import {
   odata,
   query,
 } from '../../src/index.js';
-import { API, clientWithResponse, loadFixture } from '../helpers.js';
+import { API, clientWithResponse, jsonResponse, loadFixture, tokenResponse } from '../helpers.js';
 
 const stationsFixture = loadFixture('metro-station.json') as MetroStation[];
 const linesFixture = loadFixture('metro-line.json') as MetroLine[];
@@ -20,6 +22,7 @@ const firstLastFixture = loadFixture(
   'metro-first-last-timetable.json',
 ) as MetroFirstLastTimetable[];
 const odFareFixture = loadFixture('metro-od-fare.json') as MetroODFare[];
+const alertsFixture = loadFixture('metro-alert-trtc.json') as MetroAlerts;
 
 describe('tdx.metro paths', () => {
   it('requests each endpoint for a rail system as JSON', async () => {
@@ -169,5 +172,45 @@ describe('tdx.metro parsing', () => {
       'TPE',
     ]);
     expect(od?.TravelTime).toBeUndefined();
+  });
+});
+
+describe('tdx.metro.alerts', () => {
+  it('requests the alerts of a rail system, applying the query to its Alerts', async () => {
+    const { tdx, apiUrls } = clientWithResponse(alertsFixture);
+
+    await tdx.metro.alerts('TRTC');
+    await tdx.metro.alerts('KRTC', query<MetroAlert>().filter('Status ne 1'));
+
+    expect(decodeURIComponent(apiUrls.join(' '))).toBe(
+      `${API}/v2/Rail/Metro/Alert/TRTC?$format=JSON ` +
+        `${API}/v2/Rail/Metro/Alert/KRTC?$filter=Status ne 1&$format=JSON`,
+    );
+  });
+
+  it('parses the normal-day alert wrapper', async () => {
+    const { tdx } = clientWithResponse(alertsFixture);
+
+    const result = await tdx.metro.alerts('TRTC');
+    expectTypeOf(result).toEqualTypeOf<MetroAlerts>();
+
+    expect(result).toMatchObject({ AuthorityCode: 'TRTC', UpdateInterval: 60 });
+    expect(result.Alerts.map((a) => [a.Title, a.Status])).toEqual([['正常營運', 1]]);
+    expect(result.Alerts[0]?.Scope).toMatchObject({ Network: {}, Stations: [], Lines: [] });
+  });
+
+  it('surfaces an unsupported system as TdxApiError', async () => {
+    const message = "RailSystem: 'NTDLRT' is not accepted but TYMC, KRTC, KLRT, TRTC, TRTCMG, TMRT";
+    const { tdx } = clientWithResponse(null, {
+      fetch: (url: string) =>
+        Promise.resolve(
+          url.includes('/token') ? tokenResponse() : jsonResponse({ Message: message }, 400),
+        ),
+    });
+
+    await expect(tdx.metro.alerts('NTDLRT')).rejects.toMatchObject({
+      name: 'TdxApiError',
+      status: 400,
+    });
   });
 });

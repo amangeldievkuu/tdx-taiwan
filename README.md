@@ -6,7 +6,7 @@
 [![license](https://img.shields.io/npm/l/tdx-taiwan)](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/LICENSE)
 
 Unofficial TypeScript SDK for Taiwan's [TDX (Transport Data eXchange)](https://tdx.transportdata.tw) API
-— YouBike availability, bus routes and arrival estimates, metro stations, live boards,
+— YouBike availability, city and InterCity bus routes, arrival estimates and live positions, metro stations, live boards, alerts,
 timetables and fares, and high speed rail timetables, fares and seat availability.
 
 - OAuth2 client-credentials auth with in-memory token caching and automatic refresh
@@ -150,27 +150,34 @@ still typed as the full item, so treat unselected fields as absent.
 
 ## API
 
-| Method                                          | TDX endpoint                                                 | Returns                       |
-| ----------------------------------------------- | ------------------------------------------------------------ | ----------------------------- |
-| `tdx.bike.stations(city, query?)`               | `GET /v2/Bike/Station/City/{City}`                           | `BikeStation[]`               |
-| `tdx.bike.availability(city, query?)`           | `GET /v2/Bike/Availability/City/{City}`                      | `BikeAvailability[]`          |
-| `tdx.bus.routes(city, routeName?, query?)`      | `GET /v2/Bus/Route/City/{City}[/{RouteName}]`                | `BusRoute[]`                  |
-| `tdx.bus.stopsOfRoute(city, routeName, query?)` | `GET /v2/Bus/StopOfRoute/City/{City}/{RouteName}`            | `BusStopOfRoute[]`            |
-| `tdx.bus.eta(city, routeName, query?)`          | `GET /v2/Bus/EstimatedTimeOfArrival/City/{City}/{RouteName}` | `BusEstimatedTimeOfArrival[]` |
-| `tdx.metro.stations(system, query?)`            | `GET /v2/Rail/Metro/Station/{RailSystem}`                    | `MetroStation[]`              |
-| `tdx.metro.lines(system, query?)`               | `GET /v2/Rail/Metro/Line/{RailSystem}`                       | `MetroLine[]`                 |
-| `tdx.metro.stationsOfLine(system, query?)`      | `GET /v2/Rail/Metro/StationOfLine/{RailSystem}`              | `MetroStationOfLine[]`        |
-| `tdx.metro.liveBoard(system, query?)`           | `GET /v2/Rail/Metro/LiveBoard/{RailSystem}`                  | `MetroLiveBoard[]`            |
-| `tdx.metro.firstLastTimetable(system, query?)`  | `GET /v2/Rail/Metro/FirstLastTimetable/{RailSystem}`         | `MetroFirstLastTimetable[]`   |
-| `tdx.metro.odFare(system, query?)`              | `GET /v2/Rail/Metro/ODFare/{RailSystem}`                     | `MetroODFare[]`               |
-| `tdx.thsr.stations(query?)`                     | `GET /v2/Rail/THSR/Station`                                  | `ThsrStation[]`               |
-| `tdx.thsr.timetable(from, to, date?, query?)`   | `GET /v2/Rail/THSR/DailyTimetable/OD/{O}/to/{D}/{TrainDate}` | `ThsrODTimetable[]`           |
-| `tdx.thsr.odFare(from, to, query?)`             | `GET /v2/Rail/THSR/ODFare/{O}/to/{D}`                        | `ThsrODFare[]`                |
-| `tdx.thsr.availableSeats(station, query?)`      | `GET /v2/Rail/THSR/AvailableSeatStatusList/{StationID}`      | `ThsrAvailableSeats`          |
-| `tdx.thsr.alerts(query?)`                       | `GET /v2/Rail/THSR/AlertInfo`                                | `ThsrAlert[]`                 |
-| `tdx.get(path, query?)`                         | Any other TDX endpoint (auth, retries, rate limit applied)   | `unknown`                     |
-| `tdx.getAccessToken()`                          | The current access token                                     | `string`                      |
-| `tdx.clearCache()`                              | Empties the response cache                                   | `void`                        |
+| Method                                              | TDX endpoint                                                 | Returns                       |
+| --------------------------------------------------- | ------------------------------------------------------------ | ----------------------------- |
+| `tdx.bike.stations(city, query?)`                   | `GET /v2/Bike/Station/City/{City}`                           | `BikeStation[]`               |
+| `tdx.bike.availability(city, query?)`               | `GET /v2/Bike/Availability/City/{City}`                      | `BikeAvailability[]`          |
+| `tdx.bus.routes(city, routeName?, query?)`          | `GET /v2/Bus/Route/City/{City}[/{RouteName}]`                | `BusRoute[]`                  |
+| `tdx.bus.stopsOfRoute(city, routeName, query?)`     | `GET /v2/Bus/StopOfRoute/City/{City}/{RouteName}`            | `BusStopOfRoute[]`            |
+| `tdx.bus.eta(city, routeName, query?)`              | `GET /v2/Bus/EstimatedTimeOfArrival/City/{City}/{RouteName}` | `BusEstimatedTimeOfArrival[]` |
+| `tdx.bus.stops(city, query?)`                       | `GET /v2/Bus/Stop/City/{City}`                               | `BusStopInfo[]`               |
+| `tdx.bus.positions(city, routeName, query?)`        | `GET /v2/Bus/RealTimeByFrequency/City/{City}/{RouteName}`    | `BusPosition[]`               |
+| `tdx.bus.interCity.routes(routeName?, query?)`      | `GET /v2/Bus/Route/InterCity[/{RouteName}]`                  | `BusRoute[]`                  |
+| `tdx.bus.interCity.stopsOfRoute(routeName, query?)` | `GET /v2/Bus/StopOfRoute/InterCity/{RouteName}`              | `BusStopOfRoute[]`            |
+| `tdx.bus.interCity.eta(routeName, query?)`          | `GET /v2/Bus/EstimatedTimeOfArrival/InterCity/{RouteName}`   | `BusEstimatedTimeOfArrival[]` |
+| `tdx.bus.interCity.positions(routeName, query?)`    | `GET /v2/Bus/RealTimeByFrequency/InterCity/{RouteName}`      | `BusPosition[]`               |
+| `tdx.metro.stations(system, query?)`                | `GET /v2/Rail/Metro/Station/{RailSystem}`                    | `MetroStation[]`              |
+| `tdx.metro.lines(system, query?)`                   | `GET /v2/Rail/Metro/Line/{RailSystem}`                       | `MetroLine[]`                 |
+| `tdx.metro.stationsOfLine(system, query?)`          | `GET /v2/Rail/Metro/StationOfLine/{RailSystem}`              | `MetroStationOfLine[]`        |
+| `tdx.metro.liveBoard(system, query?)`               | `GET /v2/Rail/Metro/LiveBoard/{RailSystem}`                  | `MetroLiveBoard[]`            |
+| `tdx.metro.firstLastTimetable(system, query?)`      | `GET /v2/Rail/Metro/FirstLastTimetable/{RailSystem}`         | `MetroFirstLastTimetable[]`   |
+| `tdx.metro.odFare(system, query?)`                  | `GET /v2/Rail/Metro/ODFare/{RailSystem}`                     | `MetroODFare[]`               |
+| `tdx.metro.alerts(system, query?)`                  | `GET /v2/Rail/Metro/Alert/{RailSystem}`                      | `MetroAlerts`                 |
+| `tdx.thsr.stations(query?)`                         | `GET /v2/Rail/THSR/Station`                                  | `ThsrStation[]`               |
+| `tdx.thsr.timetable(from, to, date?, query?)`       | `GET /v2/Rail/THSR/DailyTimetable/OD/{O}/to/{D}/{TrainDate}` | `ThsrODTimetable[]`           |
+| `tdx.thsr.odFare(from, to, query?)`                 | `GET /v2/Rail/THSR/ODFare/{O}/to/{D}`                        | `ThsrODFare[]`                |
+| `tdx.thsr.availableSeats(station, query?)`          | `GET /v2/Rail/THSR/AvailableSeatStatusList/{StationID}`      | `ThsrAvailableSeats`          |
+| `tdx.thsr.alerts(query?)`                           | `GET /v2/Rail/THSR/AlertInfo`                                | `ThsrAlert[]`                 |
+| `tdx.get(path, query?)`                             | Any other TDX endpoint (auth, retries, rate limit applied)   | `unknown`                     |
+| `tdx.getAccessToken()`                              | The current access token                                     | `string`                      |
+| `tdx.clearCache()`                                  | Empties the response cache                                   | `void`                        |
 
 Responses keep TDX's original field names (`StationUID`, `AvailableRentBikes`, …) so they
 match the [TDX documentation](https://tdx.transportdata.tw/api-service/swagger) and the field
@@ -191,6 +198,33 @@ await tdx.bus.eta('Taipei', '307', { exact: false }); // 307, 307西藏三民, �
 ```
 
 Names that contain `/` (a few Kinmen routes, such as `15A往烈嶼 (后頭進/黃厝出)`) work too.
+
+### Bus positions, stops and InterCity coaches
+
+```ts
+// Where are the route 307 buses right now?
+const buses = await tdx.bus.positions('Taipei', '307');
+for (const b of buses) {
+  console.log(
+    b.PlateNumb,
+    b.BusPosition?.PositionLat,
+    b.BusPosition?.PositionLon,
+    `${b.Speed} km/h`,
+  );
+}
+
+// InterCity coaches (公路客運) have the same methods without a city
+const coaches = await tdx.bus.interCity.eta('1610');
+const where = await tdx.bus.interCity.positions('1610');
+```
+
+- `positions` and every `interCity` method match route names exactly, like the city methods:
+  TDX would return all 91 `9xxx` coach routes for `'9'`. Pass `{ exact: false }` to opt out.
+- `interCity` returns the same types as the city methods (`BusRoute`, `BusStopOfRoute`,
+  `BusEstimatedTimeOfArrival`).
+- `stops(city)` returns every stop in a city as `BusStopInfo` (about 29,000 for Taipei), so
+  narrow it with `$filter` / `$select`. `BusStop` remains the stop type inside
+  `BusStopOfRoute`. `StationGroupID` is optional because Taipei and Kaohsiung omit it.
 
 ### Metro
 
@@ -213,6 +247,9 @@ console.log(adult?.Price); // 40
 
 - [`examples/next-metro-train.ts`](examples/next-metro-train.ts) prints the next trains at a
   station.
+- `alerts(system)` returns an object (`{ UpdateTime, AuthorityCode, Alerts, … }`); the query
+  filters its `Alerts`. On a normal day there is one "正常營運" alert with `Status: 1`. It
+  supports TRTC, KRTC, TYMC, KLRT, TRTCMG and TMRT.
 - `liveBoard` `EstimateTime` is in **minutes**; bus `eta` `EstimateTime` is in seconds.
 - `liveBoard` only supports `TRTC`, `KRTC`, `TYMC` and `KLRT`; other systems get a
   `TdxApiError` (400). KRTC, TYMC and KLRT list the next train for every station. TRTC only
@@ -317,6 +354,9 @@ token endpoint is separately limited to 20 requests per minute per source IP, ac
 official [sample code documentation](https://github.com/tdxmotc/SampleCode) (linked from the API
 Swagger pages). This client requests a token only when its cached one is about to expire. On 429
 the client honours `Retry-After` (capped at 30 s) or backs off exponentially with jitter.
+TDX also bills usage in points by call count and by response size (per its Swagger pages,
+1,500 calls or 150 MB per point), so prefer `$filter` / `$select` on large lists such as city
+stops, whole-city ETAs and metro fares, and consider `cache: true`.
 
 **Caching.** With `cache: true`, responses are cached in memory per URL: static data (bike
 stations, bus routes, stops of route) for 1 hour and real-time data (bike availability, bus ETA)
@@ -404,6 +444,7 @@ const top = await tdx.bike.availability(
 - 存取權杖（access token）會快取於記憶體，並於到期前 60 秒自動更新；同時多個請求只會發出一次權杖請求。
 - 遇到 429 或 5xx 會以指數退避（含隨機抖動）重試最多 3 次，並內建用戶端限流（預設每秒 5 次，請依您的 TDX 方案調整）。
 - 路線名稱預設以中文名稱（`RouteName/Zh_tw`）完全比對：`tdx.bus.eta('Taipei', '307')` 只回傳 307，不含「307西藏三民」。若要使用 TDX 原本的前綴比對，請傳入 `{ exact: false }`。
+- 公車：`tdx.bus.positions('Taipei', '307')` 取得公車即時位置（A1）、`tdx.bus.stops('Taipei')` 取得縣市全部站牌（資料量大，建議篩選）；公路客運使用 `tdx.bus.interCity.routes('1610')`、`eta`、`positions` 等，路線名稱同樣預設完全比對。捷運另有 `tdx.metro.alerts('TRTC')` 營運通阻資料。
 - 高鐵：`tdx.thsr.timetable('1000', '1070', '2026-10-21')` 查詢指定日期起迄站時刻表（日期可為 `Date` 或 `YYYY-MM-DD`，預設為臺灣時間今天；僅提供約四週內的資料），另有 `odFare`（票價）、`availableSeats`（對號座剩餘座位：O 尚有、L 有限、X 已無）與 `alerts`（營運通阻）。
 - 捷運：`tdx.metro.liveBoard('TRTC')` 等方法以軌道系統代碼（`TRTC`、`KRTC`、`TYMC`…）查詢。注意捷運看板的 `EstimateTime` 單位為**分鐘**（公車為秒），且臺北捷運（TRTC）看板只列出即將進站（0 分鐘）的列車；`odFare` 資料量大，建議以 `OriginStationID`／`DestinationStationID` 篩選。
 - 回傳資料維持 TDX 原始欄位名稱（如 `StationUID`、`AvailableRentBikes`），型別依官方 OpenAPI 規格定義。

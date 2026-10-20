@@ -147,6 +147,44 @@ describe.skipIf(!hasCredentials)('live TDX API: THSR', () => {
   });
 });
 
+describe.skipIf(!hasCredentials)('live TDX API: 0.4.0 bus and metro additions', () => {
+  let tdx: TdxClient;
+
+  beforeAll(() => {
+    tdx = new TdxClient({
+      clientId: clientId ?? '',
+      clientSecret: clientSecret ?? '',
+      requestsPerSecond: 2,
+    });
+  });
+
+  it('bus.stops returns Taipei stops', async () => {
+    const stops = await tdx.bus.stops('Taipei', { top: 2 });
+    expect(stops).toHaveLength(2);
+    expect(stops[0]?.StopUID).toMatch(/^TPE/);
+  });
+
+  it('bus.positions returns only route 307 vehicles', async () => {
+    const positions = await tdx.bus.positions('Taipei', '307');
+    expect(positions.every((p) => p.RouteName?.Zh_tw === '307')).toBe(true);
+  });
+
+  it('bus.interCity returns route 1610, its ETA and positions', async () => {
+    const routes = await tdx.bus.interCity.routes('1610');
+    expect(routes.map((r) => r.RouteName.Zh_tw)).toEqual(['1610']);
+    const eta = await tdx.bus.interCity.eta('1610');
+    expect(eta.every((e) => e.RouteName?.Zh_tw === '1610')).toBe(true);
+    const positions = await tdx.bus.interCity.positions('1610');
+    expect(Array.isArray(positions)).toBe(true);
+  });
+
+  it('metro.alerts returns the TRTC alert wrapper', async () => {
+    const result = await tdx.metro.alerts('TRTC');
+    expect(result.AuthorityCode).toBe('TRTC');
+    expect(result.Alerts.length).toBeGreaterThan(0);
+  });
+});
+
 describe.skipIf(hasCredentials)('live TDX API (skipped)', () => {
   it.skip('set TDX_CLIENT_ID and TDX_CLIENT_SECRET in .env to run the live tests', () => {});
 });

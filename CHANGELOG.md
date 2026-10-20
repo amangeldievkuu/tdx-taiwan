@@ -6,6 +6,21 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-20
+
+### Added
+
+- InterCity coaches (公路客運) under `bus.interCity`: `routes(routeName?)`, `stopsOfRoute`,
+  `eta` and `positions`, returning the same types as the city methods. Route names are matched
+  exactly by default, as for city buses (TDX returns all 91 `9xxx` routes for `'9'`).
+- `bus.positions(city, routeName)`: live vehicle positions (A1) as `BusPosition`, with exact
+  route matching.
+- `bus.stops(city)`: every stop in a city as `BusStopInfo`. `StationGroupID` is optional
+  because Taipei and Kaohsiung omit it despite the spec.
+- `metro.alerts(system)`: service alerts as a `MetroAlerts` object; the query applies to its
+  `Alerts`. Supported for TRTC, KRTC, TYMC, KLRT, TRTCMG and TMRT.
+- README notes on TDX's point-based billing (by calls and by response size).
+
 ## [0.3.1] - 2026-10-20
 
 ### Changed
@@ -121,7 +136,8 @@ All notable changes to this project are documented here. The format is based on
   - CI runs the dist tests against each NestJS major and smoke-tests the packed tarball on
     Node 20, 22 and 24.
 
-[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.2.0...v0.2.1

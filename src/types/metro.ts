@@ -191,3 +191,91 @@ export interface MetroODFare {
   UpdateTime: DateTimeString;
   VersionID: number;
 }
+
+/** `RailSystem` values accepted by the Alert endpoint (others, such as NTDLRT, get HTTP 400). */
+export type MetroAlertSystem = OpenString<'TRTC' | 'KRTC' | 'TYMC' | 'KLRT' | 'TRTCMG' | 'TMRT'>;
+
+/** 營運狀況: 0 = 全線營運停止 (line stopped), 1 = 全線營運正常 (normal), 2 = 有異常狀況 (disrupted). */
+export type MetroAlertStatus = 0 | 1 | 2;
+
+/** Affected network (MRTAlertList.AlertScopeNetwork). */
+export interface MetroAlertScopeNetwork {
+  NetworkID?: string | null;
+}
+
+/** Affected station (MRTAlertList.AlertScopeStation). */
+export interface MetroAlertScopeStation {
+  StationID?: string | null;
+  StationName?: string | null;
+}
+
+/** Affected line (MRTAlertList.AlertScopeLine). */
+export interface MetroAlertScopeLine {
+  LineID?: string | null;
+  LineName?: string | null;
+}
+
+/** Affected service route (MRTAlertList.AlertScopeRoute). */
+export interface MetroAlertScopeRoute {
+  RouteID?: string | null;
+  RouteName?: string | null;
+}
+
+/** Affected train (MRTAlertList.AlertScopeTrain). */
+export interface MetroAlertScopeTrain {
+  TrainNo?: string | null;
+}
+
+/** Affected section of a line (MRTAlertList.AlertScopeLineSection). */
+export interface MetroAlertScopeLineSection {
+  LineID?: string | null;
+  StartingStationID?: string | null;
+  StartingStationName?: string | null;
+  EndingStationID?: string | null;
+  EndingStationName?: string | null;
+  Description?: string | null;
+}
+
+/** What an alert affects (MRTAlertList.AlertScope). Empty arrays on a normal day. */
+export interface MetroAlertScope {
+  Network?: MetroAlertScopeNetwork | null;
+  Stations: MetroAlertScopeStation[];
+  Lines: MetroAlertScopeLine[];
+  Routes: MetroAlertScopeRoute[];
+  Trains: MetroAlertScopeTrain[];
+  LineSections: MetroAlertScopeLineSection[];
+}
+
+/** Service alert (Metro.Alert). On a normal day there is one "正常營運" alert with `Status: 1`. */
+export interface MetroAlert {
+  AlertID: string;
+  Title: string;
+  Description: string;
+  Status: MetroAlertStatus;
+  Scope: MetroAlertScope;
+  /** 影響方向: 0 = 去程 (outbound), 1 = 返程 (inbound). */
+  Direction?: 0 | 1 | null;
+  /** 影響等級: 1 = 重度 (severe), 2 = 中度 (moderate), 3 = 輕度 (minor). */
+  Level?: 1 | 2 | 3 | null;
+  Effect?: string | null;
+  Reason?: string | null;
+  AlertURL?: string | null;
+  StartTime?: DateTimeString | null;
+  EndTime?: DateTimeString | null;
+  PublishTime?: DateTimeString | null;
+  UpdateTime: DateTimeString;
+}
+
+/** Alerts of a rail system (MRTRealTimeWrapper[Metro.Alert]) — `GET /v2/Rail/Metro/Alert/{RailSystem}`. */
+export interface MetroAlerts {
+  /** TDX update time. */
+  UpdateTime: DateTimeString;
+  /** TDX update interval in seconds. */
+  UpdateInterval: number;
+  SrcUpdateTime: DateTimeString;
+  /** Source update interval in seconds; `-1` means irregular. */
+  SrcUpdateInterval: number;
+  AuthorityCode: string;
+  Alerts: MetroAlert[];
+  Count?: number | null;
+}

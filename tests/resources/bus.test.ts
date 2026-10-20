@@ -1,7 +1,9 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import {
   type BusEstimatedTimeOfArrival,
+  type BusPosition,
   type BusRoute,
+  type BusStopInfo,
   type BusStopOfRoute,
   query,
 } from '../../src/index.js';
@@ -12,6 +14,12 @@ const decoded = (urls: string[]) => urls.map((u) => decodeURIComponent(u));
 const routesFixture = loadFixture('bus-route-taipei-307.json') as BusRoute[];
 const stopsFixture = loadFixture('bus-stop-of-route-taipei-307.json') as BusStopOfRoute[];
 const etaFixture = loadFixture('bus-eta-taipei-307.json') as BusEstimatedTimeOfArrival[];
+const stopsInfoFixture = loadFixture('bus-stop-taipei.json') as BusStopInfo[];
+const positionsFixture = loadFixture('bus-position-taipei-307.json') as BusPosition[];
+const interCityRouteFixture = loadFixture('bus-intercity-route-1610.json') as BusRoute[];
+const interCityEtaFixture = loadFixture(
+  'bus-intercity-eta-1610.json',
+) as BusEstimatedTimeOfArrival[];
 
 describe('tdx.bus.routes', () => {
   it('requests every route in a city', async () => {
@@ -192,5 +200,117 @@ describe('tdx.bus.eta', () => {
     expect(() => tdx.bus.eta('Taipei', '  ')).toThrow(TypeError);
     expect(() => tdx.bus.eta('Taipei', '/x')).toThrow(TypeError);
     expect(() => tdx.bus.eta('Taipei', '  ', { exact: false })).toThrow(TypeError);
+  });
+});
+
+describe('tdx.bus.stops', () => {
+  it('requests every stop in a city, with a query', async () => {
+    const { tdx, apiUrls } = clientWithResponse([]);
+
+    await tdx.bus.stops('Taipei');
+    await tdx.bus.stops('Taipei', { select: ['StopUID', 'StopName'], top: 10 });
+
+    expect(decoded(apiUrls)).toEqual([
+      `${API}/v2/Bus/Stop/City/Taipei?$format=JSON`,
+      `${API}/v2/Bus/Stop/City/Taipei?$select=StopUID,StopName&$top=10&$format=JSON`,
+    ]);
+  });
+
+  it('parses stops, which lack StationGroupID in Taipei', async () => {
+    const { tdx } = clientWithResponse(stopsInfoFixture);
+
+    const stops = await tdx.bus.stops('Taipei');
+    expectTypeOf(stops).toEqualTypeOf<BusStopInfo[]>();
+
+    expect(stops.map((s) => [s.StopUID, s.StopName.Zh_tw, s.Bearing, s.City])).toEqual([
+      ['TPE10000', '蘆洲總站', 'SE', 'Taipei'],
+      ['TPE10001', '南港分局(重陽)', 'NE', 'Taipei'],
+    ]);
+    expect(stops[0]?.StationGroupID).toBeUndefined();
+    expect(stops[0]?.StopPosition.PositionLat).toBe(25.089056);
+  });
+});
+
+describe('tdx.bus.positions', () => {
+  it('requests live positions of a route by exact name', async () => {
+    const { tdx, apiUrls } = clientWithResponse([]);
+
+    await tdx.bus.positions('Taipei', '307');
+    await tdx.bus.positions('Taipei', '307', { exact: false });
+
+    expect(decoded(apiUrls)).toEqual([
+      `${API}/v2/Bus/RealTimeByFrequency/City/Taipei/307` +
+        `?$filter=RouteName/Zh_tw eq '307'&$format=JSON`,
+      `${API}/v2/Bus/RealTimeByFrequency/City/Taipei/307?$format=JSON`,
+    ]);
+  });
+
+  it('parses positions', async () => {
+    const { tdx } = clientWithResponse(positionsFixture);
+
+    const positions = await tdx.bus.positions('Taipei', '307');
+    expectTypeOf(positions).toEqualTypeOf<BusPosition[]>();
+
+    expect(positions.map((p) => [p.PlateNumb, p.Direction, p.Speed, p.DutyStatus])).toEqual([
+      ['208-U5', 0, 0, 1],
+      ['266-U5', 0, 10, 1],
+    ]);
+    expect(positions[1]?.BusPosition).toMatchObject({
+      PositionLat: 25.011048,
+      PositionLon: 121.461627,
+    });
+  });
+});
+
+describe('tdx.bus.interCity', () => {
+  it('requests InterCity routes, stops, ETA and positions by exact name', async () => {
+    const { tdx, apiUrls } = clientWithResponse([]);
+
+    await tdx.bus.interCity.routes();
+    await tdx.bus.interCity.routes({ top: 5 });
+    await tdx.bus.interCity.routes('1610');
+    await tdx.bus.interCity.stopsOfRoute('1610');
+    await tdx.bus.interCity.eta('1610');
+    await tdx.bus.interCity.positions('1610');
+
+    const exact = `?$filter=RouteName/Zh_tw eq '1610'&$format=JSON`;
+    expect(decoded(apiUrls)).toEqual([
+      `${API}/v2/Bus/Route/InterCity?$format=JSON`,
+      `${API}/v2/Bus/Route/InterCity?$top=5&$format=JSON`,
+      `${API}/v2/Bus/Route/InterCity/1610${exact}`,
+      `${API}/v2/Bus/StopOfRoute/InterCity/1610${exact}`,
+      `${API}/v2/Bus/EstimatedTimeOfArrival/InterCity/1610${exact}`,
+      `${API}/v2/Bus/RealTimeByFrequency/InterCity/1610${exact}`,
+    ]);
+  });
+
+  it('keeps TDX prefix matching with exact: false', async () => {
+    const { tdx, apiUrls } = clientWithResponse([]);
+
+    await tdx.bus.interCity.routes('9', { exact: false });
+
+    expect(apiUrls).toEqual([`${API}/v2/Bus/Route/InterCity/9?$format=JSON`]);
+  });
+
+  it('parses InterCity routes and ETA with the city types', async () => {
+    const routes = clientWithResponse(interCityRouteFixture);
+    const [route] = await routes.tdx.bus.interCity.routes('1610');
+    expectTypeOf(route).toEqualTypeOf<BusRoute | undefined>();
+    expect(route).toMatchObject({ RouteUID: 'THB1610', BusRouteType: 13 });
+    expect(route?.Operators[0]?.OperatorName.Zh_tw).toBe('統聯客運');
+
+    const eta = clientWithResponse(interCityEtaFixture);
+    const estimates = await eta.tdx.bus.interCity.eta('1610');
+    expect(estimates.map((e) => [e.StopName?.Zh_tw, e.StopStatus, e.EstimateTime])).toEqual([
+      ['建國客運站', 1, undefined],
+      ['建國客運站', 3, undefined],
+    ]);
+  });
+
+  it('validates the route name', () => {
+    const { tdx } = clientWithResponse([]);
+
+    expect(() => tdx.bus.interCity.eta(' ')).toThrow(TypeError);
+    expect(() => tdx.bus.positions('Taipei', '')).toThrow(TypeError);
   });
 });

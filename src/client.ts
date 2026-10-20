@@ -106,7 +106,7 @@ export class TdxClient {
       this.request(path, query, cacheClass, 'object') as Promise<never>;
     this.bike = new BikeApi(list);
     this.bus = new BusApi(list);
-    this.metro = new MetroApi(list);
+    this.metro = new MetroApi(list, object);
     this.thsr = new ThsrApi(list, object);
   }
 
