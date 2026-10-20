@@ -6,6 +6,18 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-20
+
+### Added
+
+- Metro endpoints (捷運/輕軌/纜車) for every TDX rail system: `metro.stations`, `metro.lines`,
+  `metro.stationsOfLine`, `metro.liveBoard` (real-time; `EstimateTime` in minutes; TRTC only
+  lists trains arriving now),
+  `metro.firstLastTimetable` and `metro.odFare`, with types transcribed from the TDX Rail v2
+  OpenAPI spec and checked against live data for every system. `StationAddress` and
+  `LineColor` are optional and `LineSectionName` may be `{}`, because live data omits them
+  despite the spec.
+
 ## [0.1.1] - 2026-10-20
 
 ### Added
@@ -66,6 +78,7 @@ All notable changes to this project are documented here. The format is based on
   - CI runs the dist tests against each NestJS major and smoke-tests the packed tarball on
     Node 20, 22 and 24.
 
-[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/amangeldievkuu/tdx-taiwan/releases/tag/v0.1.0

@@ -1,7 +1,8 @@
 # tdx-taiwan
 
 TypeScript SDK for Taiwan's [TDX (Transport Data eXchange)](https://tdx.transportdata.tw) API
-— YouBike availability, bus routes and real-time bus arrival estimates.
+— YouBike availability, bus routes and arrival estimates, and metro stations, live boards,
+timetables and fares.
 
 - OAuth2 client-credentials auth with in-memory token caching and automatic refresh
 - Retries with exponential backoff + jitter on 429 / 5xx, and a client-side rate limiter
@@ -150,6 +151,12 @@ still typed as the full item, so treat unselected fields as absent.
 | `tdx.bus.routes(city, routeName?, query?)`      | `GET /v2/Bus/Route/City/{City}[/{RouteName}]`                | `BusRoute[]`                  |
 | `tdx.bus.stopsOfRoute(city, routeName, query?)` | `GET /v2/Bus/StopOfRoute/City/{City}/{RouteName}`            | `BusStopOfRoute[]`            |
 | `tdx.bus.eta(city, routeName, query?)`          | `GET /v2/Bus/EstimatedTimeOfArrival/City/{City}/{RouteName}` | `BusEstimatedTimeOfArrival[]` |
+| `tdx.metro.stations(system, query?)`            | `GET /v2/Rail/Metro/Station/{RailSystem}`                    | `MetroStation[]`              |
+| `tdx.metro.lines(system, query?)`               | `GET /v2/Rail/Metro/Line/{RailSystem}`                       | `MetroLine[]`                 |
+| `tdx.metro.stationsOfLine(system, query?)`      | `GET /v2/Rail/Metro/StationOfLine/{RailSystem}`              | `MetroStationOfLine[]`        |
+| `tdx.metro.liveBoard(system, query?)`           | `GET /v2/Rail/Metro/LiveBoard/{RailSystem}`                  | `MetroLiveBoard[]`            |
+| `tdx.metro.firstLastTimetable(system, query?)`  | `GET /v2/Rail/Metro/FirstLastTimetable/{RailSystem}`         | `MetroFirstLastTimetable[]`   |
+| `tdx.metro.odFare(system, query?)`              | `GET /v2/Rail/Metro/ODFare/{RailSystem}`                     | `MetroODFare[]`               |
 | `tdx.get(path, query?)`                         | Any other TDX endpoint (auth, retries, rate limit applied)   | `unknown`                     |
 | `tdx.getAccessToken()`                          | The current access token                                     | `string`                      |
 | `tdx.clearCache()`                              | Empties the response cache                                   | `void`                        |
@@ -173,6 +180,35 @@ await tdx.bus.eta('Taipei', '307', { exact: false }); // 307, 307西藏三民, �
 ```
 
 Names that contain `/` (a few Kinmen routes, such as `15A往烈嶼 (后頭進/黃厝出)`) work too.
+
+### Metro
+
+Metro methods take a rail system code: `TRTC` 臺北捷運, `KRTC` 高雄捷運, `TYMC` 桃園捷運,
+`TMRT` 臺中捷運, `KLRT` 高雄輕軌, `NTDLRT` 淡海輕軌, `TRTCMG` 貓空纜車, `NTMC` 新北捷運,
+`NTALRT` 安坑輕軌.
+
+```ts
+// Next trains at Formosa Boulevard (美麗島, R10) in Kaohsiung
+const board = await tdx.metro.liveBoard('KRTC', { filter: "StationID eq 'R10'" });
+for (const b of board) console.log(b.TripHeadSign, b.EstimateTime, 'min');
+
+// Adult single-journey fare from Taipei Main Station to Dingpu
+const [od] = await tdx.metro.odFare('TRTC', {
+  filter: ["OriginStationID eq 'BL12'", "DestinationStationID eq 'BL01'"],
+});
+const adult = od?.Fares.find((f) => f.TicketType === 1 && f.FareClass === 1);
+console.log(adult?.Price); // 40
+```
+
+- `liveBoard` `EstimateTime` is in **minutes**; bus `eta` `EstimateTime` is in seconds.
+- `liveBoard` only supports `TRTC`, `KRTC`, `TYMC` and `KLRT`; other systems get a
+  `TdxApiError` (400). KRTC, TYMC and KLRT list the next train for every station. TRTC only
+  lists trains arriving right now (`EstimateTime` is always `0`), so most Taipei stations are
+  absent at any given moment.
+- `odFare` returns every station pair (about 15,000 for TRTC), so filter on
+  `OriginStationID` / `DestinationStationID`.
+- Where live data departs from the spec, the types follow the data: `StationAddress` and
+  `LineColor` are optional, and `LineSectionName` is often `{}`.
 
 ## Options
 
@@ -264,7 +300,7 @@ Development tooling requires Node.js 22+; the published package supports Node.js
 ## 繁體中文
 
 `tdx-taiwan` 是交通部 [TDX 運輸資料流通服務](https://tdx.transportdata.tw) 的 TypeScript SDK，
-支援公共自行車（YouBike）站點與即時車位、市區公車路線、站序與預估到站時間。
+支援公共自行車（YouBike）站點與即時車位、市區公車路線、站序與預估到站時間，以及捷運車站、路線、即時到站看板、首末班車與票價。
 
 **安裝**（需要 Node.js 20 以上版本）
 
@@ -306,6 +342,7 @@ const top = await tdx.bike.availability(
 - 存取權杖（access token）會快取於記憶體，並於到期前 60 秒自動更新；同時多個請求只會發出一次權杖請求。
 - 遇到 429 或 5xx 會以指數退避（含隨機抖動）重試最多 3 次，並內建用戶端限流（預設每秒 5 次，請依您的 TDX 方案調整）。
 - 路線名稱預設以中文名稱（`RouteName/Zh_tw`）完全比對：`tdx.bus.eta('Taipei', '307')` 只回傳 307，不含「307西藏三民」。若要使用 TDX 原本的前綴比對，請傳入 `{ exact: false }`。
+- 捷運：`tdx.metro.liveBoard('TRTC')` 等方法以軌道系統代碼（`TRTC`、`KRTC`、`TYMC`…）查詢。注意捷運看板的 `EstimateTime` 單位為**分鐘**（公車為秒），且臺北捷運（TRTC）看板只列出即將進站（0 分鐘）的列車；`odFare` 資料量大，建議以 `OriginStationID`／`DestinationStationID` 篩選。
 - 回傳資料維持 TDX 原始欄位名稱（如 `StationUID`、`AvailableRentBikes`），型別依官方 OpenAPI 規格定義。
 - NestJS 使用者可匯入 `tdx-taiwan/nestjs` 的 `TdxModule.forRoot()` / `forRootAsync()`（範例見上方英文說明）。
 

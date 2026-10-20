@@ -20,37 +20,50 @@ describe('TdxClient response cache', () => {
     expect(apiUrls).toHaveLength(2);
   });
 
-  it('caches static data (stations, routes, stops) for an hour by default', async () => {
+  it('caches static data (stations, routes, stops, lines, timetables, fares) for an hour by default', async () => {
     const { tdx, apiUrls } = clientWithResponse(stations, { cache: true });
 
     await tdx.bike.stations('Taipei');
     await tdx.bus.routes('Taipei', '307');
     await tdx.bus.stopsOfRoute('Taipei', '307');
+    await tdx.metro.stations('TRTC');
+    await tdx.metro.lines('TRTC');
+    await tdx.metro.stationsOfLine('TRTC');
+    await tdx.metro.firstLastTimetable('TRTC');
+    await tdx.metro.odFare('TRTC');
     vi.advanceTimersByTime(60 * 60 * 1000 - 1);
     await tdx.bike.stations('Taipei');
     await tdx.bus.routes('Taipei', '307');
     await tdx.bus.stopsOfRoute('Taipei', '307');
-    expect(apiUrls).toHaveLength(3);
+    await tdx.metro.stations('TRTC');
+    await tdx.metro.lines('TRTC');
+    await tdx.metro.stationsOfLine('TRTC');
+    await tdx.metro.firstLastTimetable('TRTC');
+    await tdx.metro.odFare('TRTC');
+    expect(apiUrls).toHaveLength(8);
 
     vi.advanceTimersByTime(1);
     await tdx.bike.stations('Taipei');
-    expect(apiUrls).toHaveLength(4);
+    expect(apiUrls).toHaveLength(9);
   });
 
-  it('caches real-time data (availability, ETA) for 15 seconds by default', async () => {
+  it('caches real-time data (availability, ETA, live board) for 15 seconds by default', async () => {
     const { tdx, apiUrls } = clientWithResponse([], { cache: true });
 
     await tdx.bike.availability('Taipei');
     await tdx.bus.eta('Taipei', '307');
+    await tdx.metro.liveBoard('TRTC');
     vi.advanceTimersByTime(14_999);
     await tdx.bike.availability('Taipei');
     await tdx.bus.eta('Taipei', '307');
-    expect(apiUrls).toHaveLength(2);
+    await tdx.metro.liveBoard('TRTC');
+    expect(apiUrls).toHaveLength(3);
 
     vi.advanceTimersByTime(1);
     await tdx.bike.availability('Taipei');
     await tdx.bus.eta('Taipei', '307');
-    expect(apiUrls).toHaveLength(4);
+    await tdx.metro.liveBoard('TRTC');
+    expect(apiUrls).toHaveLength(6);
   });
 
   it('uses custom TTLs', async () => {

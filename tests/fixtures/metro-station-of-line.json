@@ -1,0 +1,86 @@
+[
+  {
+    "LineNo": "O",
+    "LineID": "O",
+    "Stations": [
+      {
+        "Sequence": 1,
+        "StationID": "O1",
+        "StationName": {
+          "Zh_tw": "哈瑪星",
+          "En": "Hamasen",
+          "Ja": null,
+          "Ko": null
+        },
+        "CumulativeDistance": 0
+      },
+      {
+        "Sequence": 2,
+        "StationID": "O2",
+        "StationName": {
+          "Zh_tw": "鹽埕埔",
+          "En": "Yanchengpu",
+          "Ja": null,
+          "Ko": null
+        },
+        "CumulativeDistance": 1.32
+      },
+      {
+        "Sequence": 3,
+        "StationID": "O4",
+        "StationName": {
+          "Zh_tw": "前金",
+          "En": "Cianjin",
+          "Ja": null,
+          "Ko": null
+        },
+        "CumulativeDistance": 2.63
+      }
+    ],
+    "SrcUpdateTime": "2024-06-30T11:00:00+08:00",
+    "UpdateTime": "2026-10-20T12:52:56+08:00",
+    "VersionID": 1113
+  },
+  {
+    "LineNo": "R",
+    "LineID": "R",
+    "Stations": [
+      {
+        "Sequence": 1,
+        "StationID": "R3",
+        "StationName": {
+          "Zh_tw": "小港",
+          "En": "Siaogang",
+          "Ja": null,
+          "Ko": null
+        },
+        "CumulativeDistance": 0
+      },
+      {
+        "Sequence": 2,
+        "StationID": "R4",
+        "StationName": {
+          "Zh_tw": "高雄國際機場",
+          "En": "Kaohsiung International Airport",
+          "Ja": null,
+          "Ko": null
+        },
+        "CumulativeDistance": 1.5
+      },
+      {
+        "Sequence": 3,
+        "StationID": "R4A",
+        "StationName": {
+          "Zh_tw": "草衙",
+          "En": "Caoya",
+          "Ja": null,
+          "Ko": null
+        },
+        "CumulativeDistance": 3.34
+      }
+    ],
+    "SrcUpdateTime": "2024-06-30T11:00:00+08:00",
+    "UpdateTime": "2026-10-20T12:52:56+08:00",
+    "VersionID": 1113
+  }
+]

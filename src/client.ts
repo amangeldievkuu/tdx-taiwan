@@ -7,6 +7,7 @@ import { RateLimiter } from './http/rate-limiter.js';
 import { type ODataOptions, ODataQuery } from './odata/query-builder.js';
 import { BikeApi } from './resources/bike.js';
 import { BusApi } from './resources/bus.js';
+import { MetroApi } from './resources/metro.js';
 import type { CacheClass, ListRequester } from './resources/requester.js';
 
 export interface TdxCacheOptions {
@@ -56,6 +57,8 @@ export class TdxClient {
   readonly bike: BikeApi;
   /** City bus endpoints. */
   readonly bus: BusApi;
+  /** Metro, light rail and gondola endpoints. */
+  readonly metro: MetroApi;
 
   private readonly tokens: TokenManager;
   private readonly http: HttpClient;
@@ -98,6 +101,7 @@ export class TdxClient {
       this.list(path, query, cacheClass) as Promise<never[]>;
     this.bike = new BikeApi(list);
     this.bus = new BusApi(list);
+    this.metro = new MetroApi(list);
   }
 
   /** Returns a valid OAuth2 access token (cached in memory, refreshed 60s before expiry). */

@@ -1,0 +1,49 @@
+[
+  {
+    "LineNo": "BL",
+    "LineID": "BL",
+    "LineName": {
+      "Zh_tw": "板南線",
+      "En": "Bannan Line",
+      "Ja": "板南線",
+      "Ko": "반난선"
+    },
+    "LineSectionName": {},
+    "LineColor": "#0a59ae",
+    "IsBranch": false,
+    "SrcUpdateTime": "2020-01-31T14:00:00+08:00",
+    "UpdateTime": "2020-05-20T12:00:00+08:00",
+    "VersionID": 2
+  },
+  {
+    "LineNo": "O",
+    "LineID": "O",
+    "LineName": {
+      "Zh_tw": "橘線"
+    },
+    "LineSectionName": {},
+    "IsBranch": false,
+    "SrcUpdateTime": "2017-05-26T00:00:00+08:00",
+    "UpdateTime": "2026-10-20T12:52:56+08:00",
+    "VersionID": 1103
+  },
+  {
+    "LineNo": "A",
+    "LineID": "A",
+    "LineName": {
+      "Zh_tw": "桃園機場捷運線",
+      "En": "Airport MRT Line",
+      "Ja": "桃園空港MRT",
+      "Ko": "타오위안 공항 MRT"
+    },
+    "LineSectionName": {
+      "Zh_tw": "台北車站-老街溪",
+      "En": "Taipei Main Station - Laojie River"
+    },
+    "LineColor": "#8246AF",
+    "IsBranch": false,
+    "SrcUpdateTime": "2023-07-31T00:00:00+08:00",
+    "UpdateTime": "2026-10-20T14:52:55+08:00",
+    "VersionID": 745
+  }
+]

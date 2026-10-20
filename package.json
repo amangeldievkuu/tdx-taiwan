@@ -1,13 +1,15 @@
 {
   "name": "tdx-taiwan",
   "version": "0.1.1",
-  "description": "TypeScript SDK for Taiwan's TDX (Transport Data eXchange) API — YouBike, bus routes and real-time ETA",
+  "description": "TypeScript SDK for Taiwan's TDX (Transport Data eXchange) API — YouBike, bus routes and ETA, metro stations, live boards and fares",
   "keywords": [
     "tdx",
     "taiwan",
     "transport",
     "youbike",
     "bus",
+    "metro",
+    "mrt",
     "odata",
     "ptx",
     "nestjs"

@@ -71,6 +71,39 @@ describe.skipIf(!hasCredentials)('live TDX API', () => {
   });
 });
 
+describe.skipIf(!hasCredentials)('live TDX API: metro', () => {
+  let tdx: TdxClient;
+
+  beforeAll(() => {
+    tdx = new TdxClient({
+      clientId: clientId ?? '',
+      clientSecret: clientSecret ?? '',
+      requestsPerSecond: 2,
+    });
+  });
+
+  it('metro.stations returns Taipei Metro stations', async () => {
+    const stations = await tdx.metro.stations('TRTC', { top: 3 });
+    expect(stations.length).toBeGreaterThan(0);
+    expect(stations[0]?.StationUID).toMatch(/^TRTC-/);
+    expect(stations[0]?.StationName.Zh_tw).toEqual(expect.any(String));
+  });
+
+  it('metro.liveBoard returns Kaohsiung Metro arrivals', async () => {
+    const board = await tdx.metro.liveBoard('KRTC');
+    expect(Array.isArray(board)).toBe(true);
+    if (board.length) expect(board[0]).toHaveProperty('ServiceStatus');
+  });
+
+  it('metro.odFare returns the fare between two stations', async () => {
+    const fares = await tdx.metro.odFare('TRTC', {
+      filter: [`OriginStationID eq 'BL12'`, `DestinationStationID eq 'BL01'`],
+    });
+    expect(fares).toHaveLength(1);
+    expect(fares[0]?.Fares.some((f) => f.TicketType === 1 && f.FareClass === 1)).toBe(true);
+  });
+});
+
 describe.skipIf(hasCredentials)('live TDX API (skipped)', () => {
   it.skip('set TDX_CLIENT_ID and TDX_CLIENT_SECRET in .env to run the live tests', () => {});
 });
