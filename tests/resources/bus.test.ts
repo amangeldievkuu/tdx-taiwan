@@ -7,6 +7,8 @@ import {
 } from '../../src/index.js';
 import { API, clientWithResponse, loadFixture } from '../helpers.js';
 
+const decoded = (urls: string[]) => urls.map((u) => decodeURIComponent(u));
+
 const routesFixture = loadFixture('bus-route-taipei-307.json') as BusRoute[];
 const stopsFixture = loadFixture('bus-stop-of-route-taipei-307.json') as BusStopOfRoute[];
 const etaFixture = loadFixture('bus-eta-taipei-307.json') as BusEstimatedTimeOfArrival[];
@@ -20,15 +22,49 @@ describe('tdx.bus.routes', () => {
     expect(apiUrls).toEqual([`${API}/v2/Bus/Route/City/Taipei?$format=JSON`]);
   });
 
-  it('requests a route by name, percent-encoding Chinese names', async () => {
+  it('requests a route by exact name, percent-encoding Chinese names', async () => {
     const { tdx, apiUrls } = clientWithResponse(routesFixture);
 
     await tdx.bus.routes('Taipei', '307');
     await tdx.bus.routes('Taipei', '紅5', { select: ['RouteUID'] });
 
     expect(apiUrls).toEqual([
+      `${API}/v2/Bus/Route/City/Taipei/307?$filter=RouteName%2FZh_tw%20eq%20'307'&$format=JSON`,
+      `${API}/v2/Bus/Route/City/Taipei/%E7%B4%855` +
+        `?$select=RouteUID&$filter=RouteName%2FZh_tw%20eq%20'%E7%B4%855'&$format=JSON`,
+    ]);
+  });
+
+  it('keeps TDX prefix matching with exact: false', async () => {
+    const { tdx, apiUrls } = clientWithResponse([]);
+
+    await tdx.bus.routes('Taipei', '307', { exact: false });
+    await tdx.bus.routes('Taipei', '307', { exact: false, top: 2 });
+
+    expect(apiUrls).toEqual([
       `${API}/v2/Bus/Route/City/Taipei/307?$format=JSON`,
-      `${API}/v2/Bus/Route/City/Taipei/%E7%B4%855?$select=RouteUID&$format=JSON`,
+      `${API}/v2/Bus/Route/City/Taipei/307?$top=2&$format=JSON`,
+    ]);
+  });
+
+  it('requests names containing a slash by their prefix and filters on the full name', async () => {
+    const { tdx, apiUrls } = clientWithResponse([]);
+
+    await tdx.bus.routes('KinmenCounty', ' 15A往烈嶼 (后頭進/黃厝出) ');
+
+    expect(decoded(apiUrls)).toEqual([
+      `${API}/v2/Bus/Route/City/KinmenCounty/15A往烈嶼 (后頭進` +
+        `?$filter=RouteName/Zh_tw eq '15A往烈嶼 (后頭進/黃厝出)'&$format=JSON`,
+    ]);
+  });
+
+  it('escapes quotes in the route name filter', async () => {
+    const { tdx, apiUrls } = clientWithResponse([]);
+
+    await tdx.bus.routes('Taipei', "O'Neil");
+
+    expect(decoded(apiUrls)).toEqual([
+      `${API}/v2/Bus/Route/City/Taipei/O'Neil?$filter=RouteName/Zh_tw eq 'O''Neil'&$format=JSON`,
     ]);
   });
 
@@ -67,8 +103,12 @@ describe('tdx.bus.stopsOfRoute', () => {
     const { tdx, apiUrls } = clientWithResponse(stopsFixture);
 
     await tdx.bus.stopsOfRoute('Taipei', '307');
+    await tdx.bus.stopsOfRoute('Taipei', '307', { exact: false });
 
-    expect(apiUrls).toEqual([`${API}/v2/Bus/StopOfRoute/City/Taipei/307?$format=JSON`]);
+    expect(decoded(apiUrls)).toEqual([
+      `${API}/v2/Bus/StopOfRoute/City/Taipei/307?$filter=RouteName/Zh_tw eq '307'&$format=JSON`,
+      `${API}/v2/Bus/StopOfRoute/City/Taipei/307?$format=JSON`,
+    ]);
   });
 
   it('parses ordered stops with positions and boarding flags', async () => {
@@ -94,8 +134,13 @@ describe('tdx.bus.eta', () => {
     const { tdx, apiUrls } = clientWithResponse(etaFixture);
 
     await tdx.bus.eta('Taipei', '307');
+    await tdx.bus.eta('Taipei', '307', { exact: false });
 
-    expect(apiUrls).toEqual([`${API}/v2/Bus/EstimatedTimeOfArrival/City/Taipei/307?$format=JSON`]);
+    expect(decoded(apiUrls)).toEqual([
+      `${API}/v2/Bus/EstimatedTimeOfArrival/City/Taipei/307` +
+        `?$filter=RouteName/Zh_tw eq '307'&$format=JSON`,
+      `${API}/v2/Bus/EstimatedTimeOfArrival/City/Taipei/307?$format=JSON`,
+    ]);
   });
 
   it('parses estimates, not-yet-departed and last-bus-passed stops', async () => {
@@ -123,13 +168,29 @@ describe('tdx.bus.eta', () => {
 
     expect(decodeURIComponent(apiUrls[0] ?? '')).toBe(
       `${API}/v2/Bus/EstimatedTimeOfArrival/City/Taipei/307` +
-        `?$filter=StopUID eq 'TPE38262'&$orderby=StopSequence&$format=JSON`,
+        `?$filter=(StopUID eq 'TPE38262') and (RouteName/Zh_tw eq '307')` +
+        `&$orderby=StopSequence&$format=JSON`,
     );
+  });
+
+  it('adds the route filter to a copy of a query builder', async () => {
+    const { tdx, apiUrls } = clientWithResponse([]);
+    const q = query<BusEstimatedTimeOfArrival>().filter('Direction eq 0').top(5);
+
+    await tdx.bus.eta('Taipei', '307', q);
+
+    expect(decoded(apiUrls)).toEqual([
+      `${API}/v2/Bus/EstimatedTimeOfArrival/City/Taipei/307` +
+        `?$filter=(Direction eq 0) and (RouteName/Zh_tw eq '307')&$top=5&$format=JSON`,
+    ]);
+    expect(q.toString()).toBe('$filter=Direction%20eq%200&$top=5&$format=JSON');
   });
 
   it('validates the route name', () => {
     const { tdx } = clientWithResponse([]);
 
     expect(() => tdx.bus.eta('Taipei', '  ')).toThrow(TypeError);
+    expect(() => tdx.bus.eta('Taipei', '/x')).toThrow(TypeError);
+    expect(() => tdx.bus.eta('Taipei', '  ', { exact: false })).toThrow(TypeError);
   });
 });

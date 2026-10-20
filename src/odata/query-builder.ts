@@ -89,6 +89,17 @@ export class ODataQuery<T = Record<string, unknown>> {
     return params.map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join('&');
   }
 
+  /** Returns an independent copy of this query. */
+  clone(): ODataQuery<T> {
+    const copy = new ODataQuery<T>();
+    copy.filters.push(...this.filters);
+    copy.fields.push(...this.fields);
+    copy.orders.push(...this.orders);
+    copy.topValue = this.topValue;
+    copy.skipValue = this.skipValue;
+    return copy;
+  }
+
   /** Normalises a builder, a plain options object or nothing into a builder. */
   static from<T>(input?: ODataQuery<T> | ODataOptions<T>): ODataQuery<T> {
     if (input instanceof ODataQuery) return input;

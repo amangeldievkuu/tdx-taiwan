@@ -43,10 +43,17 @@ describe.skipIf(!hasCredentials)('live TDX API', () => {
     expect(availability[0]).toHaveProperty('StationUID');
   });
 
-  it('bus.routes returns route 307', async () => {
+  it('bus.routes returns exactly route 307', async () => {
     const routes = await tdx.bus.routes('Taipei', '307');
-    expect(routes.some((r) => r.RouteName.Zh_tw === '307')).toBe(true);
+    expect(routes.length).toBeGreaterThan(0);
+    expect(routes.every((r) => r.RouteName.Zh_tw === '307')).toBe(true);
     expect(routes[0]).toHaveProperty('RouteUID');
+  });
+
+  it('bus.routes with exact: false keeps TDX prefix matching', async () => {
+    const routes = await tdx.bus.routes('Taipei', '307', { exact: false });
+    expect(routes.every((r) => r.RouteName.Zh_tw.startsWith('307'))).toBe(true);
+    expect(routes.some((r) => r.RouteName.Zh_tw !== '307')).toBe(true);
   });
 
   it('bus.stopsOfRoute returns ordered stops for 307', async () => {
@@ -59,6 +66,7 @@ describe.skipIf(!hasCredentials)('live TDX API', () => {
   it('bus.eta returns estimates for 307', async () => {
     const eta = await tdx.bus.eta('Taipei', '307');
     expect(Array.isArray(eta)).toBe(true);
+    expect(eta.every((e) => e.RouteName?.Zh_tw === '307')).toBe(true);
     if (eta.length) expect(eta[0]).toHaveProperty('Direction');
   });
 });

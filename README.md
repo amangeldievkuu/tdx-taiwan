@@ -162,15 +162,17 @@ declares them.
 City names autocomplete (`'Taipei'`, `'NewTaipei'`, `'Kaohsiung'`, …) but any string is
 accepted. Route names may be Chinese (`'紅5'`); they are URL-encoded for you.
 
-The `{RouteName}` path segment is not an exact match: TDX also returns routes whose name merely
-starts with it. For example, `tdx.bus.eta('Taipei', '307')` returns arrivals for both `307` and
-`307西藏三民`. For one specific route, add an exact filter:
+Route names are matched exactly against the Chinese name (`RouteName/Zh_tw`). TDX itself
+treats the `{RouteName}` path segment as a prefix, so `'307'` would also return `307西藏三民`
+and `'紅5'` would also return `紅50`, `紅55`, …; the SDK adds an exact `$filter` for you. Pass
+`exact: false` (plain-object queries only) to get TDX's prefix matching instead:
 
 ```ts
-const eta = await tdx.bus.eta('Taipei', '307', {
-  filter: `RouteName/Zh_tw eq ${odata.str('307')}`,
-});
+await tdx.bus.eta('Taipei', '307'); // route 307 only
+await tdx.bus.eta('Taipei', '307', { exact: false }); // 307, 307西藏三民, …
 ```
+
+Names that contain `/` (a few Kinmen routes, such as `15A往烈嶼 (后頭進/黃厝出)`) work too.
 
 ## Options
 
@@ -303,7 +305,7 @@ const top = await tdx.bike.availability(
 
 - 存取權杖（access token）會快取於記憶體，並於到期前 60 秒自動更新；同時多個請求只會發出一次權杖請求。
 - 遇到 429 或 5xx 會以指數退避（含隨機抖動）重試最多 3 次，並內建用戶端限流（預設每秒 5 次，請依您的 TDX 方案調整）。
-- 路線名稱並非完全比對：例如 `tdx.bus.eta('Taipei', '307')` 也會回傳「307西藏三民」的資料；若只要特定路線，請加上 `RouteName/Zh_tw eq '307'` 篩選條件。
+- 路線名稱預設以中文名稱（`RouteName/Zh_tw`）完全比對：`tdx.bus.eta('Taipei', '307')` 只回傳 307，不含「307西藏三民」。若要使用 TDX 原本的前綴比對，請傳入 `{ exact: false }`。
 - 回傳資料維持 TDX 原始欄位名稱（如 `StationUID`、`AvailableRentBikes`），型別依官方 OpenAPI 規格定義。
 - NestJS 使用者可匯入 `tdx-taiwan/nestjs` 的 `TdxModule.forRoot()` / `forRootAsync()`（範例見上方英文說明）。
 

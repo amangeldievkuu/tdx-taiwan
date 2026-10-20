@@ -18,7 +18,7 @@ export {
   type SortDirection,
 } from './odata/query-builder.js';
 export { BikeApi } from './resources/bike.js';
-export { BusApi } from './resources/bus.js';
+export { BusApi, type RouteQueryInput, type RouteQueryOptions } from './resources/bus.js';
 export type { QueryInput } from './resources/requester.js';
 export type * from './types/common.js';
 export type * from './types/bike.js';

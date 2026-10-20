@@ -16,11 +16,12 @@ All notable changes to this project are documented here. The format is based on
   backoff + full jitter (max 3, honours `Retry-After`), one re-authentication on 401, a
   client-side rate limiter (`requestsPerSecond`, default 5) and per-request timeouts.
 - Typed errors: `TdxError`, `TdxAuthError`, `TdxApiError`, `TdxRateLimitError`, `TdxNetworkError`.
-- OData query builder (`query()`, `ODataQuery`, `odata.str`) for `$filter`, `$select`,
+- OData query builder (`query()`, `ODataQuery`, `odata.str`, `clone()`) for `$filter`, `$select`,
   `$orderby`, `$top`, `$skip`; `$format=JSON` is always sent.
 - Bike endpoints: `bike.stations(city)`, `bike.availability(city)`.
 - Bus endpoints: `bus.routes(city, routeName?)`, `bus.stopsOfRoute(city, routeName)`,
-  `bus.eta(city, routeName)`.
+  `bus.eta(city, routeName)`. Route names match `RouteName/Zh_tw` exactly by default;
+  `{ exact: false }` keeps TDX's prefix matching.
 - Response types transcribed from the TDX OpenAPI specs (Bike v2, Bus v2).
 - Optional in-memory TTL response cache (1 h for static data, 15 s for real-time data).
 - `tdx.get(path, query?)` for TDX endpoints not wrapped yet.
@@ -38,10 +39,16 @@ All notable changes to this project are documented here. The format is based on
 - Type declarations rely on `@types/node` for `fetch` types; the `DOM` lib is no longer used.
 - README:
   - The NestJS example uses an explicit `@Inject(TdxClient)`.
-  - Documents that the `{RouteName}` path segment also matches longer route names (`307`
-    returns `307西藏三民` too), with an exact-match filter. Verified against the live API.
+  - Documents exact route-name matching and the `exact: false` option.
   - The token-endpoint limit (20/min per IP) now cites TDX's official sample-code docs; API
     limits link to the pricing page.
+- Bus route names now match exactly by default. TDX matches the `{RouteName}` path segment
+  as a prefix (`307` also returned `307西藏三民`; `紅5` also returned `紅50`, `紅55`, …), so the
+  SDK adds a `RouteName/Zh_tw eq '…'` filter. Pass `{ exact: false }` for the old behaviour.
+  Query builders passed in are copied, not modified. Verified against the live API: every
+  city's ETA records carry `RouteName`, so the filter drops nothing.
+- Route names containing `/` (some Kinmen routes) previously returned 404; with exact matching
+  the SDK requests the part before the `/` and filters on the full name.
 - Tooling and tests:
   - ESLint uses `strictTypeChecked` with the project service.
   - The Vitest integration config extends the base config through `mergeConfig`.

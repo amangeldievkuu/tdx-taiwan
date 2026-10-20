@@ -95,6 +95,24 @@ describe('ODataQuery', () => {
     expect(ODataQuery.from(undefined).toString()).toBe('$format=JSON');
   });
 
+  it('clones independently of the original', () => {
+    const original = query<Station>()
+      .filter('a eq 1')
+      .select('StationUID')
+      .orderBy('StationUID')
+      .top(5)
+      .skip(1);
+    const copy = original.clone().filter('b eq 2').select('Tags');
+
+    expect(original.toString()).toBe(
+      '$select=StationUID&$filter=a%20eq%201&$orderby=StationUID&$top=5&$skip=1&$format=JSON',
+    );
+    expect(decodeURIComponent(copy.toString())).toBe(
+      '$select=StationUID,Tags&$filter=(a eq 1) and (b eq 2)&$orderby=StationUID&$top=5&$skip=1' +
+        '&$format=JSON',
+    );
+  });
+
   it('types field names against the item type', () => {
     expectTypeOf<FieldPath<Station>>().toEqualTypeOf<
       | 'StationUID'
