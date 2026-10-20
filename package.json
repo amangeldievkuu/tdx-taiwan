@@ -1,6 +1,6 @@
 {
   "name": "tdx-taiwan",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Unofficial TypeScript SDK for Taiwan's TDX (Transport Data eXchange) API — YouBike, bus routes and ETA, metro, and high speed rail timetables, fares and seats",
   "keywords": [
     "tdx",
