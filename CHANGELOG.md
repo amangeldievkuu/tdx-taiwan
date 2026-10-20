@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Added
+
+- Releases are published from GitHub Actions with npm trusted publishing, so each version
+  carries [provenance](https://docs.npmjs.com/generating-provenance-statements) linking it to
+  the source commit and workflow run.
+
 ## [0.1.0] - 2026-10-20
 
 ### Added
