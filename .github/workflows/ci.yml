@@ -1,0 +1,106 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Lint, typecheck, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm run check:exports
+      - run: npm pack
+      - uses: actions/upload-artifact@v4
+        with:
+          name: package
+          path: tdx-taiwan-*.tgz
+
+  test:
+    name: Test (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
+  nestjs-compat:
+    name: NestJS ${{ matrix.nest }} compatibility
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        nest: [10, 11, 12]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: >-
+          npm install --no-save
+          @nestjs/common@${{ matrix.nest }}
+          @nestjs/core@${{ matrix.nest }}
+          @nestjs/testing@${{ matrix.nest }}
+      - run: npx tsc --noEmit
+      - run: npx vitest run tests/nestjs tests/dist
+
+  runtime:
+    name: Packed package on Node ${{ matrix.node }}
+    needs: check
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22, 24]
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: package
+      # Install the tarball into an empty project (no NestJS) and load both module formats.
+      - name: Smoke test
+        run: |
+          mkdir smoke && cd smoke
+          npm init -y > /dev/null
+          npm install ../tdx-taiwan-*.tgz
+          node -e "
+            const { TdxClient, query } = require('tdx-taiwan');
+            const tdx = new TdxClient({ clientId: 'id', clientSecret: 'secret' });
+            if (typeof tdx.bike.availability !== 'function') throw new Error('bike missing');
+            if (!query().top(1).toString().includes('\$top=1')) throw new Error('query broken');
+            console.log('CJS ok');
+          "
+          node --input-type=module -e "
+            const { TdxClient } = await import('tdx-taiwan');
+            new TdxClient({ clientId: 'id', clientSecret: 'secret' });
+            console.log('ESM ok');
+          "

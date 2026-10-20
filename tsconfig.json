@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "types": ["node"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "exactOptionalPropertyTypes": false,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "experimentalDecorators": true,
+    "declaration": true,
+    "noEmit": true,
+    "paths": {
+      "tdx-taiwan": ["./src/index.ts"],
+      "tdx-taiwan/nestjs": ["./src/nestjs/index.ts"]
+    }
+  },
+  "include": ["src", "tests", "examples", "*.config.ts"]
+}
