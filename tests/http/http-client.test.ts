@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { TokenManager } from '../../src/auth/token-manager.js';
-import { TdxApiError, TdxNetworkError, TdxRateLimitError } from '../../src/errors.js';
+import { TdxApiError, TdxAuthError, TdxNetworkError, TdxRateLimitError } from '../../src/errors.js';
 import { HttpClient, type TdxHooks } from '../../src/http/http-client.js';
 import { RateLimiter } from '../../src/http/rate-limiter.js';
 import { jsonResponse, textResponse, tokenResponse } from '../helpers.js';
@@ -8,17 +8,58 @@ import { jsonResponse, textResponse, tokenResponse } from '../helpers.js';
 const BASE = 'https://tdx.example/api/basic';
 const URL = `${BASE}/v2/Bike/Station/City/Taipei?$format=JSON`;
 
-/** API responses are served in order; token requests always succeed with a new token. */
-function setup(apiResponses: Array<Response | Error>, maxRetries?: number, hooks: TdxHooks = {}) {
+type Reply = Response | Error | ((init: RequestInit) => Response);
+
+interface SetupOptions {
+  maxRetries?: number;
+  hooks?: TdxHooks;
+  /** Served to token requests in order; once used up, each token request gets a new token. */
+  tokenReplies?: Reply[];
+  timeoutMs?: number;
+}
+
+function reply(next: Reply | undefined, init: RequestInit): Promise<Response> {
+  if (!next) return Promise.reject(new Error('unexpected call'));
+  if (next instanceof Error) return Promise.reject(next);
+  return Promise.resolve(typeof next === 'function' ? next(init) : next);
+}
+
+/** A 200 response whose body stream fails partway through. */
+function brokenBodyResponse(): Response {
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(new TextEncoder().encode('[{"StationUID":'));
+      controller.error(new TypeError('terminated'));
+    },
+  });
+  return new Response(stream, { status: 200 });
+}
+
+/** A 200 response whose body never finishes, so the request's timeout signal aborts it. */
+function stalledBodyResponse(init: RequestInit): Response {
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(new TextEncoder().encode('['));
+      init.signal?.addEventListener('abort', () => {
+        controller.error(init.signal?.reason);
+      });
+    },
+  });
+  return new Response(stream, { status: 200 });
+}
+
+/** API replies are served in order; token requests succeed with a new token unless overridden. */
+function setup(apiReplies: Reply[], options: SetupOptions = {}) {
   let tokenCount = 0;
+  const tokenReplies = options.tokenReplies ?? [];
   const apiCalls: Array<{ url: string; init: RequestInit }> = [];
-  const fetch = vi.fn((url: string, init?: RequestInit) => {
-    if (url.includes('/token')) return Promise.resolve(tokenResponse(`token-${++tokenCount}`));
-    apiCalls.push({ url, init: init ?? {} });
-    const next = apiResponses.shift();
-    if (!next) return Promise.reject(new Error('unexpected API call'));
-    if (next instanceof Error) return Promise.reject(next);
-    return Promise.resolve(next);
+  const fetch = vi.fn((url: string, init: RequestInit = {}) => {
+    if (url.includes('/token')) {
+      const next = tokenReplies.shift() ?? tokenResponse(`token-${String(++tokenCount)}`);
+      return reply(next, init);
+    }
+    apiCalls.push({ url, init });
+    return reply(apiReplies.shift(), init);
   });
   const sleeps: number[] = [];
   const sleep = (ms: number) => {
@@ -36,13 +77,14 @@ function setup(apiResponses: Array<Response | Error>, maxRetries?: number, hooks
     tokens,
     rateLimiter: new RateLimiter(0),
     fetch,
-    maxRetries,
+    maxRetries: options.maxRetries,
+    timeoutMs: options.timeoutMs,
     sleep,
     random: () => 0.5,
     now: () => Date.parse('2026-10-20T00:00:00Z'),
-    ...hooks,
+    ...options.hooks,
   });
-  return { http, apiCalls, sleeps, tokenCount: () => tokenCount };
+  return { http, tokens, apiCalls, sleeps, tokenCount: () => tokenCount };
 }
 
 describe('HttpClient', () => {
@@ -96,7 +138,9 @@ describe('HttpClient', () => {
   });
 
   it('honours maxRetries', async () => {
-    const { http, apiCalls } = setup([textResponse('x', 500), textResponse('x', 500)], 1);
+    const { http, apiCalls } = setup([textResponse('x', 500), textResponse('x', 500)], {
+      maxRetries: 1,
+    });
 
     await expect(http.getJson(URL)).rejects.toBeInstanceOf(TdxApiError);
     expect(apiCalls).toHaveLength(2);
@@ -165,6 +209,42 @@ describe('HttpClient', () => {
     expect(apiCalls).toHaveLength(4);
   });
 
+  it('retries a response body that fails mid-stream', async () => {
+    const { http, apiCalls, sleeps } = setup([brokenBodyResponse(), jsonResponse([1])]);
+
+    await expect(http.getJson(URL)).resolves.toEqual([1]);
+    expect(apiCalls).toHaveLength(2);
+    expect(sleeps).toEqual([250]);
+  });
+
+  it('throws TdxNetworkError when the response body keeps failing', async () => {
+    const { http, apiCalls } = setup(Array.from({ length: 4 }, brokenBodyResponse));
+
+    const error = await http.getJson(URL).catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(TdxNetworkError);
+    expect((error as TdxNetworkError).cause).toMatchObject({ message: 'terminated' });
+    expect(apiCalls).toHaveLength(4);
+  });
+
+  it('retries a response body that times out', async () => {
+    const { http, apiCalls } = setup([stalledBodyResponse, jsonResponse([1])], {
+      timeoutMs: 20,
+    });
+
+    await expect(http.getJson(URL)).resolves.toEqual([1]);
+    expect(apiCalls).toHaveLength(2);
+  });
+
+  it('passes the rejected token to invalidate() on 401', async () => {
+    const { http, tokens } = setup([textResponse('expired', 401), jsonResponse([])]);
+    const invalidate = vi.spyOn(tokens, 'invalidate');
+
+    await http.getJson(URL);
+
+    expect(invalidate).toHaveBeenCalledWith('token-1');
+  });
+
   it('throws TdxApiError on a non-JSON success body', async () => {
     const { http } = setup([textResponse('<html>maintenance</html>', 200)]);
 
@@ -175,13 +255,65 @@ describe('HttpClient', () => {
     });
   });
 
+  describe('token endpoint failures', () => {
+    it('retries a token endpoint 5xx, then succeeds', async () => {
+      const onRetry = vi.fn();
+      const { http, apiCalls, sleeps } = setup([jsonResponse([1])], {
+        tokenReplies: [textResponse('busy', 503)],
+        hooks: { onRetry },
+      });
+
+      await expect(http.getJson(URL)).resolves.toEqual([1]);
+
+      expect(apiCalls).toHaveLength(1);
+      expect(sleeps).toEqual([250]);
+      expect(onRetry).toHaveBeenCalledWith({ url: URL, attempt: 1, status: 503, delayMs: 250 });
+    });
+
+    it('retries token network errors and 429 (honouring Retry-After)', async () => {
+      const { http, sleeps } = setup([jsonResponse([1])], {
+        tokenReplies: [
+          new TypeError('fetch failed'),
+          textResponse('slow down', 429, { 'retry-after': '2' }),
+        ],
+      });
+
+      await expect(http.getJson(URL)).resolves.toEqual([1]);
+      expect(sleeps).toEqual([250, 2000]);
+    });
+
+    it('does not retry 400 or 401 from the token endpoint', async () => {
+      for (const status of [400, 401]) {
+        const { http, apiCalls, sleeps } = setup([], {
+          tokenReplies: [textResponse('{"error":"invalid_client"}', status)],
+        });
+
+        await expect(http.getJson(URL)).rejects.toMatchObject({ name: 'TdxAuthError', status });
+        expect(apiCalls).toHaveLength(0);
+        expect(sleeps).toEqual([]);
+      }
+    });
+
+    it('throws the TdxAuthError once retries are exhausted', async () => {
+      const { http, apiCalls, sleeps } = setup([], {
+        tokenReplies: Array.from({ length: 4 }, () => textResponse('busy', 503)),
+      });
+
+      const error = await http.getJson(URL).catch((e: unknown) => e);
+
+      expect(error).toBeInstanceOf(TdxAuthError);
+      expect(error).toMatchObject({ status: 503 });
+      expect(apiCalls).toHaveLength(0);
+      expect(sleeps).toEqual([250, 500, 1000]);
+    });
+  });
+
   describe('hooks', () => {
     it('calls onRequest before every attempt, including retries and re-authentication', async () => {
       const onRequest = vi.fn();
       const { http } = setup(
         [textResponse('busy', 503), textResponse('expired', 401), jsonResponse([])],
-        3,
-        { onRequest },
+        { hooks: { onRequest } },
       );
 
       await http.getJson(URL);
@@ -199,8 +331,7 @@ describe('HttpClient', () => {
           cause,
           jsonResponse([]),
         ],
-        3,
-        { onRetry },
+        { hooks: { onRetry } },
       );
 
       await http.getJson(URL);
@@ -215,8 +346,8 @@ describe('HttpClient', () => {
 
     it('does not call onRetry for the 401 re-authentication or for non-retryable errors', async () => {
       const onRetry = vi.fn();
-      const { http } = setup([textResponse('expired', 401), textResponse('nope', 404)], 3, {
-        onRetry,
+      const { http } = setup([textResponse('expired', 401), textResponse('nope', 404)], {
+        hooks: { onRetry },
       });
 
       await expect(http.getJson(URL)).rejects.toMatchObject({ status: 404 });

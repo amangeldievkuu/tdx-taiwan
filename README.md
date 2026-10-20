@@ -217,8 +217,8 @@ new TdxClient({
   clientId: '…',
   clientSecret: '…',
   requestsPerSecond: 5, // client-side rate limit; 0 disables it
-  maxRetries: 3, // retries for 429, 5xx and network errors
-  timeoutMs: 30_000, // per request
+  maxRetries: 3, // retries for 429, 5xx and network errors (API and token endpoint)
+  timeoutMs: 30_000, // per request, including reading the response body
   cache: false, // true, or { staticTtlMs, realtimeTtlMs, maxEntries }
   baseUrl: 'https://tdx.transportdata.tw/api/basic',
   fetch: globalThis.fetch, // inject a custom fetch (proxies, tests)
@@ -245,8 +245,10 @@ const tdx = new TdxClient({
 - `onRequest({ url })` runs before every HTTP attempt to the API, including retries. Token
   requests are not reported.
 - `onRetry({ url, attempt, status, delayMs })` runs before each backoff wait. `attempt` starts
-  at 1, and `status` is `undefined` for network errors and timeouts. The one-off token refresh
-  after a 401 is not a retry and is not reported.
+  at 1, and `status` is `undefined` for network errors and timeouts. Token endpoint outages
+  (network errors, 429, 5xx) are retried within the same budget and reported with the API
+  `url` and the token endpoint's `status`; 400/401 from the token endpoint (bad credentials)
+  are not retried. The one-off token refresh after a 401 is not a retry and is not reported.
 - Hooks are called synchronously; an exception thrown by a hook fails the request.
 
 **Rate limits.** API rate limits depend on your TDX subscription plan; see
@@ -265,12 +267,12 @@ every caller receives its own copy of the data.
 
 All errors extend `TdxError`:
 
-| Error               | When                                                                  | Extra fields            |
-| ------------------- | --------------------------------------------------------------------- | ----------------------- |
-| `TdxAuthError`      | The token request failed (bad credentials, malformed response)        | `status?`, `body?`      |
-| `TdxApiError`       | TDX returned an error status (after retries) or an unexpected body    | `status`, `body`, `url` |
-| `TdxRateLimitError` | Still HTTP 429 after all retries (subclass of `TdxApiError`)          | `retryAfterMs?`         |
-| `TdxNetworkError`   | No response at all (DNS, connection reset, timeout) after all retries | `url`                   |
+| Error               | When                                                                                      | Extra fields                        |
+| ------------------- | ----------------------------------------------------------------------------------------- | ----------------------------------- |
+| `TdxAuthError`      | The token request failed (bad credentials, malformed response, outage after retries)      | `status?`, `body?`, `retryAfterMs?` |
+| `TdxApiError`       | TDX returned an error status (after retries) or an unexpected body                        | `status`, `body`, `url`             |
+| `TdxRateLimitError` | Still HTTP 429 after all retries (subclass of `TdxApiError`)                              | `retryAfterMs?`                     |
+| `TdxNetworkError`   | No complete response (DNS, connection reset, timeout, interrupted body) after all retries | `url`                               |
 
 ```ts
 import { TdxApiError, TdxRateLimitError } from 'tdx-taiwan';

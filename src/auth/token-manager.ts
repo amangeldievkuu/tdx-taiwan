@@ -1,5 +1,6 @@
 import { DEFAULT_AUTH_URL, DEFAULT_TIMEOUT_MS, TOKEN_REFRESH_MARGIN_MS } from '../constants.js';
 import { TdxAuthError } from '../errors.js';
+import { parseRetryAfter } from '../http/retry.js';
 
 export type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
@@ -57,9 +58,15 @@ export class TokenManager {
     return this.inflight;
   }
 
-  /** Drops the cached token so the next `getToken()` fetches a fresh one (e.g. after a 401). */
-  invalidate(): void {
-    this.cached = undefined;
+  /**
+   * Drops the cached token so the next `getToken()` fetches a fresh one (e.g. after a 401).
+   * Pass the rejected token: if the cache already holds a newer one, because another request
+   * refreshed it first, that token is kept.
+   */
+  invalidate(usedToken?: string): void {
+    if (usedToken === undefined || this.cached?.accessToken === usedToken) {
+      this.cached = undefined;
+    }
   }
 
   private async requestToken(): Promise<string> {
@@ -70,6 +77,7 @@ export class TokenManager {
     });
 
     let response: Response;
+    let text: string;
     try {
       response = await this.fetchFn(this.authUrl, {
         method: 'POST',
@@ -77,15 +85,17 @@ export class TokenManager {
         body,
         signal: AbortSignal.timeout(this.timeoutMs),
       });
+      // The body can fail or time out after the headers arrive; treat that as a network error.
+      text = await response.text();
     } catch (cause) {
       throw new TdxAuthError('Token request failed: network error', { cause });
     }
 
-    const text = await response.text();
     if (!response.ok) {
       throw new TdxAuthError(`Token request failed with HTTP ${response.status}`, {
         status: response.status,
         body: text,
+        retryAfterMs: parseRetryAfter(response.headers.get('retry-after'), this.now()),
       });
     }
 

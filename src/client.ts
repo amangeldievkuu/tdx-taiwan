@@ -28,7 +28,7 @@ export interface TdxClientOptions extends TdxHooks {
   baseUrl?: string;
   /** Override the OAuth2 token endpoint. */
   authUrl?: string;
-  /** Custom fetch implementation. Defaults to the global `fetch` (Node 18+). */
+  /** Custom fetch implementation. Defaults to the global `fetch` (Node 20+). */
   fetch?: FetchLike;
   /**
    * Client-side rate limit. Requests are spaced evenly at this rate. Match it to your TDX

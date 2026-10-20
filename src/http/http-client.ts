@@ -1,6 +1,6 @@
 import type { FetchLike, TokenManager } from '../auth/token-manager.js';
 import { DEFAULT_MAX_RETRIES, DEFAULT_TIMEOUT_MS } from '../constants.js';
-import { TdxApiError, TdxNetworkError, TdxRateLimitError } from '../errors.js';
+import { TdxApiError, TdxAuthError, TdxNetworkError, TdxRateLimitError } from '../errors.js';
 import type { RateLimiter } from './rate-limiter.js';
 import { isRetryableStatus, parseRetryAfter, retryDelay } from './retry.js';
 import { type Sleep, sleep as defaultSleep } from './sleep.js';
@@ -15,7 +15,10 @@ export interface TdxRetryEvent {
   url: string;
   /** 1 for the first retry, 2 for the second, … */
   attempt: number;
-  /** HTTP status that triggered the retry; `undefined` for network errors and timeouts. */
+  /**
+   * HTTP status that triggered the retry: from the API, or from the token endpoint when getting
+   * a token failed. `undefined` for network errors and timeouts.
+   */
   status: number | undefined;
   /** How long the client will wait before retrying. */
   delayMs: number;
@@ -24,7 +27,7 @@ export interface TdxRetryEvent {
 export interface TdxHooks {
   /** Called synchronously before every HTTP attempt, including retries. */
   onRequest?: (event: TdxRequestEvent) => void;
-  /** Called synchronously before each backoff wait (429, 5xx, network errors). */
+  /** Called synchronously before each backoff wait (429, 5xx, network errors, token outages). */
   onRetry?: (event: TdxRetryEvent) => void;
 }
 
@@ -79,11 +82,23 @@ export class HttpClient {
 
     for (;;) {
       await this.rateLimiter.acquire();
-      const token = await this.tokens.getToken();
+
+      let token: string;
+      try {
+        token = await this.tokens.getToken();
+      } catch (error) {
+        // A token endpoint outage is retried like an API one; bad credentials are not.
+        if (isTransientAuthError(error) && retries < this.maxRetries) {
+          await this.backoff(url, retries++, error.status, error.retryAfterMs);
+          continue;
+        }
+        throw error;
+      }
 
       this.hooks.onRequest?.({ url });
 
       let response: Response;
+      let body: string;
       try {
         response = await this.fetchFn(url, {
           method: 'GET',
@@ -94,6 +109,8 @@ export class HttpClient {
           },
           signal: AbortSignal.timeout(this.timeoutMs),
         });
+        // The body can fail or time out after the headers arrive; treat that as a network error.
+        body = await response.text();
       } catch (cause) {
         if (retries < this.maxRetries) {
           await this.backoff(url, retries++, undefined, undefined);
@@ -101,8 +118,6 @@ export class HttpClient {
         }
         throw new TdxNetworkError(`Request failed: GET ${url}`, { url, cause });
       }
-
-      const body = await response.text();
 
       if (response.ok) {
         try {
@@ -120,7 +135,7 @@ export class HttpClient {
       // An expired or revoked token: fetch a new one and try again, once.
       if (response.status === 401 && !reauthenticated) {
         reauthenticated = true;
-        this.tokens.invalidate();
+        this.tokens.invalidate(token);
         continue;
       }
 
@@ -149,6 +164,13 @@ export class HttpClient {
     this.hooks.onRetry?.({ url, attempt: retry + 1, status, delayMs });
     await this.sleep(delayMs);
   }
+}
+
+/** A token request that failed with a network error, 429 or 5xx (not 400/401 or bad JSON). */
+function isTransientAuthError(error: unknown): error is TdxAuthError {
+  return (
+    error instanceof TdxAuthError && (error.status === undefined || isRetryableStatus(error.status))
+  );
 }
 
 /** Extracts TDX's `{"Message": "..."}` error text for a readable error message. */

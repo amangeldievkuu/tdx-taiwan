@@ -135,6 +135,28 @@ describe('TokenManager', () => {
     expect((error as TdxAuthError).status).toBeUndefined();
   });
 
+  it('wraps a token response body that fails mid-stream in TdxAuthError', async () => {
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode('{"access_token":'));
+        controller.error(new TypeError('terminated'));
+      },
+    });
+    const { manager } = setup([new Response(stream, { status: 200 })]);
+
+    const error = await manager.getToken().catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(TdxAuthError);
+    expect((error as TdxAuthError).status).toBeUndefined();
+    expect((error as TdxAuthError).cause).toMatchObject({ message: 'terminated' });
+  });
+
+  it('reports Retry-After on a rate-limited token request', async () => {
+    const { manager } = setup([textResponse('slow down', 429, { 'retry-after': '5' })]);
+
+    await expect(manager.getToken()).rejects.toMatchObject({ status: 429, retryAfterMs: 5000 });
+  });
+
   it('rejects malformed token responses', async () => {
     const { manager } = setup([
       jsonResponse({ token_type: 'Bearer' }),
@@ -150,6 +172,18 @@ describe('TokenManager', () => {
 
     await manager.getToken();
     manager.invalidate();
+    await expect(manager.getToken()).resolves.toBe('two');
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('invalidate(usedToken) keeps a newer token that another request already fetched', async () => {
+    const { manager, fetch } = setup([tokenResponse('one'), tokenResponse('two')]);
+
+    await manager.getToken();
+    manager.invalidate('one'); // first 401: drop "one"
+    await expect(manager.getToken()).resolves.toBe('two');
+    manager.invalidate('one'); // a late 401 for "one" must not drop "two"
+
     await expect(manager.getToken()).resolves.toBe('two');
     expect(fetch).toHaveBeenCalledTimes(2);
   });

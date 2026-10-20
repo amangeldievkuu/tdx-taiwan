@@ -8,15 +8,21 @@ export class TdxError extends Error {
 
 /** Obtaining an access token failed (bad credentials, network error, malformed token response). */
 export class TdxAuthError extends TdxError {
-  /** HTTP status of the token endpoint response, if one was received. */
+  /** HTTP status of the token endpoint response; `undefined` for network errors and timeouts. */
   readonly status: number | undefined;
   /** Raw response body of the token endpoint, if one was received. */
   readonly body: string | undefined;
+  /** Server-suggested wait from the token endpoint's `Retry-After` header, in milliseconds. */
+  readonly retryAfterMs: number | undefined;
 
-  constructor(message: string, details: { status?: number; body?: string; cause?: unknown } = {}) {
+  constructor(
+    message: string,
+    details: { status?: number; body?: string; retryAfterMs?: number; cause?: unknown } = {},
+  ) {
     super(message, { cause: details.cause });
     this.status = details.status;
     this.body = details.body;
+    this.retryAfterMs = details.retryAfterMs;
   }
 }
 
@@ -54,7 +60,10 @@ export class TdxRateLimitError extends TdxApiError {
   }
 }
 
-/** The request never got an HTTP response (DNS failure, connection reset, timeout). */
+/**
+ * The request did not get a complete HTTP response (DNS failure, connection reset, timeout,
+ * or a response body that failed or timed out while being read).
+ */
 export class TdxNetworkError extends TdxError {
   readonly url: string;
 

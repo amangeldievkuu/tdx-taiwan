@@ -6,6 +6,23 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-10-20
+
+### Fixed
+
+- A response body that failed or timed out while being read (after the headers arrived) threw
+  a raw `TypeError` / `DOMException` without being retried. It is now retried like a network
+  error and surfaces as `TdxNetworkError` once retries run out. The same applies to the token
+  response, which now fails with `TdxAuthError`.
+- A transient token endpoint failure (network error, 429 or 5xx) failed the request at once.
+  It is now retried inside the request's retry loop, with the same backoff, `Retry-After`
+  handling and `onRetry` hook. 400/401 from the token endpoint are still not retried.
+  `TdxAuthError` has a new `retryAfterMs` field.
+- When concurrent requests got 401 with the same expired token, a late 401 could discard the
+  fresh token another request had just fetched, causing an extra token request.
+  `TokenManager.invalidate(usedToken)` now only drops the cache if it still holds that token.
+- The `fetch` option's documentation said Node 18+; the minimum is Node 20.
+
 ## [0.2.0] - 2026-10-20
 
 ### Added
@@ -78,7 +95,8 @@ All notable changes to this project are documented here. The format is based on
   - CI runs the dist tests against each NestJS major and smoke-tests the packed tarball on
     Node 20, 22 and 24.
 
-[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/amangeldievkuu/tdx-taiwan/releases/tag/v0.1.0
