@@ -1,5 +1,9 @@
 # Test fixtures
 
+> 資料來源：交通部運輸資料流通服務平臺 (MOTC Transport Data eXchange, TDX). The `metro-*.json`
+> and `thsr-*.json` files contain TDX data and are used under the
+> [TDX 資料授權利用條款](https://tdx.transportdata.tw/term), not this repository's MIT license.
+
 These JSON files are **hand-written, schema-derived samples**, not recorded API responses.
 Every field name, nesting level, required/optional flag and nullable flag follows the official
 TDX OpenAPI specs (`公共運輸-自行車 v2`, `公共運輸-公車 v2`, fetched 2026-10-20). The values

@@ -5,7 +5,7 @@
 [![node](https://img.shields.io/node/v/tdx-taiwan)](https://www.npmjs.com/package/tdx-taiwan)
 [![license](https://img.shields.io/npm/l/tdx-taiwan)](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/LICENSE)
 
-TypeScript SDK for Taiwan's [TDX (Transport Data eXchange)](https://tdx.transportdata.tw) API
+Unofficial TypeScript SDK for Taiwan's [TDX (Transport Data eXchange)](https://tdx.transportdata.tw) API
 — YouBike availability, bus routes and arrival estimates, metro stations, live boards,
 timetables and fares, and high speed rail timetables, fares and seat availability.
 
@@ -361,7 +361,7 @@ Development tooling requires Node.js 22+; the published package supports Node.js
 
 ## 繁體中文
 
-`tdx-taiwan` 是交通部 [TDX 運輸資料流通服務](https://tdx.transportdata.tw) 的 TypeScript SDK，
+`tdx-taiwan` 是存取交通部 [TDX 運輸資料流通服務](https://tdx.transportdata.tw) 的**非官方** TypeScript SDK（與交通部無隸屬或合作關係），
 支援公共自行車（YouBike）站點與即時車位、市區公車路線、站序與預估到站時間、捷運車站、路線、即時到站看板、首末班車與票價，以及高鐵時刻表、票價與剩餘座位。
 
 **安裝**（需要 Node.js 20 以上版本）
@@ -407,11 +407,28 @@ const top = await tdx.bike.availability(
 - 高鐵：`tdx.thsr.timetable('1000', '1070', '2026-10-21')` 查詢指定日期起迄站時刻表（日期可為 `Date` 或 `YYYY-MM-DD`，預設為臺灣時間今天；僅提供約四週內的資料），另有 `odFare`（票價）、`availableSeats`（對號座剩餘座位：O 尚有、L 有限、X 已無）與 `alerts`（營運通阻）。
 - 捷運：`tdx.metro.liveBoard('TRTC')` 等方法以軌道系統代碼（`TRTC`、`KRTC`、`TYMC`…）查詢。注意捷運看板的 `EstimateTime` 單位為**分鐘**（公車為秒），且臺北捷運（TRTC）看板只列出即將進站（0 分鐘）的列車；`odFare` 資料量大，建議以 `OriginStationID`／`DestinationStationID` 篩選。
 - 回傳資料維持 TDX 原始欄位名稱（如 `StationUID`、`AvailableRentBikes`），型別依官方 OpenAPI 規格定義。
+- 資料來源與授權：資料由交通部運輸資料流通服務平臺提供，並適用其[資料授權利用條款](https://tdx.transportdata.tw/term)。公開發布或展示資料（含加值衍生物）時，須清楚標示資料來源為「交通部運輸資料流通服務平臺」或其資料來源單位；資料可能依平臺收費要點有償提供。
 - NestJS 使用者可匯入 `tdx-taiwan/nestjs` 的 `TdxModule.forRoot()` / `forRootAsync()`（範例見上方英文說明）。
+
+## Data source and terms
+
+This is an **unofficial** SDK. It is not affiliated with, or endorsed by, the Ministry of
+Transportation and Communications (MOTC, 交通部); "TDX" refers to MOTC's Transport Data
+eXchange platform.
+
+The data comes from TDX and is governed by its
+[資料授權利用條款 (data license terms)](https://tdx.transportdata.tw/term), not by this
+package's license. In particular:
+
+- When you publish or display TDX data, or a product built from it, you must clearly credit the
+  source as **「交通部運輸資料流通服務平臺」** (MOTC Transport Data eXchange) or the original data
+  provider. Without that credit the terms treat the data as never licensed to you.
+- The license covers reproducing, distributing and building on the data, but not MOTC's
+  trademarks or patents.
+- Data may be charged for under the platform's pricing rules, and you must follow the usage
+  rules it publishes (such as rate limits for your plan).
 
 ## License
 
-[MIT](LICENSE)
-
-This project is not affiliated with the Ministry of Transportation and Communications (MOTC).
-Data is provided by TDX under its own terms of use.
+The SDK code is [MIT](LICENSE) licensed. TDX data, including the trimmed responses in
+`tests/fixtures/`, remains under the TDX terms above.

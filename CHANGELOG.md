@@ -6,6 +6,16 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-10-20
+
+### Changed
+
+- Documentation only: the README now states that this is an unofficial SDK (in English and
+  Traditional Chinese) and has a "Data source and terms" section summarising the TDX
+  [資料授權利用條款](https://tdx.transportdata.tw/term): credit 「交通部運輸資料流通服務平臺」 when
+  publishing TDX data, no trademark licence, and plan-based pricing and rate limits. The test
+  fixtures that contain TDX data now carry that attribution.
+
 ## [0.3.0] - 2026-10-20
 
 ### Added
@@ -111,7 +121,8 @@ All notable changes to this project are documented here. The format is based on
   - CI runs the dist tests against each NestJS major and smoke-tests the packed tarball on
     Node 20, 22 and 24.
 
-[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.1.1...v0.2.0
