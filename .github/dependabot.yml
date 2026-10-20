@@ -17,6 +17,9 @@ updates:
       # typescript-eslint supports TypeScript < 6.1; bump this by hand with typescript-eslint.
       - dependency-name: typescript
         update-types: ['version-update:semver-minor', 'version-update:semver-major']
+      # The SDK supports Node.js 20+; newer @types/node majors would type APIs it lacks.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
 
   - package-ecosystem: github-actions
     directory: /
