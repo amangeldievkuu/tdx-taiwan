@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-20
+
 ### Added
 
 - Releases are published from GitHub Actions with npm trusted publishing, so each version
@@ -64,5 +66,6 @@ All notable changes to this project are documented here. The format is based on
   - CI runs the dist tests against each NestJS major and smoke-tests the packed tarball on
     Node 20, 22 and 24.
 
-[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/amangeldievkuu/tdx-taiwan/releases/tag/v0.1.0
