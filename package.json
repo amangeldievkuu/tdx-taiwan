@@ -1,7 +1,7 @@
 {
   "name": "tdx-taiwan",
   "version": "0.2.1",
-  "description": "TypeScript SDK for Taiwan's TDX (Transport Data eXchange) API — YouBike, bus routes and ETA, metro stations, live boards and fares",
+  "description": "TypeScript SDK for Taiwan's TDX (Transport Data eXchange) API — YouBike, bus routes and ETA, metro, and high speed rail timetables, fares and seats",
   "keywords": [
     "tdx",
     "taiwan",
@@ -9,6 +9,8 @@
     "youbike",
     "bus",
     "metro",
+    "thsr",
+    "high-speed-rail",
     "mrt",
     "odata",
     "ptx",
@@ -74,7 +76,8 @@
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "check:exports": "publint && attw --pack . --profile node16",
     "example:youbike": "tsx examples/nearest-youbike.ts",
-    "example:metro": "tsx examples/next-metro-train.ts"
+    "example:metro": "tsx examples/next-metro-train.ts",
+    "example:thsr": "tsx examples/thsr-trains.ts"
   },
   "peerDependencies": {
     "@nestjs/common": "^10.0.0 || ^11.0.0 || ^12.0.0"

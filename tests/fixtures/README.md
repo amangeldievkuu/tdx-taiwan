@@ -9,12 +9,16 @@ They intentionally include edge cases: stations with missing English names, `nul
 a suspended station with `null` availability, a stop with `StopStatus: 3` (last bus passed)
 and `EstimateTime: null`, and a not-yet-departed bus (`StopStatus: 1`, `PlateNumb: "-1"`).
 
-The `metro-*.json` files are different: they are **trimmed live responses** from the
+The `metro-*.json` and `thsr-*.json` files are different: they are **trimmed live responses** from the
 `公共運輸-軌道 v2` Metro endpoints (2026-10-20), cut to a few records each, with duplicate
 fare entries removed. They keep the places where TDX's data departs from its spec: a station
 without `StationAddress`, a line without `LineColor`, and empty `LineSectionName` objects. One
 live-board record (`O1`) was edited to `ServiceStatus: 3` with `EstimateTime: null` to cover
 the documented "last train passed" case, which was not live at the time.
+
+The `thsr-*.json` files are trimmed the same way (THSR endpoints, 2026-10-20): two stations,
+two timetable rows (with the empty `Note: {}` TDX returns), the Taipei → Zuoying fares, a seat
+board cut to three trains that cover the `O`/`L`/`X` statuses, and the normal-day alert.
 
 To compare against real data, add your keys to `.env` and run `npm run test:integration`,
 which exercises the same endpoints against the live API.

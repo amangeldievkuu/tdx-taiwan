@@ -8,7 +8,8 @@ import { type ODataOptions, ODataQuery } from './odata/query-builder.js';
 import { BikeApi } from './resources/bike.js';
 import { BusApi } from './resources/bus.js';
 import { MetroApi } from './resources/metro.js';
-import type { CacheClass, ListRequester } from './resources/requester.js';
+import { ThsrApi } from './resources/thsr.js';
+import type { CacheClass, ListRequester, ObjectRequester } from './resources/requester.js';
 
 export interface TdxCacheOptions {
   /** TTL for static data: bike stations, bus routes, stops of route. Default: 1 hour. */
@@ -59,11 +60,13 @@ export class TdxClient {
   readonly bus: BusApi;
   /** Metro, light rail and gondola endpoints. */
   readonly metro: MetroApi;
+  /** Taiwan High Speed Rail (高鐵) endpoints. */
+  readonly thsr: ThsrApi;
 
   private readonly tokens: TokenManager;
   private readonly http: HttpClient;
   private readonly cacheConfig: Required<TdxCacheOptions> | undefined;
-  private readonly cache: TtlCache<Promise<unknown[]>> | undefined;
+  private readonly cache: TtlCache<Promise<unknown>> | undefined;
 
   constructor(options: TdxClientOptions) {
     // Runtime guard for JavaScript callers, who may pass nothing at all.
@@ -98,10 +101,13 @@ export class TdxClient {
     }
 
     const list: ListRequester = (path, query, cacheClass) =>
-      this.list(path, query, cacheClass) as Promise<never[]>;
+      this.request(path, query, cacheClass, 'array') as Promise<never[]>;
+    const object: ObjectRequester = (path, query, cacheClass) =>
+      this.request(path, query, cacheClass, 'object') as Promise<never>;
     this.bike = new BikeApi(list);
     this.bus = new BusApi(list);
     this.metro = new MetroApi(list);
+    this.thsr = new ThsrApi(list, object);
   }
 
   /** Returns a valid OAuth2 access token (cached in memory, refreshed 60s before expiry). */
@@ -128,19 +134,20 @@ export class TdxClient {
     this.cache?.clear();
   }
 
-  private async list<T>(
+  private async request<T>(
     path: string,
     query: ODataQuery<T> | ODataOptions<T> | undefined,
     cacheClass: CacheClass,
-  ): Promise<unknown[]> {
+    shape: Shape,
+  ): Promise<unknown> {
     const url = this.http.url(path, ODataQuery.from(query).toString());
-    if (!this.cache || !this.cacheConfig) return this.fetchList(url);
+    if (!this.cache || !this.cacheConfig) return this.fetchShape(url, shape);
 
     let pending = this.cache.get(url);
     if (!pending) {
       const ttl =
         cacheClass === 'static' ? this.cacheConfig.staticTtlMs : this.cacheConfig.realtimeTtlMs;
-      pending = this.fetchList(url);
+      pending = this.fetchShape(url, shape);
       this.cache.set(url, pending, ttl);
       // Never cache failures.
       pending.catch(() => this.cache?.delete(url, pending));
@@ -149,18 +156,25 @@ export class TdxClient {
     return structuredClone(await pending);
   }
 
-  private async fetchList(url: string): Promise<unknown[]> {
+  private async fetchShape(url: string, shape: Shape): Promise<unknown> {
     const data = await this.http.getJson(url);
-    if (!Array.isArray(data)) {
-      throw new TdxApiError(`Expected a JSON array from TDX: GET ${url}`, {
+    const ok =
+      shape === 'array'
+        ? Array.isArray(data)
+        : typeof data === 'object' && data !== null && !Array.isArray(data);
+    if (!ok) {
+      throw new TdxApiError(`Expected a JSON ${shape} from TDX: GET ${url}`, {
         status: 200,
         body: JSON.stringify(data),
         url,
       });
     }
-    return data as unknown[];
+    return data;
   }
 }
+
+/** The JSON shape an endpoint returns. */
+type Shape = 'array' | 'object';
 
 function withoutUndefined<T extends object>(value: T): Partial<T> {
   return Object.fromEntries(Object.entries(value).filter(([, v]) => v !== undefined)) as Partial<T>;

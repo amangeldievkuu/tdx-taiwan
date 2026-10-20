@@ -1,0 +1,162 @@
+{
+  "UpdateTime": "2026-10-20T16:57:06+08:00",
+  "AvailableSeats": [
+    {
+      "TrainNo": "1202",
+      "Direction": 1,
+      "StationID": "1000",
+      "StationName": {
+        "Zh_tw": "台北",
+        "En": "Taipei",
+        "Ja": "台北",
+        "Ko": "타이페이"
+      },
+      "DepartureTime": "08:07",
+      "EndingStationID": "0990",
+      "EndingStationName": {
+        "Zh_tw": "南港",
+        "En": "Nangang",
+        "Ja": "南港",
+        "Ko": "난강"
+      },
+      "StopStations": [
+        {
+          "StopSequence": 6,
+          "StationID": "0990",
+          "StationCode": "NAK",
+          "StationName": {
+            "Zh_tw": "南港",
+            "En": "Nangang",
+            "Ja": "南港",
+            "Ko": "난강"
+          },
+          "StandardSeatStatus": "O",
+          "BusinessSeatStatus": "O"
+        }
+      ],
+      "SrcUpdateTime": "2026-10-20T16:46:04+08:00"
+    },
+    {
+      "TrainNo": "1241",
+      "Direction": 0,
+      "StationID": "1000",
+      "StationName": {
+        "Zh_tw": "台北",
+        "En": "Taipei",
+        "Ja": "台北",
+        "Ko": "타이페이"
+      },
+      "DepartureTime": "16:51",
+      "EndingStationID": "1070",
+      "EndingStationName": {
+        "Zh_tw": "左營",
+        "En": "Zuoying",
+        "Ja": "左營",
+        "Ko": "쭤잉"
+      },
+      "StopStations": [
+        {
+          "StopSequence": 3,
+          "StationID": "1010",
+          "StationCode": "BAC",
+          "StationName": {
+            "Zh_tw": "板橋",
+            "En": "Banqiao",
+            "Ja": "板橋",
+            "Ko": "반차오"
+          },
+          "StandardSeatStatus": "L",
+          "BusinessSeatStatus": "L"
+        },
+        {
+          "StopSequence": 4,
+          "StationID": "1040",
+          "StationCode": "TAC",
+          "StationName": {
+            "Zh_tw": "台中",
+            "En": "Taichung",
+            "Ja": "台中",
+            "Ko": "타이중"
+          },
+          "StandardSeatStatus": "X",
+          "BusinessSeatStatus": "X"
+        },
+        {
+          "StopSequence": 5,
+          "StationID": "1060",
+          "StationCode": "TNN",
+          "StationName": {
+            "Zh_tw": "台南",
+            "En": "Tainan",
+            "Ja": "台南",
+            "Ko": "타이난"
+          },
+          "StandardSeatStatus": "X",
+          "BusinessSeatStatus": "X"
+        }
+      ],
+      "SrcUpdateTime": "2026-10-20T16:46:04+08:00"
+    },
+    {
+      "TrainNo": "1305",
+      "Direction": 0,
+      "StationID": "1000",
+      "StationName": {
+        "Zh_tw": "台北",
+        "En": "Taipei",
+        "Ja": "台北",
+        "Ko": "타이페이"
+      },
+      "DepartureTime": "08:01",
+      "EndingStationID": "1070",
+      "EndingStationName": {
+        "Zh_tw": "左營",
+        "En": "Zuoying",
+        "Ja": "左營",
+        "Ko": "쭤잉"
+      },
+      "StopStations": [
+        {
+          "StopSequence": 3,
+          "StationID": "1020",
+          "StationCode": "TAY",
+          "StationName": {
+            "Zh_tw": "桃園",
+            "En": "Taoyuan",
+            "Ja": "桃園",
+            "Ko": "타오위안"
+          },
+          "StandardSeatStatus": "O",
+          "BusinessSeatStatus": "O"
+        },
+        {
+          "StopSequence": 4,
+          "StationID": "1040",
+          "StationCode": "TAC",
+          "StationName": {
+            "Zh_tw": "台中",
+            "En": "Taichung",
+            "Ja": "台中",
+            "Ko": "타이중"
+          },
+          "StandardSeatStatus": "X",
+          "BusinessSeatStatus": "X"
+        },
+        {
+          "StopSequence": 5,
+          "StationID": "1043",
+          "StationCode": "CHA",
+          "StationName": {
+            "Zh_tw": "彰化",
+            "En": "Changhua",
+            "Ja": "彰化",
+            "Ko": "장화"
+          },
+          "StandardSeatStatus": "X",
+          "BusinessSeatStatus": "X"
+        }
+      ],
+      "SrcUpdateTime": "2026-10-20T16:46:04+08:00"
+    }
+  ]
+}

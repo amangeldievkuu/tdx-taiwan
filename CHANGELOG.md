@@ -6,6 +6,22 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-20
+
+### Added
+
+- Taiwan High Speed Rail (高鐵) endpoints: `thsr.stations`, `thsr.timetable(from, to, date?)`
+  (trains between two stations on a day), `thsr.odFare(from, to)`, `thsr.availableSeats(station)`
+  (real-time seat board: `O` available, `L` limited, `X` sold out) and `thsr.alerts`, with
+  types transcribed from the TDX Rail v2 OpenAPI spec and checked against live data.
+  `DailyTrainInfo.Note` is typed `Partial<NameType>` because TDX returns `{}`, and stop times
+  are documented as `HH:mm` (the spec says `HH:mm:ss`).
+- `trainDate(date?)` formats a `Date` (or validates a `YYYY-MM-DD` string) as the calendar day
+  in Taiwan, defaulting to today, for THSR paths and `tdx.get`.
+- Endpoints that wrap their items in an object (such as the THSR seat board) are now supported
+  and cached like list endpoints; OData queries apply to the wrapped items.
+- `examples/thsr-trains.ts` (`npm run example:thsr`).
+
 ## [0.2.1] - 2026-10-20
 
 ### Fixed
@@ -95,7 +111,8 @@ All notable changes to this project are documented here. The format is based on
   - CI runs the dist tests against each NestJS major and smoke-tests the packed tarball on
     Node 20, 22 and 24.
 
-[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.1.0...v0.1.1

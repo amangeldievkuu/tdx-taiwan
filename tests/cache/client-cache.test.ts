@@ -66,6 +66,41 @@ describe('TdxClient response cache', () => {
     expect(apiUrls).toHaveLength(6);
   });
 
+  it('caches THSR stations, timetables and fares as static, seats and alerts as real-time', async () => {
+    const lists = clientWithResponse([], { cache: true });
+    const fetchLists = async () => {
+      await lists.tdx.thsr.stations();
+      await lists.tdx.thsr.timetable('1000', '1070', '2026-10-21');
+      await lists.tdx.thsr.odFare('1000', '1070');
+      await lists.tdx.thsr.alerts();
+    };
+    await fetchLists();
+    vi.advanceTimersByTime(15_000);
+    await fetchLists();
+    expect(lists.apiUrls).toHaveLength(5); // only alerts were fetched again
+
+    const seats = clientWithResponse({ UpdateTime: 'now', AvailableSeats: [] }, { cache: true });
+    await seats.tdx.thsr.availableSeats('1000');
+    await seats.tdx.thsr.availableSeats('1000');
+    expect(seats.apiUrls).toHaveLength(1);
+    vi.advanceTimersByTime(15_000);
+    await seats.tdx.thsr.availableSeats('1000');
+    expect(seats.apiUrls).toHaveLength(2);
+  });
+
+  it('returns copies of cached objects too', async () => {
+    const { tdx } = clientWithResponse(
+      { UpdateTime: 'now', AvailableSeats: [{ TrainNo: '0803' }] },
+      { cache: true },
+    );
+
+    const first = await tdx.thsr.availableSeats('1000');
+    first.AvailableSeats.length = 0;
+
+    const second = await tdx.thsr.availableSeats('1000');
+    expect(second.AvailableSeats).toHaveLength(1);
+  });
+
   it('uses custom TTLs', async () => {
     const { tdx, apiUrls } = clientWithResponse([], {
       cache: { staticTtlMs: 1000, realtimeTtlMs: 100 },

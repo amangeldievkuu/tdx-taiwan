@@ -6,8 +6,8 @@
 [![license](https://img.shields.io/npm/l/tdx-taiwan)](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/LICENSE)
 
 TypeScript SDK for Taiwan's [TDX (Transport Data eXchange)](https://tdx.transportdata.tw) API
-— YouBike availability, bus routes and arrival estimates, and metro stations, live boards,
-timetables and fares.
+— YouBike availability, bus routes and arrival estimates, metro stations, live boards,
+timetables and fares, and high speed rail timetables, fares and seat availability.
 
 - OAuth2 client-credentials auth with in-memory token caching and automatic refresh
 - Retries with exponential backoff + jitter on 429 / 5xx, and a client-side rate limiter
@@ -69,6 +69,7 @@ Runnable scripts are in [`examples/`](examples/):
 cp .env.example .env   # then fill in your keys
 npx tsx examples/nearest-youbike.ts 25.0478 121.5170   # 5 nearest YouBike stations with bikes
 npx tsx examples/next-metro-train.ts KRTC R10          # next trains at a metro station
+npx tsx examples/thsr-trains.ts 1000 1070              # today's THSR trains with fares
 ```
 
 ### 2. NestJS
@@ -162,6 +163,11 @@ still typed as the full item, so treat unselected fields as absent.
 | `tdx.metro.liveBoard(system, query?)`           | `GET /v2/Rail/Metro/LiveBoard/{RailSystem}`                  | `MetroLiveBoard[]`            |
 | `tdx.metro.firstLastTimetable(system, query?)`  | `GET /v2/Rail/Metro/FirstLastTimetable/{RailSystem}`         | `MetroFirstLastTimetable[]`   |
 | `tdx.metro.odFare(system, query?)`              | `GET /v2/Rail/Metro/ODFare/{RailSystem}`                     | `MetroODFare[]`               |
+| `tdx.thsr.stations(query?)`                     | `GET /v2/Rail/THSR/Station`                                  | `ThsrStation[]`               |
+| `tdx.thsr.timetable(from, to, date?, query?)`   | `GET /v2/Rail/THSR/DailyTimetable/OD/{O}/to/{D}/{TrainDate}` | `ThsrODTimetable[]`           |
+| `tdx.thsr.odFare(from, to, query?)`             | `GET /v2/Rail/THSR/ODFare/{O}/to/{D}`                        | `ThsrODFare[]`                |
+| `tdx.thsr.availableSeats(station, query?)`      | `GET /v2/Rail/THSR/AvailableSeatStatusList/{StationID}`      | `ThsrAvailableSeats`          |
+| `tdx.thsr.alerts(query?)`                       | `GET /v2/Rail/THSR/AlertInfo`                                | `ThsrAlert[]`                 |
 | `tdx.get(path, query?)`                         | Any other TDX endpoint (auth, retries, rate limit applied)   | `unknown`                     |
 | `tdx.getAccessToken()`                          | The current access token                                     | `string`                      |
 | `tdx.clearCache()`                              | Empties the response cache                                   | `void`                        |
@@ -216,6 +222,53 @@ console.log(adult?.Price); // 40
   `OriginStationID` / `DestinationStationID`.
 - Where live data departs from the spec, the types follow the data: `StationAddress` and
   `LineColor` are optional, and `LineSectionName` is often `{}`.
+
+### High speed rail (THSR)
+
+Stations are identified by ID: `0990` 南港, `1000` 台北, `1010` 板橋, `1020` 桃園, `1030` 新竹,
+`1035` 苗栗, `1040` 台中, `1043` 彰化, `1047` 雲林, `1050` 嘉義, `1060` 台南, `1070` 左營.
+
+```ts
+import { query, type ThsrODTimetable } from 'tdx-taiwan';
+
+// Evening trains from Taipei to Zuoying tomorrow, with the standard adult fare
+const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+const trains = await tdx.thsr.timetable(
+  '1000',
+  '1070',
+  tomorrow,
+  query<ThsrODTimetable>().filter("OriginStopTime/DepartureTime ge '18:00'"),
+);
+const [od] = await tdx.thsr.odFare('1000', '1070');
+const standard = od?.Fares.find(
+  (f) => f.TicketType === 1 && f.FareClass === 1 && f.CabinClass === 1,
+);
+
+for (const t of trains) {
+  console.log(
+    t.DailyTrainInfo.TrainNo,
+    t.OriginStopTime.DepartureTime,
+    '→',
+    t.DestinationStopTime.ArrivalTime,
+  );
+}
+console.log(`NT$${standard?.Price}`); // NT$1490
+
+// Seats left on trains leaving Taipei: O = available, L = limited, X = sold out
+const board = await tdx.thsr.availableSeats('1000');
+```
+
+- `date` is a `Date` or a `'YYYY-MM-DD'` string and defaults to today. A `Date` is read as the
+  calendar day in Taiwan (UTC+8), whatever the machine's time zone; `trainDate()` exposes the
+  same conversion for `tdx.get` paths.
+- TDX only publishes timetables about four weeks ahead; later dates fail with a `TdxApiError`
+  (400).
+- Times are `HH:mm`, although the spec says `HH:mm:ss`.
+- `availableSeats` returns an object (`{ UpdateTime, AvailableSeats }`); the query filters the
+  `AvailableSeats` items. During disruptions THSR freezes the board at the last normal state.
+- `alerts` returns a single "全線營運正常(Normal)" record with an empty `Status` on a normal day.
+- [`examples/thsr-trains.ts`](examples/thsr-trains.ts) prints the day's trains between two
+  stations with fares.
 
 ## Options
 
@@ -309,7 +362,7 @@ Development tooling requires Node.js 22+; the published package supports Node.js
 ## 繁體中文
 
 `tdx-taiwan` 是交通部 [TDX 運輸資料流通服務](https://tdx.transportdata.tw) 的 TypeScript SDK，
-支援公共自行車（YouBike）站點與即時車位、市區公車路線、站序與預估到站時間，以及捷運車站、路線、即時到站看板、首末班車與票價。
+支援公共自行車（YouBike）站點與即時車位、市區公車路線、站序與預估到站時間、捷運車站、路線、即時到站看板、首末班車與票價，以及高鐵時刻表、票價與剩餘座位。
 
 **安裝**（需要 Node.js 20 以上版本）
 
@@ -351,6 +404,7 @@ const top = await tdx.bike.availability(
 - 存取權杖（access token）會快取於記憶體，並於到期前 60 秒自動更新；同時多個請求只會發出一次權杖請求。
 - 遇到 429 或 5xx 會以指數退避（含隨機抖動）重試最多 3 次，並內建用戶端限流（預設每秒 5 次，請依您的 TDX 方案調整）。
 - 路線名稱預設以中文名稱（`RouteName/Zh_tw`）完全比對：`tdx.bus.eta('Taipei', '307')` 只回傳 307，不含「307西藏三民」。若要使用 TDX 原本的前綴比對，請傳入 `{ exact: false }`。
+- 高鐵：`tdx.thsr.timetable('1000', '1070', '2026-10-21')` 查詢指定日期起迄站時刻表（日期可為 `Date` 或 `YYYY-MM-DD`，預設為臺灣時間今天；僅提供約四週內的資料），另有 `odFare`（票價）、`availableSeats`（對號座剩餘座位：O 尚有、L 有限、X 已無）與 `alerts`（營運通阻）。
 - 捷運：`tdx.metro.liveBoard('TRTC')` 等方法以軌道系統代碼（`TRTC`、`KRTC`、`TYMC`…）查詢。注意捷運看板的 `EstimateTime` 單位為**分鐘**（公車為秒），且臺北捷運（TRTC）看板只列出即將進站（0 分鐘）的列車；`odFare` 資料量大，建議以 `OriginStationID`／`DestinationStationID` 篩選。
 - 回傳資料維持 TDX 原始欄位名稱（如 `StationUID`、`AvailableRentBikes`），型別依官方 OpenAPI 規格定義。
 - NestJS 使用者可匯入 `tdx-taiwan/nestjs` 的 `TdxModule.forRoot()` / `forRootAsync()`（範例見上方英文說明）。

@@ -20,9 +20,12 @@ export {
 export { BikeApi } from './resources/bike.js';
 export { BusApi, type RouteQueryInput, type RouteQueryOptions } from './resources/bus.js';
 export { MetroApi } from './resources/metro.js';
+export { ThsrApi } from './resources/thsr.js';
+export { trainDate } from './resources/requester.js';
 export type { QueryInput } from './resources/requester.js';
 export type * from './types/common.js';
 export type * from './types/bike.js';
 export type * from './types/bus.js';
 export type * from './types/metro.js';
+export type * from './types/thsr.js';
 export { DEFAULT_AUTH_URL, DEFAULT_BASE_URL } from './constants.js';
