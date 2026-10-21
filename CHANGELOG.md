@@ -6,6 +6,19 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-21
+
+### Added
+
+- Taiwan Railway (臺鐵) endpoints from the TDX Rail **v3** API: `tra.stations`,
+  `tra.timetable(from, to, date?)`, `tra.odFare(from, to)`, `tra.liveBoard(station)` (imminent
+  trains with platform and delay), `tra.trainLiveBoard(trainNo)` (where a train is and how late)
+  and `tra.alerts`. Every response is the v3 wrapper object; queries apply to its items. Types
+  are transcribed from the spec and checked against live data; `TraNameType` uses `Kr` for
+  Korean, and `AuthorityCode` (timetable and fare wrappers) plus `AlertID` / `Description`
+  (normal-day alert) are optional because live data omits them.
+- `examples/tra-trains.ts` (`npm run example:tra`).
+
 ## [0.4.0] - 2026-10-20
 
 ### Added
@@ -136,7 +149,8 @@ All notable changes to this project are documented here. The format is based on
   - CI runs the dist tests against each NestJS major and smoke-tests the packed tarball on
     Node 20, 22 and 24.
 
-[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.2.1...v0.3.0

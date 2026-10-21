@@ -1,8 +1,8 @@
 # Test fixtures
 
 > 資料來源：交通部運輸資料流通服務平臺 (MOTC Transport Data eXchange, TDX). The `metro-*.json`,
-> `thsr-*.json`, `bus-stop-taipei.json`, `bus-position-taipei-307.json` and `bus-intercity-*.json`
-> files contain TDX data and are used under the
+> `thsr-*.json`, `tra-*.json`, `bus-stop-taipei.json`, `bus-position-taipei-307.json` and
+> `bus-intercity-*.json` files contain TDX data and are used under the
 > [TDX 資料授權利用條款](https://tdx.transportdata.tw/term), not this repository's MIT license.
 
 These JSON files are **hand-written, schema-derived samples**, not recorded API responses.
@@ -28,6 +28,12 @@ board cut to three trains that cover the `O`/`L`/`X` statuses, and the normal-da
 The 0.4.0 bus fixtures (`bus-stop-taipei.json`, `bus-position-taipei-307.json`,
 `bus-intercity-*.json`) and `metro-alert-trtc.json` are also trimmed live responses (2026-10-20),
 fetched through the SDK; the Taipei stops show the missing `StationGroupID`.
+
+The `tra-*.json` files are trimmed TRA v3 wrappers (2026-10-21), fetched through the SDK with
+OData filters: two stations, two 臺北 → 高雄 trains (without the `AuthorityCode` the spec
+requires), the 自強 and 區間 fares in both directions, the 板橋 live board with a delayed train,
+a train live board, and the normal-day alert (without `AlertID` and `Description`). None were
+edited.
 
 To compare against real data, add your keys to `.env` and run `npm run test:integration`,
 which exercises the same endpoints against the live API.

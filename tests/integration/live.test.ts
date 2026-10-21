@@ -185,6 +185,50 @@ describe.skipIf(!hasCredentials)('live TDX API: 0.4.0 bus and metro additions', 
   });
 });
 
+describe.skipIf(!hasCredentials)('live TDX API: TRA', () => {
+  let tdx: TdxClient;
+
+  beforeAll(() => {
+    tdx = new TdxClient({
+      clientId: clientId ?? '',
+      clientSecret: clientSecret ?? '',
+      requestsPerSecond: 2,
+    });
+  });
+
+  it('tra.stations returns 臺北 and 高雄', async () => {
+    const result = await tdx.tra.stations();
+    const ids = result.Stations.map((s) => s.StationID);
+    expect(ids).toContain('1000');
+    expect(ids).toContain('4400');
+  });
+
+  it("tra.timetable and tra.trainLiveBoard follow tomorrow's 臺北 → 高雄 trains", async () => {
+    const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const result = await tdx.tra.timetable('1000', '4400', tomorrow);
+    expect(result.TrainDate).toBe(trainDate(tomorrow));
+    const trains = result.TrainTimetables ?? [];
+    expect(trains.length).toBeGreaterThan(0);
+    expect(trains[0]?.StopTimes.map((s) => s.StationID)).toEqual(['1000', '4400']);
+
+    const live = await tdx.tra.trainLiveBoard(trains[0]?.TrainInfo.TrainNo ?? '');
+    expect(Array.isArray(live.TrainLiveBoards)).toBe(true);
+  });
+
+  it('tra.odFare returns fares per train type', async () => {
+    const result = await tdx.tra.odFare('1000', '4400');
+    expect(result.ODFares.length).toBeGreaterThan(0);
+    expect(result.ODFares[0]?.Fares[0]).toHaveProperty('Price');
+  });
+
+  it('tra.liveBoard and tra.alerts return their wrappers', async () => {
+    const board = await tdx.tra.liveBoard('1000');
+    expect(Array.isArray(board.StationLiveBoards)).toBe(true);
+    const alerts = await tdx.tra.alerts();
+    expect(alerts.Alerts.length).toBeGreaterThan(0);
+  });
+});
+
 describe.skipIf(hasCredentials)('live TDX API (skipped)', () => {
   it.skip('set TDX_CLIENT_ID and TDX_CLIENT_SECRET in .env to run the live tests', () => {});
 });

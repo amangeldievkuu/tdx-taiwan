@@ -109,6 +109,23 @@ describe('TdxClient response cache', () => {
     expect(alerts.apiUrls).toHaveLength(2);
   });
 
+  it('caches TRA stations, timetables and fares as static, live boards and alerts as real-time', async () => {
+    const { tdx, apiUrls } = clientWithResponse({}, { cache: true });
+    const fetchAll = async () => {
+      await tdx.tra.stations();
+      await tdx.tra.timetable('1000', '4400', '2026-10-22');
+      await tdx.tra.odFare('1000', '4400');
+      await tdx.tra.liveBoard('1000');
+      await tdx.tra.trainLiveBoard('103');
+      await tdx.tra.alerts();
+    };
+    await fetchAll();
+    vi.advanceTimersByTime(15_000);
+    await fetchAll();
+
+    expect(apiUrls).toHaveLength(9); // only the three real-time requests repeat
+  });
+
   it('returns copies of cached objects too', async () => {
     const { tdx } = clientWithResponse(
       { UpdateTime: 'now', AvailableSeats: [{ TrainNo: '0803' }] },
