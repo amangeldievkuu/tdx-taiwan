@@ -262,6 +262,37 @@ describe.skipIf(!hasCredentials)('live TDX API: parking', () => {
   });
 });
 
+describe.skipIf(!hasCredentials)('live TDX API: EV charging', () => {
+  let tdx: TdxClient;
+
+  beforeAll(() => {
+    tdx = new TdxClient({
+      clientId: clientId ?? '',
+      clientSecret: clientSecret ?? '',
+      requestsPerSecond: 2,
+    });
+  });
+
+  it('ev.liveStatus joins to ev.connectors and ev.stations in Taipei', async () => {
+    const [stations, connectors, live] = await Promise.all([
+      tdx.ev.stations('Taipei'),
+      tdx.ev.connectors('Taipei'),
+      tdx.ev.liveStatus('Taipei'),
+    ]);
+    const stationIds = new Set(stations.Stations.map((s) => s.StationID));
+    const connectorIds = new Set(connectors.Connectors.map((c) => c.ConnectorID));
+    expect(live.LiveStatuses.length).toBeGreaterThan(0);
+    expect(live.LiveStatuses.some((l) => stationIds.has(l.StationID))).toBe(true);
+    expect(live.LiveStatuses.some((l) => connectorIds.has(l.ConnectorID))).toBe(true);
+  });
+
+  it('ev.freeway.stations returns service area chargers', async () => {
+    const result = await tdx.ev.freeway.stations();
+    expect(result.Stations.length).toBeGreaterThan(0);
+    expect(result.Stations[0]?.Location.Freeway).toBeTruthy();
+  });
+});
+
 describe.skipIf(hasCredentials)('live TDX API (skipped)', () => {
   it.skip('set TDX_CLIENT_ID and TDX_CLIENT_SECRET in .env to run the live tests', () => {});
 });

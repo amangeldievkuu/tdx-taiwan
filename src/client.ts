@@ -7,6 +7,7 @@ import { RateLimiter } from './http/rate-limiter.js';
 import { type ODataOptions, ODataQuery } from './odata/query-builder.js';
 import { BikeApi } from './resources/bike.js';
 import { BusApi } from './resources/bus.js';
+import { EvApi } from './resources/ev.js';
 import { MetroApi } from './resources/metro.js';
 import { ParkingApi } from './resources/parking.js';
 import { ThsrApi } from './resources/thsr.js';
@@ -68,6 +69,8 @@ export class TdxClient {
   readonly tra: TraApi;
   /** Parking (停車資訊) endpoints. */
   readonly parking: ParkingApi;
+  /** EV charging (充電樁) endpoints. */
+  readonly ev: EvApi;
 
   private readonly tokens: TokenManager;
   private readonly http: HttpClient;
@@ -116,6 +119,7 @@ export class TdxClient {
     this.thsr = new ThsrApi(list, object);
     this.tra = new TraApi(object);
     this.parking = new ParkingApi(object);
+    this.ev = new EvApi(object);
   }
 
   /** Returns a valid OAuth2 access token (cached in memory, refreshed 60s before expiry). */

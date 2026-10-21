@@ -1,0 +1,39 @@
+{
+  "UpdateTime": "2026-10-21T10:30:33+08:00",
+  "UpdateInterval": 14400,
+  "SrcUpdateTime": "2026-10-21T03:50:25+08:00",
+  "SrcUpdateInterval": 86400,
+  "AuthorityCode": "TPE",
+  "ChargingRates": [
+    {
+      "StationID": "33029464-STP6360001",
+      "ChargingPointID": "33029464-PTP6360001",
+      "ConnectorID": "33029464-CTP6360001",
+      "Rates": [
+        {
+          "RateType": 3,
+          "PricingType": 1,
+          "RatePrice": 10,
+          "Peak": 0,
+          "StartTime": "00:00",
+          "EndTime": "24:00"
+        }
+      ]
+    },
+    {
+      "StationID": "TPE0201U01",
+      "ChargingPointID": "42861108-P318611A",
+      "ConnectorID": "42861108-C318611A-1",
+      "Rates": [
+        {
+          "RateType": 2,
+          "PricingType": 1,
+          "RatePrice": 7,
+          "Peak": 0,
+          "StartTime": "00:00",
+          "EndTime": "04:00"
+        }
+      ]
+    }
+  ]
+}

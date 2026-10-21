@@ -6,6 +6,18 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-21
+
+### Added
+
+- EV charging (綠色運輸-充電樁 v1) endpoints by city and for freeway service areas
+  (`tdx.ev.freeway.*`): `stations`, `chargingPoints`, `connectors`, `liveStatus` (free, in use
+  or out of order) and `chargingRates`. Responses are wrapper objects; queries apply to their
+  items. The types include the ID fields live data uses to join the lists (`StationID`,
+  `ChargingPointID`, `ConnectorID`) even though the spec omits them; those fields cannot be used
+  in OData queries. The README explains how to join the lists reliably.
+- `examples/nearest-ev-charger.ts` (`npm run example:ev`).
+
 ## [0.6.0] - 2026-10-21
 
 ### Added
@@ -163,7 +175,8 @@ All notable changes to this project are documented here. The format is based on
   - CI runs the dist tests against each NestJS major and smoke-tests the packed tarball on
     Node 20, 22 and 24.
 
-[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.3.1...v0.4.0

@@ -1,0 +1,59 @@
+{
+  "UpdateTime": "2026-10-21T10:30:33+08:00",
+  "UpdateInterval": 14400,
+  "SrcUpdateTime": "2026-10-21T03:50:25+08:00",
+  "SrcUpdateInterval": 86400,
+  "AuthorityCode": "TPE",
+  "ChargingPoints": [
+    {
+      "StationID": "33029464-STP6360001",
+      "ChargingPointID": "33029464-PTP6360001",
+      "OperatorID": "33029464",
+      "Connectors": [
+        {
+          "Type": 5,
+          "Quantity": 1
+        }
+      ],
+      "ChargingRate": "計時/每日/10元每1時",
+      "Payment": {
+        "CreditCard": true,
+        "SmartCard": true,
+        "EPay": true,
+        "Others": true
+      },
+      "StartType": {
+        "ByCard": false,
+        "ByApp": false,
+        "ByStaff": false,
+        "Others": true
+      },
+      "Floor": "B1"
+    },
+    {
+      "StationID": "TPE0201U01",
+      "ChargingPointID": "42861108-P318611A",
+      "OperatorID": "42861108",
+      "Connectors": [
+        {
+          "Type": 4,
+          "Quantity": 1
+        }
+      ],
+      "ChargingRate": "計度/浮動/8元每度",
+      "Payment": {
+        "CreditCard": true,
+        "SmartCard": false,
+        "EPay": false,
+        "Others": false
+      },
+      "StartType": {
+        "ByCard": false,
+        "ByApp": false,
+        "ByStaff": false,
+        "Others": false
+      },
+      "Floor": "B2"
+    }
+  ]
+}

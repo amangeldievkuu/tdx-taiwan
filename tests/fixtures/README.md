@@ -1,7 +1,7 @@
 # Test fixtures
 
 > 資料來源：交通部運輸資料流通服務平臺 (MOTC Transport Data eXchange, TDX). The `metro-*.json`,
-> `thsr-*.json`, `tra-*.json`, `parking-*.json`, `bus-stop-taipei.json`, `bus-position-taipei-307.json` and
+> `thsr-*.json`, `tra-*.json`, `parking-*.json`, `ev-*.json`, `bus-stop-taipei.json`, `bus-position-taipei-307.json` and
 > `bus-intercity-*.json` files contain TDX data and are used under the
 > [TDX 資料授權利用條款](https://tdx.transportdata.tw/term), not this repository's MIT license.
 
@@ -40,6 +40,11 @@ with OData filters and not edited. They show how loosely the lists join: car par
 no availability record (although it is flagged `LiveOccuppancyAvailable`), availability
 `TPE0096` has no car park, and only `TPE0567` appears in both. Segment `6018000` has a road
 section without `End`.
+
+The `ev-*.json` files are trimmed EV wrappers (2026-10-21): one complete chain per connector
+for a DC (Tesla TPC, 250 kW, free) and an AC (J1772, 7 kW, in use) connector in Taipei, picked in
+code because the ID fields cannot be filtered with OData, plus one freeway service area station.
+None were edited.
 
 To compare against real data, add your keys to `.env` and run `npm run test:integration`,
 which exercises the same endpoints against the live API.

@@ -8,7 +8,8 @@
 Unofficial TypeScript SDK for Taiwan's [TDX (Transport Data eXchange)](https://tdx.transportdata.tw) API
 — YouBike availability, city and InterCity bus routes, arrival estimates and live positions, metro stations, live boards, alerts,
 timetables and fares, high speed rail timetables, fares and seat availability, Taiwan
-Railway timetables, fares, live boards and train positions, and parking availability.
+Railway timetables, fares, live boards and train positions, parking availability, and EV
+charging stations with live connector status.
 
 - OAuth2 client-credentials auth with in-memory token caching and automatic refresh
 - Retries with exponential backoff + jitter on 429 / 5xx, and a client-side rate limiter
@@ -73,6 +74,7 @@ npx tsx examples/next-metro-train.ts KRTC R10          # next trains at a metro 
 npx tsx examples/thsr-trains.ts 1000 1070              # today's THSR trains with fares
 npx tsx examples/tra-trains.ts 1000 4400               # today's TRA trains with fares
 npx tsx examples/nearest-parking.ts 25.0478 121.5170   # 5 nearest car parks with free spaces
+npx tsx examples/nearest-ev-charger.ts 25.0478 121.5170 Taipei 2  # nearest free CCS2 chargers
 ```
 
 ### 2. NestJS
@@ -188,6 +190,12 @@ still typed as the full item, so treat unselected fields as absent.
 | `tdx.parking.availability(city, query?)`            | `GET /v1/Parking/OffStreet/ParkingAvailability/City/{City}`       | `ParkingAvailabilities`        |
 | `tdx.parking.segments(city, query?)`                | `GET /v1/Parking/OnStreet/ParkingSegment/City/{City}`             | `ParkingSegments`              |
 | `tdx.parking.segmentAvailability(city, query?)`     | `GET /v1/Parking/OnStreet/ParkingSegmentAvailability/City/{City}` | `ParkingSegmentAvailabilities` |
+| `tdx.ev.stations(city, query?)`                     | `GET /v1/EV/Station/City/{City}`                                  | `EvStations`                   |
+| `tdx.ev.chargingPoints(city, query?)`               | `GET /v1/EV/ChargingPoint/City/{City}`                            | `EvChargingPoints`             |
+| `tdx.ev.connectors(city, query?)`                   | `GET /v1/EV/Connector/City/{City}`                                | `EvConnectors`                 |
+| `tdx.ev.liveStatus(city, query?)`                   | `GET /v1/EV/ConnectorLiveStatus/City/{City}`                      | `EvLiveStatuses`               |
+| `tdx.ev.chargingRates(city, query?)`                | `GET /v1/EV/ChargingRate/City/{City}`                             | `EvChargingRates`              |
+| `tdx.ev.freeway.*(query?)`                          | The same five, at `…/Freeway/ServiceArea`                         | same types                     |
 | `tdx.get(path, query?)`                             | Any other TDX endpoint (auth, retries, rate limit applied)        | `unknown`                      |
 | `tdx.getAccessToken()`                              | The current access token                                          | `string`                       |
 | `tdx.clearCache()`                                  | Empties the response cache                                        | `void`                         |
@@ -412,6 +420,51 @@ const { CurbParkingSegmentAvailabilities: curb } = await tdx.parking.segmentAvai
 - [`examples/nearest-parking.ts`](examples/nearest-parking.ts) prints the 5 nearest car parks
   with free car spaces.
 
+### EV charging
+
+Charging stations, their charging points and connectors (plugs), live connector status and
+charging prices, by city or for freeway service areas (`tdx.ev.freeway.*`).
+
+```ts
+// Free DC fast chargers (CCS2) in Taipei right now
+const [{ Stations: stations }, { LiveStatuses: live }, { Connectors: connectors }] =
+  await Promise.all([
+    tdx.ev.stations('Taipei'),
+    tdx.ev.liveStatus('Taipei', { filter: 'ConnectorStatus eq 1 and ConnectorType eq 2' }),
+    tdx.ev.connectors('Taipei', { filter: 'Power eq 2' }), // 2 = DC
+  ]);
+// Join in code: the ID fields cannot be used in OData queries.
+const dc = new Map(connectors.map((c) => [c.ConnectorID, c]));
+const stationById = new Map(stations.map((s) => [s.StationID, s]));
+for (const status of live) {
+  const connector = dc.get(status.ConnectorID);
+  const station = connector && stationById.get(connector.StationID);
+  if (connector && station) console.log(station.StationName.Zh_tw, connector.PowerRating);
+}
+
+// Along the freeway
+const { Stations: serviceAreas } = await tdx.ev.freeway.stations();
+```
+
+- Join the lists on `StationID`, `ChargingPointID` and `ConnectorID`. Live data has these IDs
+  although the spec omits them (`StationID` on stations, `ChargingPointID` on charging points,
+  `ConnectorID` on connectors, statuses and rates); the types include them. Because they are not
+  in TDX's query model, **they cannot be used in `$filter`, `$select` or `$orderby`** (TDX
+  answers 400): fetch the lists and join in code. ID formats vary by operator.
+- Join a live status to its connector on `ConnectorID`, then to the station via the
+  **connector's** `StationID`. A status's own `StationID` can use another ID scheme (227 of
+  1,628 in Taipei, e.g. `TPE0117` instead of `33029464-STP6780001`).
+- Some lists are incomplete: Taichung publishes 261 connectors for 1,531 live statuses. Treat a
+  missing connector as unknown details, not a missing charger.
+- `ConnectorStatus`: 1 free, 2 in use, 3 out of order. Connector `Type`: 1 CCS1, 2 CCS2,
+  3 CHAdeMO, 4 Tesla TPC, 5 J1772 (Type 1), 6 Mennekes (Type 2); `Power`: 1 AC, 2 DC.
+- `PowerRating`, `Voltage` and `CurrentRating` are text (`"7KW"`, `"220V"`, `"32A"`), as are a
+  station's `ServiceTime`, `ParkingRate` and `ChargingRate`. Structured prices are in
+  `chargingRates` (`RateType`: 1 free, 2 per kWh, 3 per minute, 4 per hour).
+- A station's `Reference` can point to a car park or on-street segment from `tdx.parking`.
+- [`examples/nearest-ev-charger.ts`](examples/nearest-ev-charger.ts) prints the 5 nearest
+  stations with a free connector of a chosen type.
+
 ## Options
 
 ```ts
@@ -550,6 +603,7 @@ const top = await tdx.bike.availability(
 - 遇到 429 或 5xx 會以指數退避（含隨機抖動）重試最多 3 次，並內建用戶端限流（預設每秒 5 次，請依您的 TDX 方案調整）。
 - 路線名稱預設以中文名稱（`RouteName/Zh_tw`）完全比對：`tdx.bus.eta('Taipei', '307')` 只回傳 307，不含「307西藏三民」。若要使用 TDX 原本的前綴比對，請傳入 `{ exact: false }`。
 - 公車：`tdx.bus.positions('Taipei', '307')` 取得公車即時位置（A1）、`tdx.bus.stops('Taipei')` 取得縣市全部站牌（資料量大，建議篩選）；公路客運使用 `tdx.bus.interCity.routes('1610')`、`eta`、`positions` 等，路線名稱同樣預設完全比對。捷運另有 `tdx.metro.alerts('TRTC')` 營運通阻資料。
+- 電動車充電：`tdx.ev.stations('Taipei')`（充電站）、`chargingPoints`（充電樁）、`connectors`（充電槍）、`liveStatus`（充電槍即時狀態：1 可使用、2 使用中、3 故障）與 `chargingRates`（費率）；高速公路服務區使用 `tdx.ev.freeway.*`。各清單以 `StationID`、`ChargingPointID`、`ConnectorID` 對應（規格未列出這些欄位，但實際資料皆有；這些欄位無法用於 `$filter`／`$select`，請於程式中對應）。即時狀態請先以 `ConnectorID` 對應充電槍，再以充電槍的 `StationID` 對應充電站（即時狀態本身的 `StationID` 可能使用另一套代碼）。
 - 停車：`tdx.parking.carParks('Taipei')`（路外停車場）、`availability`（即時剩餘車位）、`segments`（路邊停車路段）與 `segmentAvailability`（路段即時剩餘車位）。停車場與剩餘車位以 `CarParkID` 對應，但兩份清單僅部分重疊（臺北 1,180 筆剩餘車位中僅 455 筆有對應停車場）；新北市僅有路邊停車資料，無資料的縣市回傳空清單。
 - 臺鐵（TDX v3）：`tdx.tra.timetable('1000', '4400', '2026-10-22')` 查詢起迄站時刻表，另有 `stations`、`odFare`（票價，依車種**及行駛方向**區分：臺北→高雄自強號順向 371 公里 994 元，經東部環島方向 1286 元）、`liveBoard`（車站即時到離站，含月台與延誤分鐘）、`trainLiveBoard`（列車即時位置）與 `alerts`。回應皆為包裝物件，名稱欄位使用 `TraNameType`（韓文為 `Kr`）。
 - 高鐵：`tdx.thsr.timetable('1000', '1070', '2026-10-21')` 查詢指定日期起迄站時刻表（日期可為 `Date` 或 `YYYY-MM-DD`，預設為臺灣時間今天；僅提供約四週內的資料），另有 `odFare`（票價）、`availableSeats`（對號座剩餘座位：O 尚有、L 有限、X 已無）與 `alerts`（營運通阻）。

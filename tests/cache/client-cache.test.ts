@@ -141,6 +141,23 @@ describe('TdxClient response cache', () => {
     expect(apiUrls).toHaveLength(6); // only the two availability requests repeat
   });
 
+  it('caches EV stations, points, connectors and rates as static, live status as real-time', async () => {
+    const { tdx, apiUrls } = clientWithResponse({}, { cache: true });
+    const fetchAll = async () => {
+      await tdx.ev.stations('Taipei');
+      await tdx.ev.chargingPoints('Taipei');
+      await tdx.ev.connectors('Taipei');
+      await tdx.ev.liveStatus('Taipei');
+      await tdx.ev.chargingRates('Taipei');
+      await tdx.ev.freeway.liveStatus();
+    };
+    await fetchAll();
+    vi.advanceTimersByTime(15_000);
+    await fetchAll();
+
+    expect(apiUrls).toHaveLength(8); // only the two live-status requests repeat
+  });
+
   it('returns copies of cached objects too', async () => {
     const { tdx } = clientWithResponse(
       { UpdateTime: 'now', AvailableSeats: [{ TrainNo: '0803' }] },
