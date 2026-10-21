@@ -425,6 +425,114 @@ export interface TrafficETagPairLives extends TrafficWrapperHeader {
   ETagPairLives: TrafficETagPairLive[];
 }
 
+/** Changeable message sign (CMS). */
+export interface TrafficCMS {
+  CMSID: string;
+  SubAuthorityCode?: string;
+  LinkID: string;
+  LocationType: TrafficLocationType;
+  PositionLon: number;
+  PositionLat: number;
+  RoadID?: string;
+  RoadName?: string;
+  RoadClass?: TrafficRoadClass;
+  RoadDirection?: string;
+  RoadSection?: TrafficRoadSection;
+  /** Mileage, e.g. `0K+000`. */
+  LocationMile?: string;
+  LayoutMapURL?: string;
+}
+
+/** Signs — `GET /v2/Road/Traffic/CMS/{City/{City}|Freeway|Highway}[/{CMSID}]`. */
+export interface TrafficCMSs extends TrafficWrapperHeader {
+  CMSs: TrafficCMS[];
+}
+
+/**
+ * 訊息種類: 1 = 旅行時間資訊 (travel time), 2 = 壅塞資訊 (congestion), 3 = 事故資訊 (incident),
+ * 4 = 施工資訊 (works), 5 = 停車資訊 (parking), 6 = 政令宣導資訊 (public notice), 7 = 其他未定義.
+ */
+export type TrafficCMSMessageType = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+
+/** 訊息發布狀態: 0 = 目前無資料顯示 (nothing shown), 1 = 目前正執行循環顯示 (cycling). */
+export type TrafficCMSMessageStatus = 0 | 1;
+
+/** One message in a sign's cycle (Message). Taipei sends only `Text`; a blank sign sends `" "`. */
+export interface TrafficCMSMessage {
+  Text?: string;
+  /** Image URL or data. */
+  Image?: string;
+  Type?: TrafficCMSMessageType;
+  /** Display priority. */
+  Priority?: number;
+}
+
+/** What a sign currently shows (CMSLive). */
+export interface TrafficCMSLive {
+  CMSID: string;
+  SubAuthorityCode?: string;
+  MessageStatus: TrafficCMSMessageStatus;
+  Messages: TrafficCMSMessage[];
+  Status: TrafficDeviceStatus;
+  DataCollectTime: DateTimeString;
+}
+
+/** Live sign messages — `GET /v2/Road/Traffic/Live/CMS/{City/{City}|Freeway|Highway}[/{CMSID}]`. */
+export interface TrafficCMSLives extends TrafficWrapperHeader {
+  CMSLives: TrafficCMSLive[];
+}
+
+/** eTag gantry (ETag). */
+export interface TrafficETag {
+  /** e.g. `01F0005S`. */
+  ETagGantryID: string;
+  SubAuthorityCode?: string;
+  LinkID: string;
+  LocationType: TrafficLocationType;
+  PositionLon: number;
+  PositionLat: number;
+  RoadID?: string;
+  RoadName?: string;
+  RoadClass?: TrafficRoadClass;
+  RoadDirection?: string;
+  RoadSection?: TrafficRoadSection;
+  /** Mileage, e.g. `0k+500`. */
+  LocationMile?: string;
+  LayoutMapURL?: string;
+}
+
+/** Gantries — `GET /v2/Road/Traffic/ETag/{City/{City}|Freeway|Highway}[/{ETagGantryID}]`. */
+export interface TrafficETags extends TrafficWrapperHeader {
+  ETags: TrafficETag[];
+}
+
+/** The basic links (基礎路段) a published section is made of (SectionLink). */
+export interface TrafficSectionLink {
+  SectionID: string;
+  SubAuthorityCode?: string;
+  StartLinkID?: string;
+  EndLinkID?: string;
+  LinkIDs?: TrafficLinkRef[];
+}
+
+/** Section links — `GET /v2/Road/Traffic/SectionLink/{City/{City}|Freeway|Highway}[/{SectionID}]`. */
+export interface TrafficSectionLinks extends TrafficWrapperHeader {
+  SectionLinks: TrafficSectionLink[];
+}
+
+/** A published section's geometry (SectionShape). */
+export interface TrafficSectionShape {
+  SectionID: string;
+  SubAuthorityCode?: string;
+  /** WKT, e.g. `LINESTRING(121.73528 25.12235, …)`. */
+  Geometry: string;
+}
+
+/** Section shapes — `GET /v2/Road/Traffic/SectionShape/{City/{City}|Freeway|Highway}[/{SectionID}]`. */
+export interface TrafficSectionShapes extends TrafficWrapperHeader {
+  SectionShapes: TrafficSectionShape[];
+}
+
 /** Traffic news item (News). */
 export interface TrafficNews {
   NewsID: string;

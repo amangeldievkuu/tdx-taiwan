@@ -349,11 +349,18 @@ describe.skipIf(!hasCredentials)('live TDX API: road traffic', () => {
     }
   });
 
-  it('traffic.sections lists Taipei sections', async () => {
+  it('traffic.sections lists Taipei sections and fetches one by ID', async () => {
     const sections = await tdx.traffic.sections('Taipei', { top: 3 });
     expect(sections.Sections.length).toBeGreaterThan(0);
-    expect(sections.Sections[0]).toHaveProperty('SectionID');
-    expect(sections.Sections[0]).toHaveProperty('RoadName');
+    const id = sections.Sections[0]?.SectionID ?? '';
+    const one = await tdx.traffic.sections('Taipei', id);
+    expect(one.Sections.map((s) => s.SectionID)).toEqual([id]);
+  });
+
+  it('traffic.freeway.cms lists signs', async () => {
+    const signs = await tdx.traffic.freeway.cms({ top: 2 });
+    expect(signs.CMSs.length).toBeGreaterThan(0);
+    expect(signs.CMSs[0]).toHaveProperty('CMSID');
   });
 
   it('traffic.freeway.liveEvents returns the event wrapper', async () => {

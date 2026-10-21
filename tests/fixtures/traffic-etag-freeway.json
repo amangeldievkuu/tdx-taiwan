@@ -1,0 +1,42 @@
+{
+  "UpdateTime": "2026-10-21T00:05:44+08:00",
+  "UpdateInterval": 21600,
+  "SrcUpdateTime": "2026-10-21T00:00:00+08:00",
+  "SrcUpdateInterval": 86400,
+  "AuthorityCode": "NFB",
+  "LinkVersion": "25.06.1",
+  "ETags": [
+    {
+      "ETagGantryID": "01F0005S",
+      "LinkID": "0000100000040C",
+      "LocationType": 4,
+      "PositionLon": 121.731764,
+      "PositionLat": 25.118786,
+      "RoadID": "000010",
+      "RoadName": "國道1號",
+      "RoadClass": 0,
+      "RoadDirection": "S",
+      "RoadSection": {
+        "Start": "基隆端",
+        "End": "基隆"
+      },
+      "LocationMile": "0k+500"
+    },
+    {
+      "ETagGantryID": "01F0017S",
+      "LinkID": "0000100000130C",
+      "LocationType": 4,
+      "PositionLon": 121.725906,
+      "PositionLat": 25.109567,
+      "RoadID": "000010",
+      "RoadName": "國道1號",
+      "RoadClass": 0,
+      "RoadDirection": "S",
+      "RoadSection": {
+        "Start": "基隆",
+        "End": "八堵"
+      },
+      "LocationMile": "1k+700"
+    }
+  ]
+}

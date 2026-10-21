@@ -63,7 +63,10 @@ cameras with `SurveillanceType: -1`; a bi-directional provincial-highway detecto
 detector reading with per-vehicle-class volumes; a freeway eTag pair with its WKT geometry and
 its live flows; freeway news items without the `Description` the spec requires and with the
 `0001-01-01` update time; a planned Taipei event located only by `Other`; two freeway live events
-(congestion at an interchange exit, roadworks with blocked lanes); and three authorities.
+(congestion at an interchange exit, roadworks with blocked lanes); and three authorities. Added for 0.12.0: two freeway signs, a freeway sign's live
+message (with `Type` and `Priority`), a Taipei one (text only) and a highway one (a blank `" "`
+message with `MessageStatus: 0`), two freeway gantries, a freeway section's links, a Taipei
+section's WKT shape, and the one-item wrapper `/Section/Freeway/0001` returns for a by-ID call.
 
 The `ship-*.json` files are trimmed 公共運輸-航運 v3 wrappers (2026-10-21), cut to one to three
 items each and not edited. They keep: the per-kind array names (`Ports`, `Routes`,

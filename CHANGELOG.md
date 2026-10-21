@@ -6,6 +6,18 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-10-21
+
+### Added
+
+- The rest of 路況資訊 v2 under `tdx.traffic` (city, `freeway` and `highway`): `cms` and
+  `cmsLive` (changeable message signs and what they show), `etags` (eTag gantries),
+  `sectionLinks` (the basic links of each section) and `sectionShapes` (WKT geometry).
+- By-ID lookups: every traffic list method that has a `…/{ID}` endpoint in the spec now accepts
+  the item's ID before the query (`tdx.traffic.freeway.liveTraffic('0001')`,
+  `tdx.traffic.cctvs('Taipei', 'T000001')`) and returns the same wrapper with that one item;
+  an unknown ID yields an empty list, not an error.
+
 ## [0.11.0] - 2026-10-21
 
 ### Added
@@ -253,7 +265,8 @@ All notable changes to this project are documented here. The format is based on
   - CI runs the dist tests against each NestJS major and smoke-tests the packed tarball on
     Node 20, 22 and 24.
 
-[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.8.0...v0.9.0

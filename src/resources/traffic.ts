@@ -3,13 +3,19 @@ import type {
   TrafficAuthority,
   TrafficCCTV,
   TrafficCCTVs,
+  TrafficCMS,
+  TrafficCMSLive,
+  TrafficCMSLives,
+  TrafficCMSs,
   TrafficCity,
   TrafficCongestionLevel,
   TrafficCongestionLevels,
+  TrafficETag,
   TrafficETagPair,
   TrafficETagPairLive,
   TrafficETagPairLives,
   TrafficETagPairs,
+  TrafficETags,
   TrafficEvent,
   TrafficEvents,
   TrafficLiveEvent,
@@ -19,24 +25,34 @@ import type {
   TrafficNews,
   TrafficNewsList,
   TrafficSection,
+  TrafficSectionLink,
+  TrafficSectionLinks,
+  TrafficSectionShape,
+  TrafficSectionShapes,
   TrafficSections,
   TrafficVD,
   TrafficVDLive,
   TrafficVDLives,
   TrafficVDs,
 } from '../types/traffic.js';
-import { type ObjectRequester, type QueryInput, segment } from './requester.js';
+import { type ObjectRequester, type QueryInput, optional, segment } from './requester.js';
 
 const TRAFFIC = '/v2/Road/Traffic';
 const EVENT = '/v1/Traffic/RoadEvent';
+
+/** An item ID placed before the query, or the query itself. */
+type IdOrQuery<T> = string | QueryInput<T>;
 
 /**
  * Road traffic (路況) endpoints by city, plus the freeways (高速公路局) under `freeway` and the
  * provincial highways (公路局) under `highway`. Every response is a wrapper object whose array is
  * named after the kind (`Sections`, `LiveTraffics`, …); queries apply to the items inside it.
- * Join live traffic to sections on `SectionID`, detectors on `VDID` and eTag pairs on
- * `ETagPairID`. Each kind accepts its own set of cities (see `TrafficCity`); TDX answers an
- * unsupported one with a 400 `TdxApiError` listing the accepted cities.
+ * Every list method also accepts one item's ID before the query (`sections(city, sectionId)`),
+ * which calls TDX's `…/{ID}` endpoint and returns the same wrapper with that item, or an empty
+ * list for an unknown ID. Join live traffic to sections on `SectionID`, detectors on `VDID`,
+ * signs on `CMSID` and eTag pairs on `ETagPairID`. Each kind accepts its own set of cities (see
+ * `TrafficCity`); TDX answers an unsupported one with a 400 `TdxApiError` listing the accepted
+ * cities.
  */
 export class TrafficApi {
   /** National freeways (國道), authority `NFB`. */
@@ -50,23 +66,46 @@ export class TrafficApi {
   }
 
   /**
-   * Published road sections of a city (also NewTaipei). Cached with the static TTL.
-   * `GET /v2/Road/Traffic/Section/City/{City}`
+   * Published road sections of a city (also NewTaipei), or one section by ID. Cached with the
+   * static TTL. `GET /v2/Road/Traffic/Section/City/{City}[/{SectionID}]`
    */
-  sections(city: TrafficCity, query?: QueryInput<TrafficSection>): Promise<TrafficSections> {
-    return this.object(`${TRAFFIC}/Section/${cityOf(city)}`, query, 'static');
+  sections(city: TrafficCity, query?: QueryInput<TrafficSection>): Promise<TrafficSections>;
+  sections(
+    city: TrafficCity,
+    sectionId: string,
+    query?: QueryInput<TrafficSection>,
+  ): Promise<TrafficSections>;
+  sections(
+    city: TrafficCity,
+    idOrQuery?: IdOrQuery<TrafficSection>,
+    query?: QueryInput<TrafficSection>,
+  ): Promise<TrafficSections> {
+    const base = `${TRAFFIC}/Section/${cityOf(city)}`;
+    return this.object(...optional(base, 'sectionId', idOrQuery, query), 'static');
   }
 
   /**
-   * Live speed, travel time and congestion level per section. Available for YilanCounty,
-   * ChanghuaCounty, YunlinCounty, PingtungCounty, Keelung, Taipei, Taichung, Tainan and Taoyuan.
-   * Cached with the real-time TTL. `GET /v2/Road/Traffic/Live/City/{City}`
+   * Live speed, travel time and congestion level per section, or for one section by ID.
+   * Available for YilanCounty, ChanghuaCounty, YunlinCounty, PingtungCounty, Keelung, Taipei,
+   * Taichung, Tainan and Taoyuan. Cached with the real-time TTL.
+   * `GET /v2/Road/Traffic/Live/City/{City}[/{SectionID}]`
    */
   liveTraffic(
     city: TrafficCity,
     query?: QueryInput<TrafficLiveTraffic>,
+  ): Promise<TrafficLiveTraffics>;
+  liveTraffic(
+    city: TrafficCity,
+    sectionId: string,
+    query?: QueryInput<TrafficLiveTraffic>,
+  ): Promise<TrafficLiveTraffics>;
+  liveTraffic(
+    city: TrafficCity,
+    idOrQuery?: IdOrQuery<TrafficLiveTraffic>,
+    query?: QueryInput<TrafficLiveTraffic>,
   ): Promise<TrafficLiveTraffics> {
-    return this.object(`${TRAFFIC}/Live/${cityOf(city)}`, query, 'realtime');
+    const base = `${TRAFFIC}/Live/${cityOf(city)}`;
+    return this.object(...optional(base, 'sectionId', idOrQuery, query), 'realtime');
   }
 
   /**
@@ -81,46 +120,191 @@ export class TrafficApi {
   }
 
   /**
-   * Traffic cameras with stream or snapshot URLs (also NewTaipei). Cached with the static TTL.
-   * `GET /v2/Road/Traffic/CCTV/City/{City}`
+   * Traffic cameras with stream or snapshot URLs (also NewTaipei), or one camera by ID. Cached
+   * with the static TTL. `GET /v2/Road/Traffic/CCTV/City/{City}[/{CCTVID}]`
    */
-  cctvs(city: TrafficCity, query?: QueryInput<TrafficCCTV>): Promise<TrafficCCTVs> {
-    return this.object(`${TRAFFIC}/CCTV/${cityOf(city)}`, query, 'static');
+  cctvs(city: TrafficCity, query?: QueryInput<TrafficCCTV>): Promise<TrafficCCTVs>;
+  cctvs(city: TrafficCity, cctvId: string, query?: QueryInput<TrafficCCTV>): Promise<TrafficCCTVs>;
+  cctvs(
+    city: TrafficCity,
+    idOrQuery?: IdOrQuery<TrafficCCTV>,
+    query?: QueryInput<TrafficCCTV>,
+  ): Promise<TrafficCCTVs> {
+    const base = `${TRAFFIC}/CCTV/${cityOf(city)}`;
+    return this.object(...optional(base, 'cctvId', idOrQuery, query), 'static');
   }
 
   /**
-   * Vehicle detectors and the links they watch. Cached with the static TTL.
-   * `GET /v2/Road/Traffic/VD/City/{City}`
+   * Vehicle detectors and the links they watch, or one detector by ID. Cached with the static
+   * TTL. `GET /v2/Road/Traffic/VD/City/{City}[/{VDID}]`
    */
-  vds(city: TrafficCity, query?: QueryInput<TrafficVD>): Promise<TrafficVDs> {
-    return this.object(`${TRAFFIC}/VD/${cityOf(city)}`, query, 'static');
+  vds(city: TrafficCity, query?: QueryInput<TrafficVD>): Promise<TrafficVDs>;
+  vds(city: TrafficCity, vdId: string, query?: QueryInput<TrafficVD>): Promise<TrafficVDs>;
+  vds(
+    city: TrafficCity,
+    idOrQuery?: IdOrQuery<TrafficVD>,
+    query?: QueryInput<TrafficVD>,
+  ): Promise<TrafficVDs> {
+    const base = `${TRAFFIC}/VD/${cityOf(city)}`;
+    return this.object(...optional(base, 'vdId', idOrQuery, query), 'static');
   }
 
   /**
-   * Live lane speeds, occupancy and volumes per detector. Cached with the real-time TTL.
-   * `GET /v2/Road/Traffic/Live/VD/City/{City}`
+   * Live lane speeds, occupancy and volumes per detector, or for one detector by ID. Cached
+   * with the real-time TTL. `GET /v2/Road/Traffic/Live/VD/City/{City}[/{VDID}]`
    */
-  vdLive(city: TrafficCity, query?: QueryInput<TrafficVDLive>): Promise<TrafficVDLives> {
-    return this.object(`${TRAFFIC}/Live/VD/${cityOf(city)}`, query, 'realtime');
+  vdLive(city: TrafficCity, query?: QueryInput<TrafficVDLive>): Promise<TrafficVDLives>;
+  vdLive(
+    city: TrafficCity,
+    vdId: string,
+    query?: QueryInput<TrafficVDLive>,
+  ): Promise<TrafficVDLives>;
+  vdLive(
+    city: TrafficCity,
+    idOrQuery?: IdOrQuery<TrafficVDLive>,
+    query?: QueryInput<TrafficVDLive>,
+  ): Promise<TrafficVDLives> {
+    const base = `${TRAFFIC}/Live/VD/${cityOf(city)}`;
+    return this.object(...optional(base, 'vdId', idOrQuery, query), 'realtime');
   }
 
   /**
-   * eTag gantry pairs (measured paths). Not available for Taipei; see `TrafficCity`. Cached with
-   * the static TTL. `GET /v2/Road/Traffic/ETagPair/City/{City}`
+   * Changeable message signs (資訊可變標誌) of a city (also NewTaipei), or one sign by ID.
+   * Cached with the static TTL. `GET /v2/Road/Traffic/CMS/City/{City}[/{CMSID}]`
    */
-  etagPairs(city: TrafficCity, query?: QueryInput<TrafficETagPair>): Promise<TrafficETagPairs> {
-    return this.object(`${TRAFFIC}/ETagPair/${cityOf(city)}`, query, 'static');
+  cms(city: TrafficCity, query?: QueryInput<TrafficCMS>): Promise<TrafficCMSs>;
+  cms(city: TrafficCity, cmsId: string, query?: QueryInput<TrafficCMS>): Promise<TrafficCMSs>;
+  cms(
+    city: TrafficCity,
+    idOrQuery?: IdOrQuery<TrafficCMS>,
+    query?: QueryInput<TrafficCMS>,
+  ): Promise<TrafficCMSs> {
+    const base = `${TRAFFIC}/CMS/${cityOf(city)}`;
+    return this.object(...optional(base, 'cmsId', idOrQuery, query), 'static');
   }
 
   /**
-   * Live travel times between gantry pairs. Same cities as `etagPairs`. Cached with the
-   * real-time TTL. `GET /v2/Road/Traffic/Live/ETag/City/{City}`
+   * The messages the signs currently show, or one sign's by ID. Cached with the real-time TTL.
+   * `GET /v2/Road/Traffic/Live/CMS/City/{City}[/{CMSID}]`
+   */
+  cmsLive(city: TrafficCity, query?: QueryInput<TrafficCMSLive>): Promise<TrafficCMSLives>;
+  cmsLive(
+    city: TrafficCity,
+    cmsId: string,
+    query?: QueryInput<TrafficCMSLive>,
+  ): Promise<TrafficCMSLives>;
+  cmsLive(
+    city: TrafficCity,
+    idOrQuery?: IdOrQuery<TrafficCMSLive>,
+    query?: QueryInput<TrafficCMSLive>,
+  ): Promise<TrafficCMSLives> {
+    const base = `${TRAFFIC}/Live/CMS/${cityOf(city)}`;
+    return this.object(...optional(base, 'cmsId', idOrQuery, query), 'realtime');
+  }
+
+  /**
+   * eTag gantries (偵測站), or one by ID. Not available for Taipei; see `TrafficCity`. Cached
+   * with the static TTL. `GET /v2/Road/Traffic/ETag/City/{City}[/{ETagGantryID}]`
+   */
+  etags(city: TrafficCity, query?: QueryInput<TrafficETag>): Promise<TrafficETags>;
+  etags(
+    city: TrafficCity,
+    gantryId: string,
+    query?: QueryInput<TrafficETag>,
+  ): Promise<TrafficETags>;
+  etags(
+    city: TrafficCity,
+    idOrQuery?: IdOrQuery<TrafficETag>,
+    query?: QueryInput<TrafficETag>,
+  ): Promise<TrafficETags> {
+    const base = `${TRAFFIC}/ETag/${cityOf(city)}`;
+    return this.object(...optional(base, 'gantryId', idOrQuery, query), 'static');
+  }
+
+  /**
+   * eTag gantry pairs (measured paths), or one by ID. Not available for Taipei; see
+   * `TrafficCity`. Cached with the static TTL.
+   * `GET /v2/Road/Traffic/ETagPair/City/{City}[/{ETagPairID}]`
+   */
+  etagPairs(city: TrafficCity, query?: QueryInput<TrafficETagPair>): Promise<TrafficETagPairs>;
+  etagPairs(
+    city: TrafficCity,
+    pairId: string,
+    query?: QueryInput<TrafficETagPair>,
+  ): Promise<TrafficETagPairs>;
+  etagPairs(
+    city: TrafficCity,
+    idOrQuery?: IdOrQuery<TrafficETagPair>,
+    query?: QueryInput<TrafficETagPair>,
+  ): Promise<TrafficETagPairs> {
+    const base = `${TRAFFIC}/ETagPair/${cityOf(city)}`;
+    return this.object(...optional(base, 'pairId', idOrQuery, query), 'static');
+  }
+
+  /**
+   * Live travel times between gantry pairs, or for one pair by ID. Same cities as `etagPairs`.
+   * Cached with the real-time TTL. `GET /v2/Road/Traffic/Live/ETag/City/{City}[/{ETagPairID}]`
    */
   etagPairLive(
     city: TrafficCity,
     query?: QueryInput<TrafficETagPairLive>,
+  ): Promise<TrafficETagPairLives>;
+  etagPairLive(
+    city: TrafficCity,
+    pairId: string,
+    query?: QueryInput<TrafficETagPairLive>,
+  ): Promise<TrafficETagPairLives>;
+  etagPairLive(
+    city: TrafficCity,
+    idOrQuery?: IdOrQuery<TrafficETagPairLive>,
+    query?: QueryInput<TrafficETagPairLive>,
   ): Promise<TrafficETagPairLives> {
-    return this.object(`${TRAFFIC}/Live/ETag/${cityOf(city)}`, query, 'realtime');
+    const base = `${TRAFFIC}/Live/ETag/${cityOf(city)}`;
+    return this.object(...optional(base, 'pairId', idOrQuery, query), 'realtime');
+  }
+
+  /**
+   * The basic links (基礎路段) each published section is made of, or one section's by ID.
+   * Cached with the static TTL. `GET /v2/Road/Traffic/SectionLink/City/{City}[/{SectionID}]`
+   */
+  sectionLinks(
+    city: TrafficCity,
+    query?: QueryInput<TrafficSectionLink>,
+  ): Promise<TrafficSectionLinks>;
+  sectionLinks(
+    city: TrafficCity,
+    sectionId: string,
+    query?: QueryInput<TrafficSectionLink>,
+  ): Promise<TrafficSectionLinks>;
+  sectionLinks(
+    city: TrafficCity,
+    idOrQuery?: IdOrQuery<TrafficSectionLink>,
+    query?: QueryInput<TrafficSectionLink>,
+  ): Promise<TrafficSectionLinks> {
+    const base = `${TRAFFIC}/SectionLink/${cityOf(city)}`;
+    return this.object(...optional(base, 'sectionId', idOrQuery, query), 'static');
+  }
+
+  /**
+   * Section geometries as WKT line strings, or one section's by ID. Cached with the static TTL.
+   * `GET /v2/Road/Traffic/SectionShape/City/{City}[/{SectionID}]`
+   */
+  sectionShapes(
+    city: TrafficCity,
+    query?: QueryInput<TrafficSectionShape>,
+  ): Promise<TrafficSectionShapes>;
+  sectionShapes(
+    city: TrafficCity,
+    sectionId: string,
+    query?: QueryInput<TrafficSectionShape>,
+  ): Promise<TrafficSectionShapes>;
+  sectionShapes(
+    city: TrafficCity,
+    idOrQuery?: IdOrQuery<TrafficSectionShape>,
+    query?: QueryInput<TrafficSectionShape>,
+  ): Promise<TrafficSectionShapes> {
+    const base = `${TRAFFIC}/SectionShape/${cityOf(city)}`;
+    return this.object(...optional(base, 'sectionId', idOrQuery, query), 'static');
   }
 
   /**
@@ -159,7 +343,8 @@ export class TrafficApi {
 
 /**
  * Road traffic for one road network: the freeways (`Freeway`, 高速公路局) or the provincial
- * highways (`Highway`, 公路局). The methods mirror `TrafficApi` without the city argument.
+ * highways (`Highway`, 公路局). The methods mirror `TrafficApi` without the city argument, and
+ * likewise accept one item's ID before the query.
  */
 export class TrafficRoadApi {
   constructor(
@@ -168,19 +353,34 @@ export class TrafficRoadApi {
   ) {}
 
   /**
-   * Published road sections.
-   * Cached with the static TTL. `GET /v2/Road/Traffic/Section/{Freeway|Highway}`
+   * Published road sections, or one by ID. Cached with the static TTL.
+   * `GET /v2/Road/Traffic/Section/{Freeway|Highway}[/{SectionID}]`
    */
-  sections(query?: QueryInput<TrafficSection>): Promise<TrafficSections> {
-    return this.object(`${TRAFFIC}/Section/${this.scope}`, query, 'static');
+  sections(query?: QueryInput<TrafficSection>): Promise<TrafficSections>;
+  sections(sectionId: string, query?: QueryInput<TrafficSection>): Promise<TrafficSections>;
+  sections(
+    idOrQuery?: IdOrQuery<TrafficSection>,
+    query?: QueryInput<TrafficSection>,
+  ): Promise<TrafficSections> {
+    const base = `${TRAFFIC}/Section/${this.scope}`;
+    return this.object(...optional(base, 'sectionId', idOrQuery, query), 'static');
   }
 
   /**
-   * Live speed, travel time and congestion level per section. Cached with the real-time TTL.
-   * `GET /v2/Road/Traffic/Live/{Freeway|Highway}`
+   * Live speed, travel time and congestion level per section, or for one section by ID.
+   * Cached with the real-time TTL. `GET /v2/Road/Traffic/Live/{Freeway|Highway}[/{SectionID}]`
    */
-  liveTraffic(query?: QueryInput<TrafficLiveTraffic>): Promise<TrafficLiveTraffics> {
-    return this.object(`${TRAFFIC}/Live/${this.scope}`, query, 'realtime');
+  liveTraffic(query?: QueryInput<TrafficLiveTraffic>): Promise<TrafficLiveTraffics>;
+  liveTraffic(
+    sectionId: string,
+    query?: QueryInput<TrafficLiveTraffic>,
+  ): Promise<TrafficLiveTraffics>;
+  liveTraffic(
+    idOrQuery?: IdOrQuery<TrafficLiveTraffic>,
+    query?: QueryInput<TrafficLiveTraffic>,
+  ): Promise<TrafficLiveTraffics> {
+    const base = `${TRAFFIC}/Live/${this.scope}`;
+    return this.object(...optional(base, 'sectionId', idOrQuery, query), 'realtime');
   }
 
   /**
@@ -191,38 +391,147 @@ export class TrafficRoadApi {
     return this.object(`${TRAFFIC}/CongestionLevel/${this.scope}`, query, 'static');
   }
 
-  /** Traffic cameras. Cached with the static TTL. `GET /v2/Road/Traffic/CCTV/{Freeway|Highway}` */
-  cctvs(query?: QueryInput<TrafficCCTV>): Promise<TrafficCCTVs> {
-    return this.object(`${TRAFFIC}/CCTV/${this.scope}`, query, 'static');
-  }
-
-  /** Vehicle detectors. Cached with the static TTL. `GET /v2/Road/Traffic/VD/{Freeway|Highway}` */
-  vds(query?: QueryInput<TrafficVD>): Promise<TrafficVDs> {
-    return this.object(`${TRAFFIC}/VD/${this.scope}`, query, 'static');
+  /**
+   * Traffic cameras, or one by ID. Cached with the static TTL.
+   * `GET /v2/Road/Traffic/CCTV/{Freeway|Highway}[/{CCTVID}]`
+   */
+  cctvs(query?: QueryInput<TrafficCCTV>): Promise<TrafficCCTVs>;
+  cctvs(cctvId: string, query?: QueryInput<TrafficCCTV>): Promise<TrafficCCTVs>;
+  cctvs(
+    idOrQuery?: IdOrQuery<TrafficCCTV>,
+    query?: QueryInput<TrafficCCTV>,
+  ): Promise<TrafficCCTVs> {
+    const base = `${TRAFFIC}/CCTV/${this.scope}`;
+    return this.object(...optional(base, 'cctvId', idOrQuery, query), 'static');
   }
 
   /**
-   * Live lane speeds, occupancy and volumes per detector. Cached with the real-time TTL.
-   * `GET /v2/Road/Traffic/Live/VD/{Freeway|Highway}`
+   * Vehicle detectors, or one by ID. Cached with the static TTL.
+   * `GET /v2/Road/Traffic/VD/{Freeway|Highway}[/{VDID}]`
    */
-  vdLive(query?: QueryInput<TrafficVDLive>): Promise<TrafficVDLives> {
-    return this.object(`${TRAFFIC}/Live/VD/${this.scope}`, query, 'realtime');
+  vds(query?: QueryInput<TrafficVD>): Promise<TrafficVDs>;
+  vds(vdId: string, query?: QueryInput<TrafficVD>): Promise<TrafficVDs>;
+  vds(idOrQuery?: IdOrQuery<TrafficVD>, query?: QueryInput<TrafficVD>): Promise<TrafficVDs> {
+    const base = `${TRAFFIC}/VD/${this.scope}`;
+    return this.object(...optional(base, 'vdId', idOrQuery, query), 'static');
   }
 
   /**
-   * eTag gantry pairs.
-   * Cached with the static TTL. `GET /v2/Road/Traffic/ETagPair/{Freeway|Highway}`
+   * Live lane speeds, occupancy and volumes per detector, or for one detector by ID. Cached
+   * with the real-time TTL. `GET /v2/Road/Traffic/Live/VD/{Freeway|Highway}[/{VDID}]`
    */
-  etagPairs(query?: QueryInput<TrafficETagPair>): Promise<TrafficETagPairs> {
-    return this.object(`${TRAFFIC}/ETagPair/${this.scope}`, query, 'static');
+  vdLive(query?: QueryInput<TrafficVDLive>): Promise<TrafficVDLives>;
+  vdLive(vdId: string, query?: QueryInput<TrafficVDLive>): Promise<TrafficVDLives>;
+  vdLive(
+    idOrQuery?: IdOrQuery<TrafficVDLive>,
+    query?: QueryInput<TrafficVDLive>,
+  ): Promise<TrafficVDLives> {
+    const base = `${TRAFFIC}/Live/VD/${this.scope}`;
+    return this.object(...optional(base, 'vdId', idOrQuery, query), 'realtime');
   }
 
   /**
-   * Live travel times between gantry pairs. Cached with the real-time TTL.
-   * `GET /v2/Road/Traffic/Live/ETag/{Freeway|Highway}`
+   * Changeable message signs, or one by ID. Cached with the static TTL.
+   * `GET /v2/Road/Traffic/CMS/{Freeway|Highway}[/{CMSID}]`
    */
-  etagPairLive(query?: QueryInput<TrafficETagPairLive>): Promise<TrafficETagPairLives> {
-    return this.object(`${TRAFFIC}/Live/ETag/${this.scope}`, query, 'realtime');
+  cms(query?: QueryInput<TrafficCMS>): Promise<TrafficCMSs>;
+  cms(cmsId: string, query?: QueryInput<TrafficCMS>): Promise<TrafficCMSs>;
+  cms(idOrQuery?: IdOrQuery<TrafficCMS>, query?: QueryInput<TrafficCMS>): Promise<TrafficCMSs> {
+    const base = `${TRAFFIC}/CMS/${this.scope}`;
+    return this.object(...optional(base, 'cmsId', idOrQuery, query), 'static');
+  }
+
+  /**
+   * The messages the signs currently show, or one sign's by ID. Cached with the real-time TTL.
+   * `GET /v2/Road/Traffic/Live/CMS/{Freeway|Highway}[/{CMSID}]`
+   */
+  cmsLive(query?: QueryInput<TrafficCMSLive>): Promise<TrafficCMSLives>;
+  cmsLive(cmsId: string, query?: QueryInput<TrafficCMSLive>): Promise<TrafficCMSLives>;
+  cmsLive(
+    idOrQuery?: IdOrQuery<TrafficCMSLive>,
+    query?: QueryInput<TrafficCMSLive>,
+  ): Promise<TrafficCMSLives> {
+    const base = `${TRAFFIC}/Live/CMS/${this.scope}`;
+    return this.object(...optional(base, 'cmsId', idOrQuery, query), 'realtime');
+  }
+
+  /**
+   * eTag gantries, or one by ID. Cached with the static TTL.
+   * `GET /v2/Road/Traffic/ETag/{Freeway|Highway}[/{ETagGantryID}]`
+   */
+  etags(query?: QueryInput<TrafficETag>): Promise<TrafficETags>;
+  etags(gantryId: string, query?: QueryInput<TrafficETag>): Promise<TrafficETags>;
+  etags(
+    idOrQuery?: IdOrQuery<TrafficETag>,
+    query?: QueryInput<TrafficETag>,
+  ): Promise<TrafficETags> {
+    const base = `${TRAFFIC}/ETag/${this.scope}`;
+    return this.object(...optional(base, 'gantryId', idOrQuery, query), 'static');
+  }
+
+  /**
+   * eTag gantry pairs, or one by ID. Cached with the static TTL.
+   * `GET /v2/Road/Traffic/ETagPair/{Freeway|Highway}[/{ETagPairID}]`
+   */
+  etagPairs(query?: QueryInput<TrafficETagPair>): Promise<TrafficETagPairs>;
+  etagPairs(pairId: string, query?: QueryInput<TrafficETagPair>): Promise<TrafficETagPairs>;
+  etagPairs(
+    idOrQuery?: IdOrQuery<TrafficETagPair>,
+    query?: QueryInput<TrafficETagPair>,
+  ): Promise<TrafficETagPairs> {
+    const base = `${TRAFFIC}/ETagPair/${this.scope}`;
+    return this.object(...optional(base, 'pairId', idOrQuery, query), 'static');
+  }
+
+  /**
+   * Live travel times between gantry pairs, or for one pair by ID. Cached with the real-time
+   * TTL. `GET /v2/Road/Traffic/Live/ETag/{Freeway|Highway}[/{ETagPairID}]`
+   */
+  etagPairLive(query?: QueryInput<TrafficETagPairLive>): Promise<TrafficETagPairLives>;
+  etagPairLive(
+    pairId: string,
+    query?: QueryInput<TrafficETagPairLive>,
+  ): Promise<TrafficETagPairLives>;
+  etagPairLive(
+    idOrQuery?: IdOrQuery<TrafficETagPairLive>,
+    query?: QueryInput<TrafficETagPairLive>,
+  ): Promise<TrafficETagPairLives> {
+    const base = `${TRAFFIC}/Live/ETag/${this.scope}`;
+    return this.object(...optional(base, 'pairId', idOrQuery, query), 'realtime');
+  }
+
+  /**
+   * The basic links each published section is made of, or one section's by ID. Cached with
+   * the static TTL. `GET /v2/Road/Traffic/SectionLink/{Freeway|Highway}[/{SectionID}]`
+   */
+  sectionLinks(query?: QueryInput<TrafficSectionLink>): Promise<TrafficSectionLinks>;
+  sectionLinks(
+    sectionId: string,
+    query?: QueryInput<TrafficSectionLink>,
+  ): Promise<TrafficSectionLinks>;
+  sectionLinks(
+    idOrQuery?: IdOrQuery<TrafficSectionLink>,
+    query?: QueryInput<TrafficSectionLink>,
+  ): Promise<TrafficSectionLinks> {
+    const base = `${TRAFFIC}/SectionLink/${this.scope}`;
+    return this.object(...optional(base, 'sectionId', idOrQuery, query), 'static');
+  }
+
+  /**
+   * Section geometries as WKT line strings, or one section's by ID. Cached with the static TTL.
+   * `GET /v2/Road/Traffic/SectionShape/{Freeway|Highway}[/{SectionID}]`
+   */
+  sectionShapes(query?: QueryInput<TrafficSectionShape>): Promise<TrafficSectionShapes>;
+  sectionShapes(
+    sectionId: string,
+    query?: QueryInput<TrafficSectionShape>,
+  ): Promise<TrafficSectionShapes>;
+  sectionShapes(
+    idOrQuery?: IdOrQuery<TrafficSectionShape>,
+    query?: QueryInput<TrafficSectionShape>,
+  ): Promise<TrafficSectionShapes> {
+    const base = `${TRAFFIC}/SectionShape/${this.scope}`;
+    return this.object(...optional(base, 'sectionId', idOrQuery, query), 'static');
   }
 
   /**

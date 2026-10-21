@@ -1,0 +1,22 @@
+{
+  "UpdateTime": "2026-10-21T14:35:26+08:00",
+  "UpdateInterval": 60,
+  "SrcUpdateTime": "2026-10-21T14:32:08+08:00",
+  "SrcUpdateInterval": 120,
+  "AuthorityCode": "THB",
+  "LinkVersion": "24.02.1",
+  "CMSLives": [
+    {
+      "CMSID": "CMS-37-0090-431-011",
+      "SubAuthorityCode": "THB-3R",
+      "MessageStatus": 0,
+      "Messages": [
+        {
+          "Text": " "
+        }
+      ],
+      "Status": 0,
+      "DataCollectTime": "2026-10-21T14:34:10+08:00"
+    }
+  ]
+}

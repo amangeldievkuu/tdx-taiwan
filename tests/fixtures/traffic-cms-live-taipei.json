@@ -1,0 +1,20 @@
+{
+  "UpdateTime": "2026-10-21T14:32:26+08:00",
+  "UpdateInterval": 60,
+  "SrcUpdateTime": "2026-10-21T14:30:05+08:00",
+  "SrcUpdateInterval": 120,
+  "AuthorityCode": "TPE",
+  "CMSLives": [
+    {
+      "CMSID": "X0121C0",
+      "MessageStatus": 1,
+      "Messages": [
+        {
+          "Text": "經路口慢看停"
+        }
+      ],
+      "Status": 0,
+      "DataCollectTime": "2026-10-21T14:30:00+08:00"
+    }
+  ]
+}

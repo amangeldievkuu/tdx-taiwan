@@ -195,14 +195,19 @@ describe('TdxClient response cache', () => {
       await tdx.traffic.events('Taipei');
       await tdx.traffic.liveEvents('Taipei');
       await tdx.traffic.authorities();
+      await tdx.traffic.cms('Taipei');
+      await tdx.traffic.cmsLive('Taipei');
+      await tdx.traffic.etags('NewTaipei');
+      await tdx.traffic.sectionLinks('Taipei');
+      await tdx.traffic.sectionShapes('Taipei');
       await tdx.traffic.freeway.liveTraffic();
-      await tdx.traffic.highway.sections();
+      await tdx.traffic.highway.sections('0001');
     };
     await fetchAll();
     vi.advanceTimersByTime(15_000);
     await fetchAll();
 
-    expect(apiUrls).toHaveLength(21); // 14 calls + the 7 real-time ones repeated
+    expect(apiUrls).toHaveLength(27); // 19 calls + the 8 real-time ones repeated
   });
 
   it('caches ship ports, routes, fares, schedules and authorities as static, boards, positions, seats, alerts and news as real-time', async () => {

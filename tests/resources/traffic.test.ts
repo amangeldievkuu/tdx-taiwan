@@ -2,14 +2,19 @@ import { describe, expect, expectTypeOf, it } from 'vitest';
 import {
   type TrafficAuthorities,
   type TrafficCCTVs,
+  type TrafficCMSLives,
+  type TrafficCMSs,
   type TrafficCongestionLevels,
   type TrafficETagPairLives,
   type TrafficETagPairs,
+  type TrafficETags,
   type TrafficEvents,
   type TrafficLiveEvents,
   type TrafficLiveTraffic,
   type TrafficLiveTraffics,
   type TrafficNewsList,
+  type TrafficSectionLinks,
+  type TrafficSectionShapes,
   type TrafficSections,
   type TrafficVDLives,
   type TrafficVDs,
@@ -35,6 +40,16 @@ const newsFixture = loadFixture('traffic-news-freeway.json') as TrafficNewsList;
 const eventFixture = loadFixture('traffic-event-taipei.json') as TrafficEvents;
 const liveEventFixture = loadFixture('traffic-live-event-freeway.json') as TrafficLiveEvents;
 const authorityFixture = loadFixture('traffic-authority.json') as TrafficAuthorities;
+const cmsFixture = loadFixture('traffic-cms-freeway.json') as TrafficCMSs;
+const cmsLiveFreewayFixture = loadFixture('traffic-cms-live-freeway.json') as TrafficCMSLives;
+const cmsLiveTaipeiFixture = loadFixture('traffic-cms-live-taipei.json') as TrafficCMSLives;
+const cmsLiveHighwayFixture = loadFixture('traffic-cms-live-highway.json') as TrafficCMSLives;
+const etagFixture = loadFixture('traffic-etag-freeway.json') as TrafficETags;
+const sectionLinkFixture = loadFixture('traffic-section-link-freeway.json') as TrafficSectionLinks;
+const sectionShapeFixture = loadFixture(
+  'traffic-section-shape-taipei.json',
+) as TrafficSectionShapes;
+const sectionByIdFixture = loadFixture('traffic-section-by-id-freeway.json') as TrafficSections;
 
 /** Path segment of each 路況資訊 v2 kind, in method order. */
 const KINDS = [
@@ -47,7 +62,14 @@ const KINDS = [
   'ETagPair',
   'Live/ETag',
   'Live/News',
+  'CMS',
+  'Live/CMS',
+  'ETag',
+  'SectionLink',
+  'SectionShape',
 ];
+/** Kinds whose city endpoint rejects Taipei in live data; the tests use NewTaipei for them. */
+const NEW_TAIPEI_KINDS = new Set(['ETagPair', 'Live/ETag', 'ETag']);
 
 describe('tdx.traffic paths', () => {
   it('requests each city endpoint as JSON', async () => {
@@ -62,11 +84,16 @@ describe('tdx.traffic paths', () => {
     await tdx.traffic.etagPairs('NewTaipei');
     await tdx.traffic.etagPairLive('NewTaipei');
     await tdx.traffic.news('Taipei');
+    await tdx.traffic.cms('Taipei');
+    await tdx.traffic.cmsLive('Taipei');
+    await tdx.traffic.etags('NewTaipei');
+    await tdx.traffic.sectionLinks('Taipei');
+    await tdx.traffic.sectionShapes('Taipei');
 
     expect(apiUrls).toEqual(
       KINDS.map(
-        (kind, i) =>
-          `${API}/v2/Road/Traffic/${kind}/City/${i === 6 || i === 7 ? 'NewTaipei' : 'Taipei'}?$format=JSON`,
+        (kind) =>
+          `${API}/v2/Road/Traffic/${kind}/City/${NEW_TAIPEI_KINDS.has(kind) ? 'NewTaipei' : 'Taipei'}?$format=JSON`,
       ),
     );
   });
@@ -84,6 +111,11 @@ describe('tdx.traffic paths', () => {
       await scope.etagPairs();
       await scope.etagPairLive();
       await scope.news();
+      await scope.cms();
+      await scope.cmsLive();
+      await scope.etags();
+      await scope.sectionLinks();
+      await scope.sectionShapes();
     }
 
     expect(apiUrls).toEqual(
@@ -114,6 +146,34 @@ describe('tdx.traffic paths', () => {
     expect('events' in tdx.traffic.freeway).toBe(false);
   });
 
+  it('requests one item by ID before the query, and treats a first object as the query', async () => {
+    const { tdx, apiUrls } = clientWithResponse({});
+
+    await tdx.traffic.sections('Taipei', 'L_2000100000020A');
+    await tdx.traffic.cctvs('Taipei', 'T000001', { select: ['CCTVID'] });
+    await tdx.traffic.cms('Taipei', 'X0121C0');
+    await tdx.traffic.etags('NewTaipei', '01F0005S');
+    await tdx.traffic.sectionShapes('Taipei', 'L_2000100000020A');
+    await tdx.traffic.freeway.liveTraffic('0001');
+    await tdx.traffic.freeway.etagPairLive('01F0005S-01F0017S');
+    await tdx.traffic.highway.vdLive('VD-11-0020-002-002', { top: 1 });
+    await tdx.traffic.sections('Taipei', { top: 1 });
+    await tdx.traffic.freeway.sections({ top: 1 });
+
+    expect(apiUrls).toEqual([
+      `${API}/v2/Road/Traffic/Section/City/Taipei/L_2000100000020A?$format=JSON`,
+      `${API}/v2/Road/Traffic/CCTV/City/Taipei/T000001?$select=CCTVID&$format=JSON`,
+      `${API}/v2/Road/Traffic/CMS/City/Taipei/X0121C0?$format=JSON`,
+      `${API}/v2/Road/Traffic/ETag/City/NewTaipei/01F0005S?$format=JSON`,
+      `${API}/v2/Road/Traffic/SectionShape/City/Taipei/L_2000100000020A?$format=JSON`,
+      `${API}/v2/Road/Traffic/Live/Freeway/0001?$format=JSON`,
+      `${API}/v2/Road/Traffic/Live/ETag/Freeway/01F0005S-01F0017S?$format=JSON`,
+      `${API}/v2/Road/Traffic/Live/VD/Highway/VD-11-0020-002-002?$top=1&$format=JSON`,
+      `${API}/v2/Road/Traffic/Section/City/Taipei?$top=1&$format=JSON`,
+      `${API}/v2/Road/Traffic/Section/Freeway?$top=1&$format=JSON`,
+    ]);
+  });
+
   it('requests the authority list', async () => {
     const { tdx, apiUrls } = clientWithResponse({});
 
@@ -141,6 +201,8 @@ describe('tdx.traffic paths', () => {
     const { tdx } = clientWithResponse({});
 
     expect(() => tdx.traffic.sections('')).toThrow(TypeError);
+    expect(() => tdx.traffic.sections('Taipei', ' ')).toThrow(TypeError);
+    expect(() => tdx.traffic.freeway.cms('')).toThrow(TypeError);
     expect(() => tdx.traffic.etagPairs('  ')).toThrow(TypeError);
     expect(() => tdx.traffic.liveEvents('')).toThrow(TypeError);
   });
@@ -288,6 +350,67 @@ describe('tdx.traffic parsing', () => {
     ).toEqual([
       ['壅塞事件', 3, '國道一號', '林口', 0, '-1'],
       ['施工事件', 2, '國道一號', undefined, 1, '2,RS'],
+    ]);
+  });
+
+  it('parses signs and their live messages, including blank highway signs', async () => {
+    const signs = await clientWithResponse(cmsFixture).tdx.traffic.freeway.cms();
+    const freeway = await clientWithResponse(cmsLiveFreewayFixture).tdx.traffic.freeway.cmsLive();
+    const taipei = await clientWithResponse(cmsLiveTaipeiFixture).tdx.traffic.cmsLive('Taipei');
+    const highway = await clientWithResponse(cmsLiveHighwayFixture).tdx.traffic.highway.cmsLive();
+    expectTypeOf(signs).toEqualTypeOf<TrafficCMSs>();
+    expectTypeOf(freeway).toEqualTypeOf<TrafficCMSLives>();
+
+    expect(signs.CMSs.map((c) => [c.CMSID, c.RoadName, c.LocationMile])).toEqual([
+      ['CMS-N1-S-0.000-M', '國道1號', '0K+000'],
+      [expect.any(String), '國道1號', expect.any(String)],
+    ]);
+    expect(freeway.CMSLives[0]).toMatchObject({ CMSID: 'CMS-N1-S-0.000-M', MessageStatus: 1 });
+    expect(freeway.CMSLives[0]?.Messages[0]).toEqual({
+      Text: '平面10-15K內線移動施工請小心駕駛',
+      Type: 7,
+      Priority: 51,
+    });
+    expect(taipei.CMSLives[0]?.Messages).toEqual([{ Text: '經路口慢看停' }]);
+    expect([highway.CMSLives[0]?.MessageStatus, highway.CMSLives[0]?.Messages[0]?.Text]).toEqual([
+      0,
+      ' ',
+    ]);
+  });
+
+  it('parses gantries, section links and section shapes', async () => {
+    const gantries = await clientWithResponse(etagFixture).tdx.traffic.freeway.etags();
+    const links = await clientWithResponse(sectionLinkFixture).tdx.traffic.freeway.sectionLinks();
+    const shapes =
+      await clientWithResponse(sectionShapeFixture).tdx.traffic.sectionShapes('Taipei');
+    expectTypeOf(gantries).toEqualTypeOf<TrafficETags>();
+    expectTypeOf(links).toEqualTypeOf<TrafficSectionLinks>();
+    expectTypeOf(shapes).toEqualTypeOf<TrafficSectionShapes>();
+
+    expect(gantries.ETags[0]).toMatchObject({
+      ETagGantryID: '01F0005S',
+      LocationType: 4,
+      RoadSection: { Start: '基隆端', End: '基隆' },
+    });
+    expect(links.SectionLinks[0]?.SectionID).toBe('0001');
+    expect(links.SectionLinks[0]?.LinkIDs?.map((l) => l.LinkID)).toEqual([
+      '0000100000000C',
+      '0000100000040C',
+      '0000100000080C',
+      '0000100000110C',
+    ]);
+    expect(shapes.SectionShapes[0]?.SectionID).toBe('L_2000100000020A');
+    expect(shapes.SectionShapes[0]?.Geometry).toMatch(/^LINESTRING\(/);
+  });
+
+  it('parses a by-ID wrapper with its single item', async () => {
+    const { tdx } = clientWithResponse(sectionByIdFixture);
+
+    const result = await tdx.traffic.freeway.sections('0001');
+    expectTypeOf(result).toEqualTypeOf<TrafficSections>();
+
+    expect(result.Sections.map((s) => [s.SectionID, s.SectionName])).toEqual([
+      ['0001', '國道1號(基隆端到基隆)'],
     ]);
   });
 
