@@ -3,11 +3,20 @@ import {
   type MetroAlert,
   type MetroAlerts,
   type MetroFirstLastTimetable,
+  type MetroFrequency,
   type MetroLine,
+  type MetroLineTransfer,
   type MetroLiveBoard,
+  type MetroNewsList,
   type MetroODFare,
+  type MetroRoute,
   type MetroStation,
+  type MetroStationExit,
+  type MetroStationFacility,
   type MetroStationOfLine,
+  type MetroStationOfRoute,
+  type MetroStationTimetable,
+  type MetroStationTransfers,
   TdxApiError,
   odata,
   query,
@@ -23,6 +32,21 @@ const firstLastFixture = loadFixture(
 ) as MetroFirstLastTimetable[];
 const odFareFixture = loadFixture('metro-od-fare.json') as MetroODFare[];
 const alertsFixture = loadFixture('metro-alert-trtc.json') as MetroAlerts;
+const exitsFixture = loadFixture('metro-station-exit-trtc.json') as MetroStationExit[];
+const facilitiesFixture = loadFixture('metro-station-facility-trtc.json') as MetroStationFacility[];
+const lineTransfersFixture = loadFixture('metro-line-transfer-trtc.json') as MetroLineTransfer[];
+const stationTransfersFixture = loadFixture(
+  'metro-station-transfer-trtc.json',
+) as MetroStationTransfers;
+const routesFixture = loadFixture('metro-route-trtc.json') as MetroRoute[];
+const stationsOfRouteFixture = loadFixture(
+  'metro-station-of-route-trtc.json',
+) as MetroStationOfRoute[];
+const frequencyFixture = loadFixture('metro-frequency-trtc.json') as MetroFrequency[];
+const stationTimetableFixture = loadFixture(
+  'metro-station-timetable-trtc.json',
+) as MetroStationTimetable[];
+const newsFixture = loadFixture('metro-news-trtc.json') as MetroNewsList;
 
 describe('tdx.metro paths', () => {
   it('requests each endpoint for a rail system as JSON', async () => {
@@ -212,5 +236,121 @@ describe('tdx.metro.alerts', () => {
       name: 'TdxApiError',
       status: 400,
     });
+  });
+});
+
+describe('tdx.metro station info, routes, frequency, timetables, news and positions', () => {
+  it('requests each list endpoint as JSON', async () => {
+    const { tdx, apiUrls } = clientWithResponse([]);
+
+    await tdx.metro.stationExits('TRTC');
+    await tdx.metro.stationFacilities('TRTC');
+    await tdx.metro.lineTransfers('TRTC');
+    await tdx.metro.routes('TRTC');
+    await tdx.metro.stationsOfRoute('TRTC');
+    await tdx.metro.frequency('TRTC');
+    await tdx.metro.stationTimetable('TRTC', { filter: "StationID eq 'BL01'" });
+
+    expect(apiUrls).toEqual([
+      ...[
+        'StationExit',
+        'StationFacility',
+        'LineTransfer',
+        'Route',
+        'StationOfRoute',
+        'Frequency',
+      ].map((kind) => `${API}/v2/Rail/Metro/${kind}/TRTC?$format=JSON`),
+      `${API}/v2/Rail/Metro/StationTimeTable/TRTC?$filter=StationID%20eq%20'BL01'&$format=JSON`,
+    ]);
+  });
+
+  it('requests the wrapper endpoints as JSON and validates the system', async () => {
+    const { tdx, apiUrls } = clientWithResponse({});
+
+    await tdx.metro.stationTransfers('TRTC');
+    await tdx.metro.news('TRTC', { top: 2 });
+    await tdx.metro.livePosition('KLRT');
+
+    expect(apiUrls).toEqual([
+      `${API}/v2/Rail/Metro/StationTransfer/TRTC?$format=JSON`,
+      `${API}/v2/Rail/Metro/News/TRTC?$top=2&$format=JSON`,
+      `${API}/v2/Rail/Metro/LivePosition/KLRT?$format=JSON`,
+    ]);
+    expect(() => tdx.metro.stationExits('')).toThrow(TypeError);
+    expect(() => tdx.metro.news(' ')).toThrow(TypeError);
+    await expect(clientWithResponse([]).tdx.metro.news('TRTC')).rejects.toBeInstanceOf(TdxApiError);
+  });
+
+  it('parses exits, facilities and line transfers', async () => {
+    const exits = await clientWithResponse(exitsFixture).tdx.metro.stationExits('TRTC');
+    const facilities =
+      await clientWithResponse(facilitiesFixture).tdx.metro.stationFacilities('TRTC');
+    const transfers =
+      await clientWithResponse(lineTransfersFixture).tdx.metro.lineTransfers('TRTC');
+    expectTypeOf(exits).toEqualTypeOf<MetroStationExit[]>();
+    expectTypeOf(facilities).toEqualTypeOf<MetroStationFacility[]>();
+    expectTypeOf(transfers).toEqualTypeOf<MetroLineTransfer[]>();
+
+    expect(exits.map((e) => [e.StationID, e.ExitID, e.Stair, e.Escalator, e.Elevator])).toEqual([
+      ['BL01', '1', true, 2, true],
+      ['BL01', '2', true, 2, false],
+    ]);
+    expect(facilities[0]?.FacilityMapURLs?.[0]?.MapURL).toMatch(/^https:\/\/web\.metro\.taipei\//);
+    expect(facilities[0]?.Elevators).toEqual([]);
+    expect(transfers[0]).toMatchObject({ FromLineID: 'BL', FromStationID: 'BL01', ToLineID: 'LB' });
+  });
+
+  it('parses station transfers, routes and stations of route', async () => {
+    const station =
+      await clientWithResponse(stationTransfersFixture).tdx.metro.stationTransfers('TRTC');
+    const routes = await clientWithResponse(routesFixture).tdx.metro.routes('TRTC');
+    const stations =
+      await clientWithResponse(stationsOfRouteFixture).tdx.metro.stationsOfRoute('TRTC');
+    expectTypeOf(station).toEqualTypeOf<MetroStationTransfers>();
+    expectTypeOf(routes).toEqualTypeOf<MetroRoute[]>();
+    expectTypeOf(stations).toEqualTypeOf<MetroStationOfRoute[]>();
+
+    expect(station.UpdateInterval).toBe(0);
+    expect(station.StationTransfers[0]?.StationID).toBe('BL01');
+    expect(Object.keys(station.StationTransfers[0]?.Transfers?.[0] ?? {})).toEqual([
+      'BikeTransfers',
+      'ParkingTransfers',
+    ]);
+    expect(routes.map((r) => [r.RouteID, r.RailRouteType, r.Direction, r.TravelTime])).toEqual([
+      ['BL-1', 33, 0, 48],
+      ['BL-1', 33, 1, 48],
+    ]);
+    expect(stations[0]?.Stations.map((s) => [s.Sequence, s.StationID])).toEqual([
+      [1, 'BL01'],
+      [2, 'BL02'],
+      [3, 'BL03'],
+    ]);
+  });
+
+  it('parses headways, station timetables and news', async () => {
+    const frequency = await clientWithResponse(frequencyFixture).tdx.metro.frequency('TRTC');
+    const timetable =
+      await clientWithResponse(stationTimetableFixture).tdx.metro.stationTimetable('TRTC');
+    const news = await clientWithResponse(newsFixture).tdx.metro.news('TRTC');
+    expectTypeOf(frequency).toEqualTypeOf<MetroFrequency[]>();
+    expectTypeOf(timetable).toEqualTypeOf<MetroStationTimetable[]>();
+    expectTypeOf(news).toEqualTypeOf<MetroNewsList>();
+
+    expect(
+      frequency.map((f) => [f.RouteID, f.ServiceDay.ServiceTag, f.Headways[0]?.MinHeadwayMins]),
+    ).toEqual([
+      ['BL-1', '平日', 8],
+      ['BL-1', '假日', 8],
+    ]);
+    const first = timetable[0];
+    expect([first?.StationID, first?.DestinationStaionID, first?.ServiceDay.Saturday]).toEqual([
+      'BL01',
+      'BL23',
+      true,
+    ]);
+    expect(first?.Timetables.map((t) => t.DepartureTime)).toEqual(['06:00', '06:07', '06:15']);
+    expect(news.Newses[0]).toMatchObject({ NewsID: '9726526', NewsCategory: 2 });
+    expect(news.Newses[0]?.Language).toBeUndefined();
+    expect(news.Newses[0]?.PublishTime).toBe('0001-01-01T00:00:00+08:06');
   });
 });

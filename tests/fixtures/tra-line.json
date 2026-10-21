@@ -1,0 +1,35 @@
+{
+  "UpdateTime": "2026-10-21T06:22:49+08:00",
+  "UpdateInterval": 14400,
+  "SrcUpdateTime": "2026-10-21T04:00:00+08:00",
+  "SrcUpdateInterval": -1,
+  "AuthorityCode": "TRA",
+  "Lines": [
+    {
+      "LineID": "CZ",
+      "LineName": {
+        "Zh_tw": "成追線",
+        "En": "Chengzhui Line"
+      },
+      "LineSectionName": {
+        "Zh_tw": "成功-追分",
+        "En": "Chenggong-Zhuifen"
+      },
+      "IsBranch": true,
+      "LineGroup": "CZ"
+    },
+    {
+      "LineID": "EL",
+      "LineName": {
+        "Zh_tw": "東部幹線",
+        "En": "Eastern Main Line"
+      },
+      "LineSectionName": {
+        "Zh_tw": "八堵-臺東",
+        "En": "Badu-Taitung"
+      },
+      "IsBranch": false,
+      "LineGroup": "EL"
+    }
+  ]
+}

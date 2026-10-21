@@ -1,17 +1,36 @@
 import type {
   TraAlert,
   TraAlerts,
+  TraGeneralStationTimetable,
+  TraGeneralStationTimetables,
+  TraGeneralTimetables,
+  TraGeneralTrainTimetable,
+  TraLine,
+  TraLines,
+  TraNews,
+  TraNewsList,
   TraODFare,
   TraODFares,
   TraStation,
+  TraStationExit,
+  TraStationExits,
+  TraStationFacilities,
+  TraStationFacility,
   TraStationId,
   TraStationLiveBoard,
   TraStationLiveBoards,
+  TraStationOfLine,
+  TraStationOfLines,
+  TraStationTimetable,
+  TraStationTimetables,
   TraStations,
   TraTimetable,
+  TraTrainDates,
   TraTrainLiveBoard,
   TraTrainLiveBoards,
   TraTrainTimetable,
+  TraTrainType,
+  TraTrainTypes,
 } from '../types/tra.js';
 import { type ObjectRequester, type QueryInput, segment, trainDate } from './requester.js';
 
@@ -59,34 +78,46 @@ export class TraApi {
   }
 
   /**
-   * Trains about to arrive at or leave a station, with platform and delay. Only imminent
-   * trains are listed. Cached with the real-time TTL.
-   * `GET /v3/Rail/TRA/StationLiveBoard/Station/{StationID}`
+   * Trains about to arrive at or leave a station (or every station), with platform and delay.
+   * Only imminent trains are listed. Cached with the real-time TTL.
+   * `GET /v3/Rail/TRA/StationLiveBoard[/Station/{StationID}]`
    */
+  liveBoard(query?: QueryInput<TraStationLiveBoard>): Promise<TraStationLiveBoards>;
   liveBoard(
     station: TraStationId,
     query?: QueryInput<TraStationLiveBoard>,
+  ): Promise<TraStationLiveBoards>;
+  liveBoard(
+    stationOrQuery?: TraStationId | QueryInput<TraStationLiveBoard>,
+    query?: QueryInput<TraStationLiveBoard>,
   ): Promise<TraStationLiveBoards> {
-    return this.object(
-      `/v3/Rail/TRA/StationLiveBoard/Station/${segment(station, 'station')}`,
-      query,
-      'realtime',
-    );
+    const base = '/v3/Rail/TRA/StationLiveBoard';
+    if (typeof stationOrQuery === 'string') {
+      const path = `${base}/Station/${segment(stationOrQuery, 'station')}`;
+      return this.object(path, query, 'realtime');
+    }
+    return this.object(base, stationOrQuery ?? query, 'realtime');
   }
 
   /**
-   * Where a train is now and how late it runs. Cached with the real-time TTL.
-   * `GET /v3/Rail/TRA/TrainLiveBoard/TrainNo/{TrainNo}`
+   * Where a train (or every running train) is now and how late it runs. Cached with the
+   * real-time TTL. `GET /v3/Rail/TRA/TrainLiveBoard[/TrainNo/{TrainNo}]`
    */
+  trainLiveBoard(query?: QueryInput<TraTrainLiveBoard>): Promise<TraTrainLiveBoards>;
   trainLiveBoard(
     trainNo: string,
     query?: QueryInput<TraTrainLiveBoard>,
+  ): Promise<TraTrainLiveBoards>;
+  trainLiveBoard(
+    trainNoOrQuery?: string | QueryInput<TraTrainLiveBoard>,
+    query?: QueryInput<TraTrainLiveBoard>,
   ): Promise<TraTrainLiveBoards> {
-    return this.object(
-      `/v3/Rail/TRA/TrainLiveBoard/TrainNo/${segment(trainNo, 'trainNo')}`,
-      query,
-      'realtime',
-    );
+    const base = '/v3/Rail/TRA/TrainLiveBoard';
+    if (typeof trainNoOrQuery === 'string') {
+      const path = `${base}/TrainNo/${segment(trainNoOrQuery, 'trainNo')}`;
+      return this.object(path, query, 'realtime');
+    }
+    return this.object(base, trainNoOrQuery ?? query, 'realtime');
   }
 
   /**
@@ -95,5 +126,140 @@ export class TraApi {
    */
   alerts(query?: QueryInput<TraAlert>): Promise<TraAlerts> {
     return this.object('/v3/Rail/TRA/Alert', query, 'realtime');
+  }
+  /**
+   * The regular timetable: every train's stops and running days, for all trains or one train
+   * number. Cached with the static TTL. `GET /v3/Rail/TRA/GeneralTrainTimetable[/TrainNo/{TrainNo}]`
+   */
+  generalTimetable(query?: QueryInput<TraGeneralTrainTimetable>): Promise<TraGeneralTimetables>;
+  generalTimetable(
+    trainNo: string,
+    query?: QueryInput<TraGeneralTrainTimetable>,
+  ): Promise<TraGeneralTimetables>;
+  generalTimetable(
+    trainNoOrQuery?: string | QueryInput<TraGeneralTrainTimetable>,
+    query?: QueryInput<TraGeneralTrainTimetable>,
+  ): Promise<TraGeneralTimetables> {
+    const base = '/v3/Rail/TRA/GeneralTrainTimetable';
+    if (typeof trainNoOrQuery === 'string') {
+      return this.object(`${base}/TrainNo/${segment(trainNoOrQuery, 'trainNo')}`, query, 'static');
+    }
+    return this.object(base, trainNoOrQuery ?? query, 'static');
+  }
+
+  /**
+   * The regular station timetable: every departure from a station (or all stations) per
+   * direction and running days. One station is about 60 KB. Cached with the static TTL.
+   * `GET /v3/Rail/TRA/GeneralStationTimetable[/Station/{StationID}]`
+   */
+  generalStationTimetable(
+    query?: QueryInput<TraGeneralStationTimetable>,
+  ): Promise<TraGeneralStationTimetables>;
+  generalStationTimetable(
+    station: TraStationId,
+    query?: QueryInput<TraGeneralStationTimetable>,
+  ): Promise<TraGeneralStationTimetables>;
+  generalStationTimetable(
+    stationOrQuery?: TraStationId | QueryInput<TraGeneralStationTimetable>,
+    query?: QueryInput<TraGeneralStationTimetable>,
+  ): Promise<TraGeneralStationTimetables> {
+    const base = '/v3/Rail/TRA/GeneralStationTimetable';
+    if (typeof stationOrQuery === 'string') {
+      return this.object(`${base}/Station/${segment(stationOrQuery, 'station')}`, query, 'static');
+    }
+    return this.object(base, stationOrQuery ?? query, 'static');
+  }
+
+  /**
+   * Every train's full stop list on a day (default: today in Taiwan; about two months ahead).
+   * Cached with the static TTL. `GET /v3/Rail/TRA/DailyTrainTimetable/TrainDate/{TrainDate}`
+   */
+  dailyTimetable(
+    date?: Date | string,
+    query?: QueryInput<TraTrainTimetable>,
+  ): Promise<TraTimetable> {
+    return this.object(
+      `/v3/Rail/TRA/DailyTrainTimetable/TrainDate/${trainDate(date)}`,
+      query,
+      'static',
+    );
+  }
+
+  /**
+   * One train's stop list today (TDX v3 has no other-day form). Cached with the static TTL.
+   * `GET /v3/Rail/TRA/DailyTrainTimetable/Today/TrainNo/{TrainNo}`
+   */
+  trainTimetable(trainNo: string, query?: QueryInput<TraTrainTimetable>): Promise<TraTimetable> {
+    const path = `/v3/Rail/TRA/DailyTrainTimetable/Today/TrainNo/${segment(trainNo, 'trainNo')}`;
+    return this.object(path, query, 'static');
+  }
+
+  /**
+   * Today's departures from one station, per direction. Cached with the static TTL.
+   * `GET /v3/Rail/TRA/DailyStationTimetable/Today/Station/{StationID}`
+   */
+  stationTimetable(
+    station: TraStationId,
+    query?: QueryInput<TraStationTimetable>,
+  ): Promise<TraStationTimetables> {
+    const path = `/v3/Rail/TRA/DailyStationTimetable/Today/Station/${segment(station, 'station')}`;
+    return this.object(path, query, 'static');
+  }
+
+  /**
+   * Departures from every station on a day (default: today in Taiwan). Each item holds a whole
+   * station's day, so filter on `StationID`. Cached with the static TTL.
+   * `GET /v3/Rail/TRA/DailyStationTimetable/TrainDate/{TrainDate}`
+   */
+  dailyStationTimetable(
+    date?: Date | string,
+    query?: QueryInput<TraStationTimetable>,
+  ): Promise<TraStationTimetables> {
+    const path = `/v3/Rail/TRA/DailyStationTimetable/TrainDate/${trainDate(date)}`;
+    return this.object(path, query, 'static');
+  }
+
+  /**
+   * The dates the daily timetables cover (about two months). Cached with the static TTL.
+   * `GET /v3/Rail/TRA/DailyTrainTimetable/TrainDates`
+   */
+  trainDates(query?: QueryInput<TraTrainDates>): Promise<TraTrainDates> {
+    return this.object('/v3/Rail/TRA/DailyTrainTimetable/TrainDates', query, 'static');
+  }
+
+  /** Lines (西部幹線, 東部幹線, branches). Cached with the static TTL. `GET /v3/Rail/TRA/Line` */
+  lines(query?: QueryInput<TraLine>): Promise<TraLines> {
+    return this.object('/v3/Rail/TRA/Line', query, 'static');
+  }
+
+  /** Ordered stations of each line. Cached with the static TTL. `GET /v3/Rail/TRA/StationOfLine` */
+  stationsOfLine(query?: QueryInput<TraStationOfLine>): Promise<TraStationOfLines> {
+    return this.object('/v3/Rail/TRA/StationOfLine', query, 'static');
+  }
+
+  /**
+   * Train types (55 IDs sharing the codes 1 太魯閣 … 10 區間快). Cached with the static TTL.
+   * `GET /v3/Rail/TRA/TrainType`
+   */
+  trainTypes(query?: QueryInput<TraTrainType>): Promise<TraTrainTypes> {
+    return this.object('/v3/Rail/TRA/TrainType', query, 'static');
+  }
+
+  /** Station exits with positions. Cached with the static TTL. `GET /v3/Rail/TRA/StationExit` */
+  stationExits(query?: QueryInput<TraStationExit>): Promise<TraStationExits> {
+    return this.object('/v3/Rail/TRA/StationExit', query, 'static');
+  }
+
+  /**
+   * Lifts, information desks, drinking fountains and toilets per station. Cached with the static
+   * TTL. `GET /v3/Rail/TRA/StationFacility`
+   */
+  stationFacilities(query?: QueryInput<TraStationFacility>): Promise<TraStationFacilities> {
+    return this.object('/v3/Rail/TRA/StationFacility', query, 'static');
+  }
+
+  /** TRA news (`Description` may contain HTML). Cached with the real-time TTL. `GET /v3/Rail/TRA/News` */
+  news(query?: QueryInput<TraNews>): Promise<TraNewsList> {
+    return this.object('/v3/Rail/TRA/News', query, 'realtime');
   }
 }

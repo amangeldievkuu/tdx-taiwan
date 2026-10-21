@@ -1,0 +1,22 @@
+{
+  "UpdateTime": "2026-10-21T17:15:04+08:00",
+  "UpdateInterval": 120,
+  "SrcUpdateTime": "2026-10-21T17:14:34+08:00",
+  "SrcUpdateInterval": -1,
+  "AuthorityCode": "TRA",
+  "Newses": [
+    {
+      "NewsID": "8ae4cac392ab4f810192b35b8cfd15ef",
+      "Language": 1,
+      "Title": "大型車輛路口停讓及行車視野確認影片宣導",
+      "NewsCategory": 1,
+      "Description": "大型車輛路口停讓及行車視野確認影片宣導  <a href=\"https://www.railway.gov.tw/tra-tip-web/adr/about-video-play?pk=438\" title=\"大型車輛路口停讓及行車視野確認影片宣導\" class=\"links\">影片連結</a>",
+      "NewsURL": "https://www.trc.com.tw/tra-tip-web/tip/tip009/tip911/newsDtl?newsNo=8ae4cac392ab4f810192b35b8cfd15ef",
+      "AttachmentURL": "https://www.trc.com.tw/tra-tip-web/tip/file/2d768c75-2a26-4f5c-a963-204007c1ea5a",
+      "StartTime": "2024-10-22T15:43:54+08:00",
+      "EndTime": "2027-10-22T23:59:59+08:00",
+      "PublishTime": "2024-10-22T15:43:54+08:00",
+      "UpdateTime": "2024-10-22T16:33:58+08:00"
+    }
+  ]
+}

@@ -95,6 +95,12 @@ describe.skipIf(!hasCredentials)('live TDX API: metro', () => {
     if (board.length) expect(board[0]).toHaveProperty('ServiceStatus');
   });
 
+  it('metro.stationExits returns Taipei Metro exits', async () => {
+    const exits = await tdx.metro.stationExits('TRTC', { top: 2 });
+    expect(exits.length).toBeGreaterThan(0);
+    expect(exits[0]).toHaveProperty('ExitPosition');
+  });
+
   it('metro.odFare returns the fare between two stations', async () => {
     const fares = await tdx.metro.odFare('TRTC', {
       filter: [`OriginStationID eq 'BL12'`, `DestinationStationID eq 'BL01'`],
@@ -138,6 +144,11 @@ describe.skipIf(!hasCredentials)('live TDX API: THSR', () => {
   it('thsr.availableSeats returns the seat board object', async () => {
     const board = await tdx.thsr.availableSeats('1000');
     expect(Array.isArray(board.AvailableSeats)).toBe(true);
+  });
+
+  it('thsr.trainDates covers today', async () => {
+    const dates = await tdx.thsr.trainDates();
+    expect(dates.TrainDates).toContain(trainDate());
   });
 
   it('thsr.alerts returns at least the status record', async () => {
@@ -219,6 +230,11 @@ describe.skipIf(!hasCredentials)('live TDX API: TRA', () => {
     const result = await tdx.tra.odFare('1000', '4400');
     expect(result.ODFares.length).toBeGreaterThan(0);
     expect(result.ODFares[0]?.Fares[0]).toHaveProperty('Price');
+  });
+
+  it('tra.trainTypes includes 自強', async () => {
+    const types = await tdx.tra.trainTypes();
+    expect(types.TrainTypes.some((t) => t.TrainTypeCode === '3')).toBe(true);
   });
 
   it('tra.liveBoard and tra.alerts return their wrappers', async () => {

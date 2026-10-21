@@ -1,7 +1,7 @@
 # Test fixtures
 
 > 資料來源：交通部運輸資料流通服務平臺 (MOTC Transport Data eXchange, TDX). The `metro-*.json`,
-> `thsr-*.json`, `tra-*.json`, `parking-*.json`, `ev-*.json`, `air-*.json`, `traffic-*.json`, `ship-*.json`, `bus-stop-taipei.json`, `bus-position-taipei-307.json` and
+> `thsr-*.json`, `tra-*.json`, `parking-*.json`, `ev-*.json`, `air-*.json`, `traffic-*.json`, `ship-*.json`, the 0.14.0 `metro-*`, `thsr-*` and `tra-*` additions, `bus-stop-taipei.json`, `bus-position-taipei-307.json` and
 > `bus-intercity-*.json` files contain TDX data and are used under the
 > [TDX 資料授權利用條款](https://tdx.transportdata.tw/term), not this repository's MIT license.
 
@@ -57,6 +57,16 @@ general-schedule rows (AE and DA, `FlightNumber` with the airline prefix), two A
 (one normal, one cancelled with `FlightRemark: "X"`), one AE route's fares and the shortest CAA
 news item, and one B7 seat-availability answer (sold out, no seat counts; the AE call timed out
 upstream).
+
+The 0.14.0 rail extras (2026-10-21, trimmed to one to three items, not edited): Taipei Metro
+exits, facilities, line transfers, a station transfer wrapper (`UpdateInterval: 0`), routes,
+stations of a route, headways, a station timetable and a news item (with the `0001-01-01` time
+sentinels and no `Language`); THSR general, daily and station timetables (`ExpiringDate: ""`,
+`Ja`/`Ko` null), train dates, a news item (HTML description) and exits; TRA general train and
+station timetables (empty `SrcVersion`, timestamp `EffectiveDate`), a daily train timetable,
+today's station timetable, train dates, lines, stations of a line, three train types, a station's
+exits (composite `ExitID`), a station's facilities (empty strings), a news item and the
+all-station live board.
 
 The `traffic-*.json` files are trimmed 路況資訊 v2 and 道路事件 v1 wrappers (2026-10-21), cut to one
 to three items each and not edited. They keep the places where live data departs from the spec:

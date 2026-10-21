@@ -6,6 +6,22 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-10-21
+
+### Added
+
+- Rail extras. Metro: `stationExits`, `stationFacilities`, `lineTransfers`, `stationTransfers`,
+  `routes`, `stationsOfRoute`, `frequency`, `stationTimetable`, `news` and `livePosition`
+  (KLRT only). THSR: `generalTimetable(trainNo?)`, `dailyTimetable(date?)`,
+  `trainTimetable(trainNo, date?)`, `stationTimetable(station, date?)`, `trainDates`, `news`,
+  `stationExits`, and `availableSeats()` without a station for every station's board. TRA:
+  `generalTimetable(trainNo?)`, `generalStationTimetable(station?)`, `dailyTimetable(date?)`,
+  `trainTimetable(trainNo)` (today only in v3), `stationTimetable(station)`,
+  `dailyStationTimetable(date?)`, `trainDates`, `lines`, `stationsOfLine`, `trainTypes`,
+  `stationExits`, `stationFacilities`, `news`, and `liveBoard()` / `trainLiveBoard()` without an
+  argument for every station and every running train. Types follow live data (Taipei news time
+  sentinels, TRA's full-timestamp `EffectiveDate` and empty text fields, THSR's `""` expiry).
+
 ## [0.13.0] - 2026-10-21
 
 ### Added
@@ -276,7 +292,8 @@ All notable changes to this project are documented here. The format is based on
   - CI runs the dist tests against each NestJS major and smoke-tests the packed tarball on
     Node 20, 22 and 24.
 
-[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.14.0...HEAD
+[0.14.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.10.0...v0.11.0

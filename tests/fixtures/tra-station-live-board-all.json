@@ -1,0 +1,63 @@
+{
+  "UpdateTime": "2026-10-21T18:00:04+08:00",
+  "UpdateInterval": 30,
+  "SrcUpdateTime": "2026-10-21T18:00:00+08:00",
+  "SrcUpdateInterval": 60,
+  "AuthorityCode": "TRA",
+  "StationLiveBoards": [
+    {
+      "StationID": "1230",
+      "StationName": {
+        "Zh_tw": "香山",
+        "En": "Xiangshan"
+      },
+      "TrainNo": "2544",
+      "Direction": 0,
+      "TrainTypeID": "1131",
+      "TrainTypeCode": "6",
+      "TrainTypeName": {
+        "Zh_tw": "區間",
+        "En": "Local Train"
+      },
+      "EndingStationID": "1210",
+      "EndingStationName": {
+        "Zh_tw": "新竹",
+        "En": "Hsinchu"
+      },
+      "TripLine": 2,
+      "Platform": "",
+      "ScheduleArrivalTime": "18:15:00",
+      "ScheduleDepartureTime": "18:16:00",
+      "DelayTime": 4,
+      "RunningStatus": 1,
+      "UpdateTime": "2026-10-21T17:59:57+08:00"
+    },
+    {
+      "StationID": "1230",
+      "StationName": {
+        "Zh_tw": "香山",
+        "En": "Xiangshan"
+      },
+      "TrainNo": "2224",
+      "Direction": 0,
+      "TrainTypeID": "1131",
+      "TrainTypeCode": "6",
+      "TrainTypeName": {
+        "Zh_tw": "區間",
+        "En": "Local Train"
+      },
+      "EndingStationID": "1150",
+      "EndingStationName": {
+        "Zh_tw": "北湖",
+        "En": "Beihu"
+      },
+      "TripLine": 1,
+      "Platform": "",
+      "ScheduleArrivalTime": "18:07:30",
+      "ScheduleDepartureTime": "18:08:00",
+      "DelayTime": 0,
+      "RunningStatus": 0,
+      "UpdateTime": "2026-10-21T17:59:57+08:00"
+    }
+  ]
+}

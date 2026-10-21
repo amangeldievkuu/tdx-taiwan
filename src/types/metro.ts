@@ -1,7 +1,14 @@
 // Metro types, transcribed from the TDX 公共運輸-軌道 v2 OpenAPI spec
 // (PTX.Service.DTO.Rail.Specification.V2.Metro.*). Where live data contradicts the spec,
 // the type follows the data and says so.
-import type { DateTimeString, NameType, OpenString, PointType, WrapperHeader } from './common.js';
+import type {
+  DateTimeString,
+  NameType,
+  OpenString,
+  PointType,
+  WrapperHeader,
+  ZhEnName,
+} from './common.js';
 
 /**
  * `RailSystem` path values accepted by most Metro endpoints: TRTC 臺北捷運, KRTC 高雄捷運,
@@ -269,4 +276,338 @@ export interface MetroAlert {
 /** Alerts of a rail system (MRTRealTimeWrapper[Metro.Alert]) — `GET /v2/Rail/Metro/Alert/{RailSystem}`. */
 export interface MetroAlerts extends WrapperHeader {
   Alerts: MetroAlert[];
+}
+
+/** `RailSystem` values with a news feed. */
+export type MetroNewsSystem = OpenString<'TRTC' | 'KRTC' | 'TYMC' | 'KLRT' | 'TMRT'>;
+
+/** `RailSystem` values with live train positions: only `KLRT` (others get HTTP 400). */
+export type MetroLivePositionSystem = OpenString<'KLRT'>;
+
+/** 是否有電扶梯: 0 = 沒有 (none), 1 = 雙向 (both ways), 2 = 出站 (exit only), 3 = 入站 (entry only). */
+export type MetroEscalator = 0 | 1 | 2 | 3;
+
+/** 軌道路線類別: 33 = 都市捷運 (urban metro), 34 = 機場捷運 (airport line). */
+export type MetroRailRouteType = 33 | 34;
+
+/** 營運路線方向: 0 = 去程 (outbound), 1 = 返程 (return). */
+export type MetroDirection = 0 | 1;
+
+/** Fields every static v2 item carries. */
+export interface MetroVersioned {
+  SrcUpdateTime: DateTimeString;
+  UpdateTime: DateTimeString;
+  VersionID: number;
+}
+
+/** Map image of an exit or facility (ExitMapURL / FacilityMapURL). */
+export interface MetroMapURL {
+  MapName?: NameType | null;
+  MapURL?: string | null;
+  FloorLevel?: string | null;
+}
+
+/** Station exit (Metro.StationExit) — `GET /v2/Rail/Metro/StationExit/{RailSystem}`. */
+export interface MetroStationExit extends MetroVersioned {
+  StationID: string;
+  StationName: NameType;
+  ExitID: string;
+  ExitName: NameType;
+  ExitPosition: PointType;
+  LocationDescription: string;
+  Stair: boolean;
+  Escalator: MetroEscalator;
+  Elevator: boolean;
+  ExitMapURLs?: MetroMapURL[] | null;
+}
+
+/** Location of a facility in a station (Elevator, InformationSpot, DrinkingFountain, Toilet). */
+export interface MetroFacilitySpot {
+  Description: string;
+  FloorLevel: string;
+}
+
+/** Station facilities (Metro.StationFacility) — `GET /v2/Rail/Metro/StationFacility/{RailSystem}`. */
+export interface MetroStationFacility extends MetroVersioned {
+  StationID: string;
+  StationName: NameType;
+  FacilityMapURLs?: MetroMapURL[] | null;
+  Elevators?: MetroFacilitySpot[] | null;
+  InformationSpots?: MetroFacilitySpot[] | null;
+  DrinkingFountains?: MetroFacilitySpot[] | null;
+  Toilets?: MetroFacilitySpot[] | null;
+}
+
+/** Transfer between two lines at a station (Metro.LineTransfer) — `GET /v2/Rail/Metro/LineTransfer/{RailSystem}`. */
+export interface MetroLineTransfer extends MetroVersioned {
+  FromLineNo?: string | null;
+  FromLineID: string;
+  FromLineName: NameType;
+  FromStationID: string;
+  FromStationName: NameType;
+  ToLineNo: string;
+  ToLineID: string;
+  ToLineName: NameType;
+  ToStationID: string;
+  ToStationName: NameType;
+  /** 0 = 站外 (outside the paid area), 1 = 站內 (inside). */
+  IsOnSiteTransfer?: 0 | 1 | null;
+  /** Minutes. */
+  TransferTime: number;
+  TransferDescription: string;
+}
+
+/** Fields shared by the transfer kinds of a station exit. */
+export interface MetroTransferBase {
+  /** Transport mode code. */
+  Mode: string;
+  /** Minutes. */
+  MinTransferTime?: number | null;
+  FloorLevel?: string | null;
+  Description?: string | null;
+  /** 0 = 站外, 1 = 站內. */
+  IsOnSiteTransfer?: 0 | 1 | null;
+}
+
+/** Transfer to another rail system (RailTransfer). */
+export interface MetroRailTransfer extends MetroTransferBase {
+  OperatorCode: string;
+  OperatorName: ZhEnName;
+  StationID: string;
+  StationName: ZhEnName;
+}
+
+/** Transfer to a bus route (BusTransfer). */
+export interface MetroBusTransfer extends MetroTransferBase {
+  OperatorCode: string;
+  OperatorName: ZhEnName;
+  RouteID: string;
+  RouteName: ZhEnName;
+  StopID: string;
+  StopName: ZhEnName;
+  Destination: string;
+}
+
+/** Transfer to an airport (AirportTransfer). */
+export interface MetroAirportTransfer extends MetroTransferBase {
+  OperatorCode: string;
+  OperatorName: ZhEnName;
+  AirportID: string;
+  AirportName: ZhEnName;
+}
+
+/** Transfer to a public bike station (BikeTransfer). */
+export interface MetroBikeTransfer extends MetroTransferBase {
+  OperatorCode: string;
+  OperatorName: ZhEnName;
+  StationID: string;
+  StationName: ZhEnName;
+}
+
+/** Transfer to a car park (ParkingTransfer). */
+export interface MetroParkingTransfer extends MetroTransferBase {
+  CarParkID: string;
+  CarParkName: ZhEnName;
+}
+
+/** Transfer to a taxi stand (TaxiTransfer). */
+export interface MetroTaxiTransfer extends MetroTransferBase {
+  TaxiStopID: string;
+  TaxiStopName: ZhEnName;
+}
+
+/** Transfers available from one exit (Transfer). */
+export interface MetroExitTransfer {
+  ExitID?: string | null;
+  ExitName?: ZhEnName | null;
+  RailTransfers?: MetroRailTransfer[] | null;
+  BusTransfers?: MetroBusTransfer[] | null;
+  AirportTransfers?: MetroAirportTransfer[] | null;
+  BikeTransfers?: MetroBikeTransfer[] | null;
+  ParkingTransfers?: MetroParkingTransfer[] | null;
+  TaxiTransfers?: MetroTaxiTransfer[] | null;
+}
+
+/** Map link in a station transfer record (InteriorMapURL / ExteriorMapURL). */
+export interface MetroTransferMapURL {
+  MapName: ZhEnName;
+  MapURL: string;
+  FloorLevel?: string | null;
+}
+
+/** Transfers to other modes at a station (StationTransfer). */
+export interface MetroStationTransfer {
+  StationID: string;
+  StationName: ZhEnName;
+  TransferDescription?: string | null;
+  InteriorMapURLs?: MetroTransferMapURL[] | null;
+  ExteriorMapURLs?: MetroTransferMapURL[] | null;
+  Transfers?: MetroExitTransfer[] | null;
+}
+
+/**
+ * Station transfers — `GET /v2/Rail/Metro/StationTransfer/{RailSystem}` (TRTC, NTMC, TYMC).
+ * Live data sends `UpdateInterval: 0`.
+ */
+export interface MetroStationTransfers extends WrapperHeader {
+  StationTransfers: MetroStationTransfer[];
+}
+
+/** Service route of a line (Metro.Route) — `GET /v2/Rail/Metro/Route/{RailSystem}`. */
+export interface MetroRoute extends MetroVersioned {
+  /** e.g. `BL-1`. */
+  RouteID: string;
+  OperatorCode: string;
+  RouteName: NameType;
+  RailRouteType: MetroRailRouteType;
+  LineNo?: string | null;
+  LineID: string;
+  Direction: MetroDirection;
+  StartStationID: string;
+  StartStationName: NameType;
+  EndStationID: string;
+  EndStationName: NameType;
+  /** Minutes end to end. */
+  TravelTime: number;
+  /** Kilometres. */
+  RouteLength: number;
+}
+
+/** Station of a route (StationOfRoute.Station). */
+export interface MetroRouteStation {
+  Sequence: number;
+  StationID: string;
+  StationName: NameType;
+  /** Kilometres from the start of the route. */
+  CumulativeDistance?: number | null;
+}
+
+/** Ordered stations of a route (Metro.StationOfRoute) — `GET /v2/Rail/Metro/StationOfRoute/{RailSystem}`. */
+export interface MetroStationOfRoute extends MetroVersioned {
+  LineNo?: string | null;
+  LineID: string;
+  RouteID: string;
+  RouteName: NameType;
+  Direction: MetroDirection;
+  Stations: MetroRouteStation[];
+}
+
+/** Operating hours of a route (OperationTime). */
+export interface MetroOperationTime {
+  StartTime: string;
+  EndTime: string;
+}
+
+/** Headway for a time band (Headway). */
+export interface MetroHeadway {
+  /** `"0"` off-peak, `"1"` peak. */
+  PeakFlag: string;
+  StartTime: string;
+  EndTime: string;
+  MinHeadwayMins: number;
+  MaxHeadwayMins: number;
+}
+
+/** Headways of a route on a kind of day (Metro.Frequency) — `GET /v2/Rail/Metro/Frequency/{RailSystem}`. */
+export interface MetroFrequency extends MetroVersioned {
+  LineNo?: string | null;
+  LineID: string;
+  RouteID: string;
+  TrainType?: MetroTrainType | null;
+  ServiceDay: MetroServiceDay;
+  OperationTime: MetroOperationTime;
+  Headways: MetroHeadway[];
+}
+
+/** One departure in a station timetable (StationTimeTable.Timetable). */
+export interface MetroTimetableEntry {
+  Sequence: number;
+  /** Usually absent: metros do not number trains. */
+  TrainNo?: string | null;
+  /** `hh:mm`. */
+  ArrivalTime?: string | null;
+  DepartureTime: string;
+  TrainType?: MetroTrainType | null;
+  StoppingPatternID?: string | null;
+}
+
+/** Special date range of a station timetable (SpecialDay). `SaterDate` is TDX's spelling. */
+export interface MetroSpecialDay {
+  SaterDate: string;
+  EndDate: string;
+  Description: string;
+}
+
+/**
+ * Departures from a station towards a destination on a kind of day (Metro.StationTimeTable) —
+ * `GET /v2/Rail/Metro/StationTimeTable/{RailSystem}`. TRTC does not publish the 文湖線;
+ * use `frequency` for it. `DestinationStaionID` is TDX's spelling.
+ */
+export interface MetroStationTimetable extends MetroVersioned {
+  RouteID?: string | null;
+  LineID: string;
+  StationID: string;
+  StationName: NameType;
+  Direction?: MetroDirection | null;
+  DestinationStaionID: string;
+  DestinationStationName: NameType;
+  Timetables: MetroTimetableEntry[];
+  ServiceDay: MetroServiceDay;
+  SpecialDays?: MetroSpecialDay[] | null;
+}
+
+/**
+ * News item (MRTNewsList.News). Taipei sends the sentinel `0001-01-01T00:00:00+08:06` for
+ * every time field and omits `Language`.
+ */
+export interface MetroNews {
+  NewsID: string;
+  /** 1 Zh_tw, 2 En_us, 3 Zh_cn, 4 Ja, 5 Ko, 99 other. */
+  Language?: number | null;
+  Department?: string | null;
+  Title: string;
+  /** 1 最新消息, 2 新聞稿, 3 營運資訊, 4 轉乘資訊, 5 活動訊息, 6 系統公告, 7-10 platform notices, 99 其他. */
+  NewsCategory: number;
+  /** HTML. */
+  Description: string;
+  NewsURL?: string | null;
+  AttachmentURL?: string | null;
+  StartTime?: DateTimeString | null;
+  EndTime?: DateTimeString | null;
+  PublishTime: DateTimeString;
+  UpdateTime: DateTimeString;
+}
+
+/** News — `GET /v2/Rail/Metro/News/{RailSystem}`. */
+export interface MetroNewsList extends WrapperHeader {
+  Newses: MetroNews[];
+}
+
+/** Live train position (MRTLivePositionList.LivePosition). */
+export interface MetroLivePosition {
+  TripID: string;
+  OperatorCode: string;
+  LineID: string;
+  LineName: NameType;
+  /** 0 去程, 1 返程, 2 迴圈, 255 unknown. */
+  Direction: number;
+  /** 0 unknown, 1 scheduled, 2 unscheduled. */
+  MessageType?: number | null;
+  TrainPosition: PointType;
+  /** km/h. */
+  Speed: number;
+  /** Degrees. */
+  Azimuth: number;
+  /** 0 normal, 1 starting, 2 ending. */
+  DutyStatus: number;
+  /** 0 normal, 1 accident, 2 fault, 3 congestion, 4 emergency, 98 off route, 99 not in service, 100 full, 255 unknown. */
+  TrainStatus: number;
+  GPSTime: DateTimeString;
+  GPSTransTime: DateTimeString;
+  UpdateTime: DateTimeString;
+}
+
+/** Live train positions — `GET /v2/Rail/Metro/LivePosition/{RailSystem}` (KLRT only). */
+export interface MetroLivePositions extends WrapperHeader {
+  LivePositions: MetroLivePosition[];
 }

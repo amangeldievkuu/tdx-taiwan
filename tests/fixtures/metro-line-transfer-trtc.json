@@ -1,0 +1,73 @@
+[
+  {
+    "FromLineNo": "BL",
+    "FromLineID": "BL",
+    "FromLineName": {
+      "Zh_tw": "板南線",
+      "En": "Bannan Line",
+      "Ja": "板南線",
+      "Ko": "반난선"
+    },
+    "FromStationID": "BL01",
+    "FromStationName": {
+      "Zh_tw": "頂埔",
+      "En": "Dingpu",
+      "Ja": "頂埔",
+      "Ko": "딩푸"
+    },
+    "ToLineNo": "LB",
+    "ToLineID": "LB",
+    "ToLineName": {
+      "Zh_tw": "三鶯線",
+      "En": "Sanying Line"
+    },
+    "ToStationID": "LB01",
+    "ToStationName": {
+      "Zh_tw": "頂埔",
+      "En": "Dingpu"
+    },
+    "IsOnSiteTransfer": 1,
+    "TransferTime": 6,
+    "SrcUpdateTime": "2020-01-31T14:00:00+08:00",
+    "UpdateTime": "2020-05-20T12:00:00+08:00",
+    "VersionID": 2
+  },
+  {
+    "FromLineNo": "BL",
+    "FromLineID": "BL",
+    "FromLineName": {
+      "Zh_tw": "板南線",
+      "En": "Bannan Line",
+      "Ja": "板南線",
+      "Ko": "반난선"
+    },
+    "FromStationID": "BL07",
+    "FromStationName": {
+      "Zh_tw": "板橋",
+      "En": "Banqiao",
+      "Ja": "板橋",
+      "Ko": "반차오"
+    },
+    "ToLineNo": "Y",
+    "ToLineID": "Y",
+    "ToLineName": {
+      "Zh_tw": "環狀線",
+      "En": "Circular Line",
+      "Ja": "環状線",
+      "Ko": "환좡선"
+    },
+    "ToStationID": "Y16",
+    "ToStationName": {
+      "Zh_tw": "板橋",
+      "En": "Banqiao",
+      "Ja": "板橋",
+      "Ko": "반차오"
+    },
+    "IsOnSiteTransfer": 0,
+    "TransferTime": 11,
+    "TransferDescription": "",
+    "SrcUpdateTime": "2020-01-31T14:00:00+08:00",
+    "UpdateTime": "2020-05-20T12:00:00+08:00",
+    "VersionID": 2
+  }
+]

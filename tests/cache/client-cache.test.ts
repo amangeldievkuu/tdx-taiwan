@@ -126,6 +126,42 @@ describe('TdxClient response cache', () => {
     expect(apiUrls).toHaveLength(9); // only the three real-time requests repeat
   });
 
+  it('caches the rail extras: timetables, station info and reference lists as static, news, positions and all-station boards as real-time', async () => {
+    const lists = clientWithResponse([], { cache: true });
+    const objects = clientWithResponse({}, { cache: true });
+    const fetchAll = async () => {
+      await lists.tdx.metro.stationExits('TRTC');
+      await lists.tdx.metro.routes('TRTC');
+      await lists.tdx.metro.frequency('TRTC');
+      await lists.tdx.metro.stationTimetable('TRTC');
+      await lists.tdx.thsr.generalTimetable();
+      await lists.tdx.thsr.dailyTimetable('2026-10-22');
+      await lists.tdx.thsr.stationExits();
+      await lists.tdx.thsr.news();
+      await objects.tdx.metro.stationTransfers('TRTC');
+      await objects.tdx.metro.news('TRTC');
+      await objects.tdx.metro.livePosition('KLRT');
+      await objects.tdx.thsr.trainDates();
+      await objects.tdx.thsr.availableSeats();
+      await objects.tdx.tra.generalTimetable();
+      await objects.tdx.tra.dailyTimetable('2026-10-22');
+      await objects.tdx.tra.stationTimetable('1000');
+      await objects.tdx.tra.trainDates();
+      await objects.tdx.tra.lines();
+      await objects.tdx.tra.trainTypes();
+      await objects.tdx.tra.stationExits();
+      await objects.tdx.tra.news();
+      await objects.tdx.tra.liveBoard();
+      await objects.tdx.tra.trainLiveBoard();
+    };
+    await fetchAll();
+    vi.advanceTimersByTime(15_000);
+    await fetchAll();
+
+    expect(lists.apiUrls).toHaveLength(9); // 8 calls + the news request repeated
+    expect(objects.apiUrls).toHaveLength(21); // 15 calls + the 6 real-time ones repeated
+  });
+
   it('caches parking car parks and segments as static, availability as real-time', async () => {
     const { tdx, apiUrls } = clientWithResponse({}, { cache: true });
     const fetchAll = async () => {

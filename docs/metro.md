@@ -15,6 +15,16 @@ Metro methods take a rail system code: `TRTC` 臺北捷運, `KRTC` 高雄捷運,
 | `tdx.metro.firstLastTimetable(system, query?)` | `GET /v2/Rail/Metro/FirstLastTimetable/{RailSystem}` | `MetroFirstLastTimetable[]` |
 | `tdx.metro.odFare(system, query?)`             | `GET /v2/Rail/Metro/ODFare/{RailSystem}`             | `MetroODFare[]`             |
 | `tdx.metro.alerts(system, query?)`             | `GET /v2/Rail/Metro/Alert/{RailSystem}`              | `MetroAlerts`               |
+| `tdx.metro.stationExits(system, query?)`       | `GET /v2/Rail/Metro/StationExit/{RailSystem}`        | `MetroStationExit[]`        |
+| `tdx.metro.stationFacilities(system, query?)`  | `GET /v2/Rail/Metro/StationFacility/{RailSystem}`    | `MetroStationFacility[]`    |
+| `tdx.metro.lineTransfers(system, query?)`      | `GET /v2/Rail/Metro/LineTransfer/{RailSystem}`       | `MetroLineTransfer[]`       |
+| `tdx.metro.stationTransfers(system, query?)`   | `GET /v2/Rail/Metro/StationTransfer/{RailSystem}`    | `MetroStationTransfers`     |
+| `tdx.metro.routes(system, query?)`             | `GET /v2/Rail/Metro/Route/{RailSystem}`              | `MetroRoute[]`              |
+| `tdx.metro.stationsOfRoute(system, query?)`    | `GET /v2/Rail/Metro/StationOfRoute/{RailSystem}`     | `MetroStationOfRoute[]`     |
+| `tdx.metro.frequency(system, query?)`          | `GET /v2/Rail/Metro/Frequency/{RailSystem}`          | `MetroFrequency[]`          |
+| `tdx.metro.stationTimetable(system, query?)`   | `GET /v2/Rail/Metro/StationTimeTable/{RailSystem}`   | `MetroStationTimetable[]`   |
+| `tdx.metro.news(system, query?)`               | `GET /v2/Rail/Metro/News/{RailSystem}`               | `MetroNewsList`             |
+| `tdx.metro.livePosition(system, query?)`       | `GET /v2/Rail/Metro/LivePosition/{RailSystem}`       | `MetroLivePositions`        |
 
 ## Example
 
@@ -45,6 +55,20 @@ console.log(adult?.Price); // 40
   `OriginStationID` / `DestinationStationID`.
 - Where live data departs from the spec, the types follow the data: `StationAddress` and
   `LineColor` are optional, and `LineSectionName` is often `{}`.
+- Station info: `stationExits` (position, address, stairs / escalator / lift flags),
+  `stationFacilities` (lifts, information desks, fountains, toilets with map links),
+  `lineTransfers` (minutes between lines at interchanges; TRTC, KRTC, NTMC) and
+  `stationTransfers` (buses, bikes, car parks and taxis per exit; TRTC, NTMC, TYMC, returns a
+  wrapper whose `UpdateInterval` is 0).
+- Service routes: `routes` are a line's end-to-end runs per direction (`BL-1`) with run time and
+  length; `stationsOfRoute` lists their stations in order. `frequency` gives headways per route,
+  kind of day (`ServiceDay.ServiceTag` 平日 / 假日) and time band; `stationTimetable` every
+  departure from each station towards each destination. TRTC does not publish the 文湖線 station
+  timetable, so use `frequency` for it.
+- `news(system)` is a wrapper (`Newses`) for TRTC, KRTC, TYMC, KLRT and TMRT. Taipei sends the
+  sentinel `0001-01-01T00:00:00+08:06` for every time field and omits `Language`.
+- `livePosition(system)` works only for the Kaohsiung light rail (`KLRT`); other systems answer 400. Not wrapped: network, shape, station-to-station travel times, platforms, stopping patterns
+  and the `TransferStations` list (`TRTC_NTMC`, `KRTC`); use `tdx.get` for those.
 
 ## See also
 
@@ -54,4 +78,4 @@ console.log(adult?.Price); // 40
 
 ## 繁體中文
 
-捷運：`tdx.metro.liveBoard('TRTC')` 等方法以軌道系統代碼（`TRTC`、`KRTC`、`TYMC`…）查詢。注意捷運看板的 `EstimateTime` 單位為**分鐘**（公車為秒），且臺北捷運（TRTC）看板只列出即將進站（0 分鐘）的列車；`odFare` 資料量大，建議以 `OriginStationID`／`DestinationStationID` 篩選。
+捷運：`tdx.metro.liveBoard('TRTC')` 等方法以軌道系統代碼（`TRTC`、`KRTC`、`TYMC`…）查詢。注意捷運看板的 `EstimateTime` 單位為**分鐘**（公車為秒），且臺北捷運（TRTC）看板只列出即將進站（0 分鐘）的列車；`odFare` 資料量大，建議以 `OriginStationID`／`DestinationStationID` 篩選。另有 `stationExits`／`stationFacilities`（出入口與車站設施）、`lineTransfers`／`stationTransfers`（路線間與跨運具轉乘）、`routes`／`stationsOfRoute`（營運路線）、`frequency`（班距）、`stationTimetable`（站別時刻表，臺北捷運不含文湖線）、`news` 與 `livePosition`（僅高雄輕軌 KLRT）。

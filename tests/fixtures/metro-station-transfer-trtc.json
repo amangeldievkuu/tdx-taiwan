@@ -1,0 +1,62 @@
+{
+  "UpdateTime": "2025-01-07T00:00:00+08:00",
+  "UpdateInterval": 0,
+  "SrcUpdateTime": "2024-11-07T10:00:30+08:00",
+  "SrcUpdateInterval": 0,
+  "AuthorityCode": "TRTC",
+  "StationTransfers": [
+    {
+      "StationID": "BL01",
+      "StationName": {
+        "Zh_tw": "頂埔",
+        "En": "Dingpu"
+      },
+      "TransferDescription": "頂埔站轉運資訊",
+      "InteriorMapURLs": [
+        {
+          "MapName": {
+            "Zh_tw": "頂埔站車站剖面圖相關位置圖",
+            "En": "Dingpu Station Profile"
+          },
+          "MapURL": "https://web.metro.taipei/img/ALL/stationprofile/076.jpg",
+          "FloorLevel": "參考車站位置圖"
+        }
+      ],
+      "Transfers": [
+        {
+          "BikeTransfers": [
+            {
+              "Mode": "Bike",
+              "OperatorCode": "Ubike",
+              "OperatorName": {
+                "Zh_tw": "YouBike微笑單車",
+                "En": "YouBike"
+              },
+              "StationID": "BL01",
+              "StationName": {
+                "Zh_tw": "頂埔站",
+                "En": "Dingpu"
+              },
+              "FloorLevel": "1F",
+              "Description": "https://www.youbike.com.tw/region/main/",
+              "IsOnSiteTransfer": 0
+            }
+          ],
+          "ParkingTransfers": [
+            {
+              "Mode": "Car",
+              "CarParkID": "BL01",
+              "CarParkName": {
+                "Zh_tw": "捷運頂埔站轉乘停車場",
+                "En": "Dingpu Transfer Parking Lot"
+              },
+              "FloorLevel": "1F",
+              "Description": "https://web.metro.taipei/pages/tw/payparking/076",
+              "IsOnSiteTransfer": 0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -134,18 +134,18 @@ you use in `$filter`; city names autocomplete but any string is accepted. Each r
 lists its methods, an example and the places where live data departs from the spec; the rules
 they share are in [docs/conventions.md](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/conventions.md).
 
-| Namespace     | Scope                                                             | Docs                                                                                   | Example                                                   |
-| ------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| `tdx.bike`    | YouBike / Moovo stations and live availability                    | [Public bikes](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/bike.md)    | [`nearest-youbike.ts`](examples/nearest-youbike.ts)       |
-| `tdx.bus`     | City and InterCity routes, stops, ETAs and live positions         | [Buses](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/bus.md)            | —                                                         |
-| `tdx.metro`   | Stations, lines, live boards, first/last trains, fares, alerts    | [Metro](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/metro.md)          | [`next-metro-train.ts`](examples/next-metro-train.ts)     |
-| `tdx.thsr`    | Stations, timetables, fares, seat availability, alerts            | [High speed rail](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/thsr.md) | [`thsr-trains.ts`](examples/thsr-trains.ts)               |
-| `tdx.tra`     | Stations, timetables, fares, live boards, train positions, alerts | [Taiwan Railway](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/tra.md)   | [`tra-trains.ts`](examples/tra-trains.ts)                 |
-| `tdx.parking` | Car parks and curbside segments with live free spaces             | [Parking](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/parking.md)      | [`nearest-parking.ts`](examples/nearest-parking.ts)       |
-| `tdx.ev`      | Stations, chargers, connectors, live status, prices               | [EV charging](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/ev.md)       | [`nearest-ev-charger.ts`](examples/nearest-ev-charger.ts) |
-| `tdx.air`     | Airports, airlines, live boards, weather, schedules, fares        | [Flights](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/air.md)          | [`flight-board.ts`](examples/flight-board.ts)             |
-| `tdx.traffic` | Live section speeds, cameras, signs, detectors, eTag, events      | [Road traffic](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/traffic.md) | [`road-traffic.ts`](examples/road-traffic.ts)             |
-| `tdx.ship`    | Ports, routes, timetables, fares, live boards, AIS positions      | [Ferries](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/ship.md)         | [`ferry-departures.ts`](examples/ferry-departures.ts)     |
+| Namespace     | Scope                                                           | Docs                                                                                   | Example                                                   |
+| ------------- | --------------------------------------------------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| `tdx.bike`    | YouBike / Moovo stations and live availability                  | [Public bikes](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/bike.md)    | [`nearest-youbike.ts`](examples/nearest-youbike.ts)       |
+| `tdx.bus`     | City and InterCity routes, stops, ETAs and live positions       | [Buses](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/bus.md)            | —                                                         |
+| `tdx.metro`   | Stations, lines, routes, timetables, live boards, fares, alerts | [Metro](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/metro.md)          | [`next-metro-train.ts`](examples/next-metro-train.ts)     |
+| `tdx.thsr`    | Stations, timetables, fares, seat availability, news, alerts    | [High speed rail](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/thsr.md) | [`thsr-trains.ts`](examples/thsr-trains.ts)               |
+| `tdx.tra`     | Stations, lines, timetables, fares, live boards, news, alerts   | [Taiwan Railway](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/tra.md)   | [`tra-trains.ts`](examples/tra-trains.ts)                 |
+| `tdx.parking` | Car parks and curbside segments with live free spaces           | [Parking](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/parking.md)      | [`nearest-parking.ts`](examples/nearest-parking.ts)       |
+| `tdx.ev`      | Stations, chargers, connectors, live status, prices             | [EV charging](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/ev.md)       | [`nearest-ev-charger.ts`](examples/nearest-ev-charger.ts) |
+| `tdx.air`     | Airports, airlines, live boards, weather, schedules, fares      | [Flights](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/air.md)          | [`flight-board.ts`](examples/flight-board.ts)             |
+| `tdx.traffic` | Live section speeds, cameras, signs, detectors, eTag, events    | [Road traffic](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/traffic.md) | [`road-traffic.ts`](examples/road-traffic.ts)             |
+| `tdx.ship`    | Ports, routes, timetables, fares, live boards, AIS positions    | [Ferries](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/ship.md)         | [`ferry-departures.ts`](examples/ferry-departures.ts)     |
 
 Sub-APIs follow the same pattern: `tdx.bus.interCity`, `tdx.ev.freeway`, `tdx.traffic.freeway`,
 `tdx.traffic.highway` and `tdx.ship.domestic`.

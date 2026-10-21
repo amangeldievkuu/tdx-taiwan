@@ -214,3 +214,113 @@ export interface ThsrAlert {
   SrcUpdateTime: DateTimeString;
   UpdateTime: DateTimeString;
 }
+
+/** Days a general-timetable train runs (THSR.ServiceDay): 0 = 否, 1 = 是 per weekday. */
+export interface ThsrGeneralServiceDay {
+  Monday: 0 | 1;
+  Tuesday: 0 | 1;
+  Wednesday: 0 | 1;
+  Thursday: 0 | 1;
+  Friday: 0 | 1;
+  Saturday: 0 | 1;
+  Sunday: 0 | 1;
+}
+
+/** Timetable of one train in the general (regular) timetable (THSR.GeneralTimetable). */
+export interface ThsrGeneralTimetableDetail {
+  GeneralTrainInfo: ThsrDailyTrainInfo;
+  StopTimes: ThsrStopTime[];
+  ServiceDay: ThsrGeneralServiceDay;
+  SrcUpdateTime: DateTimeString;
+}
+
+/**
+ * Regular timetable entry (THSR.RailGeneralTimetable) — `GET /v2/Rail/THSR/GeneralTimetable[/TrainNo/{TrainNo}]`.
+ * Live data sends `UpdateTime` as a bare date and `ExpiringDate` as `""`.
+ */
+export interface ThsrGeneralTimetable {
+  UpdateTime?: string | null;
+  /** `yyyy-MM-dd`. */
+  EffectiveDate: string;
+  /** `yyyy-MM-dd`, or `""` while open-ended. */
+  ExpiringDate: string;
+  VersionID: number;
+  GeneralTimetable: ThsrGeneralTimetableDetail;
+}
+
+/** A train's full stop list on one day (THSR.RailDailyTimetable) — `GET /v2/Rail/THSR/DailyTimetable/…`. */
+export interface ThsrDailyTimetable {
+  /** `yyyy-MM-dd`. */
+  TrainDate: string;
+  DailyTrainInfo: ThsrDailyTrainInfo;
+  StopTimes: ThsrStopTime[];
+  UpdateTime: DateTimeString;
+  VersionID: number;
+}
+
+/** One train calling at a station on a day (THSR.RailStationTimetable) — `GET /v2/Rail/THSR/DailyTimetable/Station/{StationID}/{TrainDate}`. */
+export interface ThsrStationTimetable {
+  TrainDate: string;
+  StationID: string;
+  StationName: NameType;
+  TrainNo: string;
+  Direction: ThsrDirection;
+  StartingStationID: string;
+  StartingStationName: NameType;
+  EndingStationID: string;
+  EndingStationName: NameType;
+  /** `HH:mm`. */
+  ArrivalTime: string;
+  DepartureTime: string;
+  UpdateTime: DateTimeString;
+  VersionID: number;
+}
+
+/** Dates the daily timetable covers (THSR.TrainDateList) — `GET /v2/Rail/THSR/DailyTimetable/TrainDates`. */
+export interface ThsrTrainDates {
+  StartDate: string;
+  EndDate: string;
+  /** `yyyy-MM-dd` strings, about four weeks. */
+  TrainDates: string[];
+  UpdateTime: DateTimeString;
+}
+
+/** News item (THSR.News) — `GET /v2/Rail/THSR/News`. `Description` is HTML with inline CSS. */
+export interface ThsrNews {
+  NewsID: string;
+  Language: string;
+  /** Free text, e.g. `營運資訊`. */
+  NewsCategory: string;
+  Title: string;
+  Description: string;
+  NewsUrl: string;
+  AttachmentUrlList: string[];
+  StartTime: DateTimeString;
+  EndTime?: DateTimeString | null;
+  PublishTime: DateTimeString;
+  UpdateTime: DateTimeString;
+}
+
+/** Map image of a station exit (THSR.ExitMapURL). */
+export interface ThsrExitMapURL {
+  MapName?: NameType | null;
+  MapURL?: string | null;
+  FloorLevel?: string | null;
+}
+
+/** Station exit (THSR.StationExit) — `GET /v2/Rail/THSR/StationExit`. */
+export interface ThsrStationExit {
+  StationID: string;
+  StationName: NameType;
+  /** e.g. `North Exit`. */
+  ExitID: string;
+  ExitName: NameType;
+  ExitPosition: PointType;
+  LocationDescription: string;
+  Stair: boolean;
+  Escalator: boolean;
+  Elevator: boolean;
+  ExitMapURLs?: ThsrExitMapURL[] | null;
+  SrcUpdateTime: DateTimeString;
+  UpdateTime: DateTimeString;
+}

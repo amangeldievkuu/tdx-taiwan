@@ -1,0 +1,39 @@
+{
+  "UpdateTime": "2026-10-21T06:22:49+08:00",
+  "UpdateInterval": 14400,
+  "SrcUpdateTime": "2026-10-21T04:00:00+08:00",
+  "SrcUpdateInterval": -1,
+  "AuthorityCode": "TRA",
+  "TrainTypes": [
+    {
+      "TrainTypeID": "1100",
+      "TrainTypeCode": "3",
+      "TrainTypeName": {
+        "Zh_tw": "自強(DMU2800、2900、3000 型柴聯及 EMU 型電車)",
+        "En": "Tze-Chiang Express",
+        "Ja": "自強",
+        "Kr": "즈창"
+      }
+    },
+    {
+      "TrainTypeID": "1101",
+      "TrainTypeCode": "1",
+      "TrainTypeName": {
+        "Zh_tw": "太魯閣(太魯閣)",
+        "En": "Taroko Express",
+        "Ja": "太魯閣",
+        "Kr": "타이루거"
+      }
+    },
+    {
+      "TrainTypeID": "1102",
+      "TrainTypeCode": "3",
+      "TrainTypeName": {
+        "Zh_tw": "自強(推拉式自強號)",
+        "En": "Tze-Chiang Express",
+        "Ja": "自強",
+        "Kr": "즈창"
+      }
+    }
+  ]
+}

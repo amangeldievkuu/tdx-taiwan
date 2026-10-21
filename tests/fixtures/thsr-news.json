@@ -1,0 +1,15 @@
+[
+  {
+    "NewsID": "2aabe3f3-4577-40ea-a9af-c59239ee37d9",
+    "Language": "Zh_tw",
+    "NewsCategory": "營運資訊",
+    "Title": "10/16增開車次 將於10/15開放預售",
+    "Description": "<style type=\"text/css\">.news { display: block; }\n\n  .news .table-wrapper { overflow: auto; }\n\n  .news table {\n    width: 790px;\n    text-align: center;\n    border-collapse: separate;\n  }\n\n  .news table td {\n    background: #efefef;\n    padding: 8px 4px;\n    min-width: 70px;\n    border-bottom: 1px solid #d7d5d5;\n    border-left: 1px solid #d7d5d5;\n  }\n\n  .news table th {\n    background: #ca4f0f;\n    color: #fff;\n    font-weight: 400;\n    padding: 4px;\n    font-size: 1em;\n    line-height: 22px;\n    border-right: 1px solid #f9f9f9;\n  }\n\n  .news .table-title {\n    font-weight: 500;\n    margin-top: 32px;\n  }\n\n  .news a {\n    color: #ca4f0f;\n    text-decoration: underline;\n    transition: all .2s;\n  }\n\n  /* .news a:hover {} */\n\n  .news ul { list-style: square;\n    margin-top: unset;margin: 0px;}\n</style><main class=\"news\"><!-- Paragraph & Link -->\n<p>台灣高鐵公司於10/16增開2班列車，將於10/15凌晨零時開放購票（增開班車資訊詳下表），增開車次標準車廂均設為自由座，僅商務車廂開放預售。</p>\n\n<p>旅客可透過「T-EX行動購票」App（內含智慧語音訂票功能）、網路訂票及高鐵合作便利商店，或於各車站營業時間至售票窗口及自動售票機購買車票。</p>\n<!-- Table -->\n\n<p class=\"table-title\">南下方向</p>\n\n<div class=\"table-wrapper\">\n<table cellpadding=\"0\" cellspacing=\"0\">\n\t<thead>\n\t\t<tr>\n\t\t\t<th>方向</th>\n\t\t\t<th scope=\"col\" style=\"min-width: 115px;\">行駛日</th>\n\t\t\t<th scope=\"col\">車次</th>\n\t\t\t<th scope=\"col\">南港</th>\n\t\t\t<th scope=\"col\">台北</th>\n\t\t\t<th scope=\"col\">板橋</th>\n\t\t\t<th scope=\"col\">桃園</th>\n\t\t\t<th scope=\"col\">新竹</th>\n\t\t\t<th scope=\"col\">苗栗</th>\n\t\t\t<th scope=\"col\">台中</th>\n\t\t</tr>\n\t</thead>\n\t<tbody>\n\t\t<tr>\n\t\t\t<td rowspan=\"2\" title=\"方向\">南下</td>\n\t\t\t<td rowspan=\"2\" title=\"日期\">10/16</td>\n\t\t\t<td title=\"車次\">1555</td>\n\t\t\t<td title=\"南港\">19:45</td>\n\t\t\t<td title=\"台北\">19:56</td>\n\t\t\t<td title=\"板橋\">20:04</td>\n\t\t\t<td title=\"桃園\">20:17</td>\n\t\t\t<td title=\"新竹\">20:28</td>\n\t\t\t<td title=\"苗栗\">20:40</td>\n\t\t\t<td title=\"台中\">20:56</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td title=\"車次\">1559</td>\n\t\t\t<td title=\"南港\">20:45</td>\n\t\t\t<td title=\"台北\">20:56</td>\n\t\t\t<td title=\"板橋\">21:04</td>\n\t\t\t<td title=\"桃園\">21:17</td>\n\t\t\t<td title=\"新竹\">21:28</td>\n\t\t\t<td title=\"苗栗\">21:40</td>\n\t\t\t<td title=\"台中\">21:56</td>\n\t\t</tr>\n\t</tbody>\n</table>\n</div>\n</main>",
+    "NewsUrl": "https://www.thsrc.com.tw/ArticleContent/2aabe3f3-4577-40ea-a9af-c59239ee37d9",
+    "AttachmentUrlList": [],
+    "StartTime": "2026-10-14T00:00:00+08:00",
+    "EndTime": "2026-11-13T00:00:00+08:00",
+    "PublishTime": "2026-10-14T00:00:00+08:00",
+    "UpdateTime": "2026-10-21T17:47:06+08:00"
+  }
+]

@@ -1,7 +1,7 @@
 // Taiwan Railway (臺鐵) types, transcribed from the TDX 公共運輸-軌道 v3 OpenAPI spec
 // (PTX.Service.DTO.Rail.Specification.V3.TRA.*). Every TRA v3 endpoint wraps its items in an
 // object. Where live data contradicts the spec, the type follows the data and says so.
-import type { DateTimeString, Flag, OpenString, PointType } from './common.js';
+import type { DateTimeString, Flag, OpenString, PointType, ZhEnName } from './common.js';
 
 /**
  * Multilingual name used by TRA v3 (TRANameType). Unlike `NameType`, every field is optional
@@ -366,4 +366,303 @@ export interface TraAlert {
 export interface TraAlerts extends TraWrapperHeader {
   AuthorityCode: string;
   Alerts: TraAlert[];
+}
+
+/** Header of the general (regular) timetable wrappers. Live data sends the text fields as `""`. */
+export interface TraTimetableWrapperHeader extends TraWrapperHeader {
+  AuthorityCode: string;
+  /** A full timestamp in live data, e.g. `2026-07-01T00:00:00+08:00`. */
+  EffectiveDate: string;
+  ExpireDate?: string | null;
+  SrcVersion?: string | null;
+  TimetableName?: string | null;
+  /** TDX's spelling. */
+  ValidityDesciption?: string | null;
+}
+
+/** Days a regular train runs (GeneralTrainTimetable.ServiceDay): 0 = 否, 1 = 是. */
+export interface TraGeneralServiceDay {
+  ServiceTag?: string | null;
+  Monday: TraFlag;
+  Tuesday: TraFlag;
+  Wednesday: TraFlag;
+  Thursday: TraFlag;
+  Friday: TraFlag;
+  Saturday: TraFlag;
+  Sunday: TraFlag;
+  NationalHolidays: TraFlag;
+  DayBeforeHoliday: TraFlag;
+  DayAfterHoliday: TraFlag;
+  TyphoonDay: TraFlag;
+}
+
+/** Train information in the regular timetable (GeneralTrainTimetable.TrainInfo). */
+export interface TraGeneralTrainInfo {
+  TrainNo: string;
+  /** Often `""`. */
+  RouteID?: string | null;
+  Direction: TraDirection;
+  TrainTypeID?: string | null;
+  TrainTypeCode?: TraTrainTypeCode | null;
+  TrainTypeName?: TraNameType | null;
+  TripHeadSign?: string | null;
+  StartingStationID?: string | null;
+  StartingStationName?: TraNameType | null;
+  EndingStationID?: string | null;
+  EndingStationName?: TraNameType | null;
+  OverNightStationID?: string | null;
+  TripLine?: TraTripLine | null;
+  WheelChairFlag: TraFlag;
+  PackageServiceFlag: TraFlag;
+  DiningFlag: TraFlag;
+  BreastFeedFlag: TraFlag;
+  BikeFlag: TraFlag;
+  CarFlag: TraFlag;
+  DailyFlag: TraFlag;
+  ExtraTrainFlag: TraFlag;
+  Note?: string | null;
+}
+
+/** A stop in the regular timetable (GeneralTrainTimetable.StopTime); times are `HH:mm`. */
+export interface TraGeneralStopTime {
+  StopSequence: number;
+  StationID: string;
+  StationName: TraNameType;
+  ArrivalTime: string;
+  DepartureTime: string;
+}
+
+/** One regular train (GeneralTrainTimetable). */
+export interface TraGeneralTrainTimetable {
+  TrainInfo: TraGeneralTrainInfo;
+  StopTimes: TraGeneralStopTime[];
+  ServiceDay: TraGeneralServiceDay;
+}
+
+/** Regular timetable — `GET /v3/Rail/TRA/GeneralTrainTimetable[/TrainNo/{TrainNo}]`. */
+export interface TraGeneralTimetables extends TraTimetableWrapperHeader {
+  TrainTimetables: TraGeneralTrainTimetable[];
+}
+
+/** Days a regular station departure runs (GeneralStationTimetable.ServiceDay), as booleans. */
+export interface TraStationServiceDay {
+  ServiceTag?: string | null;
+  Monday: boolean;
+  Tuesday: boolean;
+  Wednesday: boolean;
+  Thursday: boolean;
+  Friday: boolean;
+  Saturday: boolean;
+  Sunday: boolean;
+  NationalHolidays?: boolean | null;
+  DayBeforeHoliday?: boolean | null;
+  DayAfterHoliday?: boolean | null;
+  TyphoonDay?: boolean | null;
+}
+
+/** One departure in a station timetable (GeneralStationTimetable.Timetable / StationTimetable.TimeTable). */
+export interface TraStationTimetableEntry {
+  Sequence?: number | null;
+  TrainNo?: string | null;
+  DestinationStationID?: string | null;
+  DestinationStationName?: TraNameType | null;
+  TrainTypeID?: string | null;
+  TrainTypeCode?: TraTrainTypeCode | null;
+  TrainTypeName?: TraNameType | null;
+  ArrivalTime?: string | null;
+  DepartureTime?: string | null;
+  /** Daily timetables only: 0 = runs, 1 = suspended at this station. */
+  SuspendedFlag?: TraFlag | null;
+  /** Daily timetables only. */
+  ServiceType?: TraServiceType | null;
+}
+
+/** Regular departures from a station in one direction (GeneralStationTimetable). */
+export interface TraGeneralStationTimetable {
+  RouteID?: string | null;
+  StationID: string;
+  StationName?: TraNameType | null;
+  Direction: TraDirection;
+  Timetables: TraStationTimetableEntry[];
+  ServiceDay: TraStationServiceDay;
+}
+
+/** Regular station timetables — `GET /v3/Rail/TRA/GeneralStationTimetable[/Station/{StationID}]`. */
+export interface TraGeneralStationTimetables extends TraTimetableWrapperHeader {
+  StationTimetables: TraGeneralStationTimetable[];
+}
+
+/** Departures from a station on one day in one direction (DailyStationTimeTable.StationTimetable). */
+export interface TraStationTimetable {
+  RouteID?: string | null;
+  StationID?: string | null;
+  StationName?: TraNameType | null;
+  Direction?: TraDirection | null;
+  /** TDX's capitalisation. */
+  TimeTables: TraStationTimetableEntry[];
+}
+
+/** Daily station timetables — `GET /v3/Rail/TRA/DailyStationTimetable/…`. One item per station and direction holds every train of the day. */
+export interface TraStationTimetables extends TraWrapperHeader {
+  AuthorityCode?: string;
+  /** `yyyy-MM-dd`. */
+  TrainDate: string;
+  StationTimetables: TraStationTimetable[];
+}
+
+/** Dates the daily timetable covers — `GET /v3/Rail/TRA/DailyTrainTimetable/TrainDates`. */
+export interface TraTrainDates {
+  UpdateTime: DateTimeString;
+  UpdateInterval: number;
+  AuthorityCode: string;
+  StartDate: string;
+  EndDate: string;
+  /** `yyyy-MM-dd` strings, about two months. */
+  TrainDates: string[];
+  Count: number;
+}
+
+/** Line (TRA.Line). */
+export interface TraLine {
+  LineNo: string;
+  /** e.g. `WL` 西部幹線, `EL` 東部幹線, `CZ` 成追線. */
+  LineID: string;
+  LineName: ZhEnName;
+  LineSectionName: ZhEnName;
+  LineColor?: string | null;
+  IsBranch: boolean;
+  LineGroup?: string | null;
+  LineURL?: string | null;
+}
+
+/** Lines — `GET /v3/Rail/TRA/Line`. */
+export interface TraLines extends TraWrapperHeader {
+  AuthorityCode: string;
+  Lines: TraLine[];
+}
+
+/** Station of a line (StationOfLine.LineStation). */
+export interface TraLineStation {
+  Sequence: number;
+  StationID: string;
+  StationName: TraNameType;
+  /** Kilometres from the start of the line. */
+  CumulativeDistance: number;
+}
+
+/** Ordered stations of a line (StationOfLine). */
+export interface TraStationOfLine {
+  LineNo: string;
+  LineID: string;
+  Stations: TraLineStation[];
+}
+
+/** Stations of every line — `GET /v3/Rail/TRA/StationOfLine`. */
+export interface TraStationOfLines extends TraWrapperHeader {
+  AuthorityCode: string;
+  StationOfLines: TraStationOfLine[];
+}
+
+/** Train type (TRA.TrainType). Several IDs share one `TrainTypeCode`. */
+export interface TraTrainType {
+  /** e.g. `1100`. */
+  TrainTypeID: string;
+  TrainTypeCode: TraTrainTypeCode;
+  TrainTypeName: TraNameType;
+}
+
+/** Train types — `GET /v3/Rail/TRA/TrainType`. */
+export interface TraTrainTypes extends TraWrapperHeader {
+  AuthorityCode: string;
+  TrainTypes: TraTrainType[];
+}
+
+/** One exit of a station (StationExit.Exit). */
+export interface TraExit {
+  /** Composite, e.g. `0900-S Station (Zhongshan 1st Rd.)`. */
+  ExitID: string;
+  ExitName: ZhEnName;
+  ExitPosition: PointType;
+  Bearing?: string | null;
+  RoadName?: string | null;
+  LocationDescription?: string | null;
+  Stair?: boolean | null;
+  /** 0 none, 1 both ways, 2 exit only, 3 entry only. */
+  Escalator: number;
+  Elevator?: boolean | null;
+}
+
+/** Map image of a station's exits (StationExit.ExitMapURL). */
+export interface TraExitMapURL {
+  MapName: ZhEnName;
+  MapURL?: string | null;
+  FloorLevel?: string | null;
+}
+
+/** Exits of a station (StationExit). */
+export interface TraStationExit {
+  StationID: string;
+  StationName: TraNameType;
+  Exits: TraExit[];
+  ExitMapURLs?: TraExitMapURL[] | null;
+}
+
+/** Station exits — `GET /v3/Rail/TRA/StationExit`. */
+export interface TraStationExits extends TraWrapperHeader {
+  AuthorityCode: string;
+  StationExits: TraStationExit[];
+}
+
+/** Location of a facility (StationFacility.FacilityInfo). Live data can send `Description: ""`. */
+export interface TraFacilityInfo {
+  Description: string;
+  FloorLevel?: string | null;
+}
+
+/** Map image of a station's facilities (StationFacility.FacilityMapURL). */
+export interface TraFacilityMapURL {
+  MapName: ZhEnName;
+  MapURL: string;
+  FloorLevel?: string | null;
+}
+
+/** Facilities of a station (StationFacility). */
+export interface TraStationFacility {
+  StationID: string;
+  StationName: TraNameType;
+  FacilityMapURLs: TraFacilityMapURL[];
+  Elevators: TraFacilityInfo[];
+  InformationSpots: TraFacilityInfo[];
+  DrinkingFountains: TraFacilityInfo[];
+  Toilets: TraFacilityInfo[];
+}
+
+/** Station facilities — `GET /v3/Rail/TRA/StationFacility`. */
+export interface TraStationFacilities extends TraWrapperHeader {
+  AuthorityCode: string;
+  StationFacilities: TraStationFacility[];
+}
+
+/** News item (TRANewsList.News). `Description` can contain HTML. */
+export interface TraNews {
+  NewsID: string;
+  /** 1 Zh_tw, 2 En_us, 3 Zh_cn, 4 Ja, 5 Ko, 99 other. */
+  Language: number;
+  Department?: string | null;
+  Title: string;
+  /** 1 最新消息, 2 新聞稿, 3 營運資訊, 4 轉乘資訊, 5 活動訊息, 6 系統公告, 7-9 platform notices, 99 其他. */
+  NewsCategory: number;
+  Description: string;
+  NewsURL?: string | null;
+  AttachmentURL?: string | null;
+  StartTime?: DateTimeString | null;
+  EndTime?: DateTimeString | null;
+  PublishTime: DateTimeString;
+  UpdateTime: DateTimeString;
+}
+
+/** News — `GET /v3/Rail/TRA/News`. */
+export interface TraNewsList extends TraWrapperHeader {
+  AuthorityCode: string;
+  Newses: TraNews[];
 }

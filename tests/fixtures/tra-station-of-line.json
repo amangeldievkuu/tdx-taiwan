@@ -1,0 +1,36 @@
+{
+  "UpdateTime": "2026-10-21T06:22:49+08:00",
+  "UpdateInterval": 14400,
+  "SrcUpdateTime": "2026-10-21T04:00:00+08:00",
+  "SrcUpdateInterval": -1,
+  "AuthorityCode": "TRA",
+  "StationOfLines": [
+    {
+      "LineID": "CZ",
+      "Stations": [
+        {
+          "Sequence": 0,
+          "StationID": "3350",
+          "StationName": {
+            "Zh_tw": "成功",
+            "En": "Chenggong",
+            "Ja": "成功",
+            "Kr": "청공"
+          },
+          "CumulativeDistance": 0
+        },
+        {
+          "Sequence": 1,
+          "StationID": "2260",
+          "StationName": {
+            "Zh_tw": "追分",
+            "En": "Zhuifen",
+            "Ja": "追分",
+            "Kr": "줴이펀"
+          },
+          "CumulativeDistance": 2.2
+        }
+      ]
+    }
+  ]
+}

@@ -3,12 +3,27 @@ import type {
   MetroAlertSystem,
   MetroAlerts,
   MetroFirstLastTimetable,
+  MetroFrequency,
   MetroLine,
+  MetroLineTransfer,
   MetroLiveBoard,
   MetroLiveBoardSystem,
+  MetroLivePosition,
+  MetroLivePositionSystem,
+  MetroLivePositions,
+  MetroNews,
+  MetroNewsList,
+  MetroNewsSystem,
   MetroODFare,
+  MetroRoute,
   MetroStation,
+  MetroStationExit,
+  MetroStationFacility,
   MetroStationOfLine,
+  MetroStationOfRoute,
+  MetroStationTimetable,
+  MetroStationTransfer,
+  MetroStationTransfers,
   MetroSystem,
   MetroTimetableSystem,
 } from '../types/metro.js';
@@ -92,5 +107,124 @@ export class MetroApi {
    */
   alerts(system: MetroAlertSystem, query?: QueryInput<MetroAlert>): Promise<MetroAlerts> {
     return this.object(`/v2/Rail/Metro/Alert/${segment(system, 'system')}`, query, 'realtime');
+  }
+  /**
+   * Station exits with position, address and stairs / escalator / lift flags. Cached with the
+   * static TTL. `GET /v2/Rail/Metro/StationExit/{RailSystem}`
+   */
+  stationExits(
+    system: MetroSystem,
+    query?: QueryInput<MetroStationExit>,
+  ): Promise<MetroStationExit[]> {
+    return this.list(`/v2/Rail/Metro/StationExit/${segment(system, 'system')}`, query, 'static');
+  }
+
+  /**
+   * Lifts, information desks, drinking fountains and toilets per station, with map links.
+   * Cached with the static TTL. `GET /v2/Rail/Metro/StationFacility/{RailSystem}`
+   */
+  stationFacilities(
+    system: MetroSystem,
+    query?: QueryInput<MetroStationFacility>,
+  ): Promise<MetroStationFacility[]> {
+    return this.list(
+      `/v2/Rail/Metro/StationFacility/${segment(system, 'system')}`,
+      query,
+      'static',
+    );
+  }
+
+  /**
+   * Transfers between lines at interchange stations, with the minutes they take (TRTC, KRTC,
+   * NTMC). Cached with the static TTL. `GET /v2/Rail/Metro/LineTransfer/{RailSystem}`
+   */
+  lineTransfers(
+    system: MetroSystem,
+    query?: QueryInput<MetroLineTransfer>,
+  ): Promise<MetroLineTransfer[]> {
+    return this.list(`/v2/Rail/Metro/LineTransfer/${segment(system, 'system')}`, query, 'static');
+  }
+
+  /**
+   * Transfers to buses, bikes, car parks and other modes at each exit (TRTC, NTMC, TYMC).
+   * Returns an object; the query applies to its `StationTransfers`. Cached with the static TTL.
+   * `GET /v2/Rail/Metro/StationTransfer/{RailSystem}`
+   */
+  stationTransfers(
+    system: MetroSystem,
+    query?: QueryInput<MetroStationTransfer>,
+  ): Promise<MetroStationTransfers> {
+    return this.object(
+      `/v2/Rail/Metro/StationTransfer/${segment(system, 'system')}`,
+      query,
+      'static',
+    );
+  }
+
+  /**
+   * Service routes (a line's end-to-end runs, one per direction) with run time and length.
+   * Cached with the static TTL. `GET /v2/Rail/Metro/Route/{RailSystem}`
+   */
+  routes(system: MetroSystem, query?: QueryInput<MetroRoute>): Promise<MetroRoute[]> {
+    return this.list(`/v2/Rail/Metro/Route/${segment(system, 'system')}`, query, 'static');
+  }
+
+  /**
+   * Ordered stations of each service route. Cached with the static TTL.
+   * `GET /v2/Rail/Metro/StationOfRoute/{RailSystem}`
+   */
+  stationsOfRoute(
+    system: MetroSystem,
+    query?: QueryInput<MetroStationOfRoute>,
+  ): Promise<MetroStationOfRoute[]> {
+    return this.list(`/v2/Rail/Metro/StationOfRoute/${segment(system, 'system')}`, query, 'static');
+  }
+
+  /**
+   * Headways per route, kind of day and time band (TRTC, TYMC, TMRT, NTMC, KRTC). Cached with
+   * the static TTL. `GET /v2/Rail/Metro/Frequency/{RailSystem}`
+   */
+  frequency(system: MetroSystem, query?: QueryInput<MetroFrequency>): Promise<MetroFrequency[]> {
+    return this.list(`/v2/Rail/Metro/Frequency/${segment(system, 'system')}`, query, 'static');
+  }
+
+  /**
+   * Every departure from each station towards each destination, per kind of day. TRTC does not
+   * publish the 文湖線 here (use `frequency`). Cached with the static TTL.
+   * `GET /v2/Rail/Metro/StationTimeTable/{RailSystem}`
+   */
+  stationTimetable(
+    system: MetroTimetableSystem,
+    query?: QueryInput<MetroStationTimetable>,
+  ): Promise<MetroStationTimetable[]> {
+    return this.list(
+      `/v2/Rail/Metro/StationTimeTable/${segment(system, 'system')}`,
+      query,
+      'static',
+    );
+  }
+
+  /**
+   * News of an operator (TRTC, KRTC, TYMC, KLRT, TMRT). Returns an object; the query applies to
+   * its `Newses`. Cached with the real-time TTL. `GET /v2/Rail/Metro/News/{RailSystem}`
+   */
+  news(system: MetroNewsSystem, query?: QueryInput<MetroNews>): Promise<MetroNewsList> {
+    return this.object(`/v2/Rail/Metro/News/${segment(system, 'system')}`, query, 'realtime');
+  }
+
+  /**
+   * Live train positions. Only the Kaohsiung light rail (`KLRT`) publishes them; other systems
+   * get a 400. Returns an object; the query applies to its `LivePositions`. Cached with the
+   * real-time TTL. `GET /v2/Rail/Metro/LivePosition/{RailSystem}`
+   */
+  livePosition(
+    system: MetroLivePositionSystem,
+    query?: QueryInput<MetroLivePosition>,
+  ): Promise<MetroLivePositions> {
+    return this.object(
+      `/v2/Rail/Metro/LivePosition/${segment(system, 'system')}`,
+      query,
+      'realtime',
+    );
   }
 }

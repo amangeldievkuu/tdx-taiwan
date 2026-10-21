@@ -5,13 +5,20 @@ Stations are identified by ID: `0990` 南港, `1000` 台北, `1010` 板橋, `102
 
 ## Methods
 
-| Method                                        | TDX endpoint                                                 | Returns              |
-| --------------------------------------------- | ------------------------------------------------------------ | -------------------- |
-| `tdx.thsr.stations(query?)`                   | `GET /v2/Rail/THSR/Station`                                  | `ThsrStation[]`      |
-| `tdx.thsr.timetable(from, to, date?, query?)` | `GET /v2/Rail/THSR/DailyTimetable/OD/{O}/to/{D}/{TrainDate}` | `ThsrODTimetable[]`  |
-| `tdx.thsr.odFare(from, to, query?)`           | `GET /v2/Rail/THSR/ODFare/{O}/to/{D}`                        | `ThsrODFare[]`       |
-| `tdx.thsr.availableSeats(station, query?)`    | `GET /v2/Rail/THSR/AvailableSeatStatusList/{StationID}`      | `ThsrAvailableSeats` |
-| `tdx.thsr.alerts(query?)`                     | `GET /v2/Rail/THSR/AlertInfo`                                | `ThsrAlert[]`        |
+| Method                                              | TDX endpoint                                                               | Returns                  |
+| --------------------------------------------------- | -------------------------------------------------------------------------- | ------------------------ |
+| `tdx.thsr.stations(query?)`                         | `GET /v2/Rail/THSR/Station`                                                | `ThsrStation[]`          |
+| `tdx.thsr.timetable(from, to, date?, query?)`       | `GET /v2/Rail/THSR/DailyTimetable/OD/{O}/to/{D}/{TrainDate}`               | `ThsrODTimetable[]`      |
+| `tdx.thsr.odFare(from, to, query?)`                 | `GET /v2/Rail/THSR/ODFare/{O}/to/{D}`                                      | `ThsrODFare[]`           |
+| `tdx.thsr.availableSeats(station?, query?)`         | `GET /v2/Rail/THSR/AvailableSeatStatusList[/{StationID}]`                  | `ThsrAvailableSeats`     |
+| `tdx.thsr.alerts(query?)`                           | `GET /v2/Rail/THSR/AlertInfo`                                              | `ThsrAlert[]`            |
+| `tdx.thsr.generalTimetable(trainNo?, query?)`       | `GET /v2/Rail/THSR/GeneralTimetable[/TrainNo/{TrainNo}]`                   | `ThsrGeneralTimetable[]` |
+| `tdx.thsr.dailyTimetable(date?, query?)`            | `GET /v2/Rail/THSR/DailyTimetable/TrainDate/{TrainDate}`                   | `ThsrDailyTimetable[]`   |
+| `tdx.thsr.trainTimetable(trainNo, date?, query?)`   | `GET /v2/Rail/THSR/DailyTimetable/TrainNo/{TrainNo}/TrainDate/{TrainDate}` | `ThsrDailyTimetable[]`   |
+| `tdx.thsr.stationTimetable(station, date?, query?)` | `GET /v2/Rail/THSR/DailyTimetable/Station/{StationID}/{TrainDate}`         | `ThsrStationTimetable[]` |
+| `tdx.thsr.trainDates(query?)`                       | `GET /v2/Rail/THSR/DailyTimetable/TrainDates`                              | `ThsrTrainDates`         |
+| `tdx.thsr.news(query?)`                             | `GET /v2/Rail/THSR/News`                                                   | `ThsrNews[]`             |
+| `tdx.thsr.stationExits(query?)`                     | `GET /v2/Rail/THSR/StationExit`                                            | `ThsrStationExit[]`      |
 
 ## Example
 
@@ -56,6 +63,16 @@ const board = await tdx.thsr.availableSeats('1000');
 - `availableSeats` returns an object (`{ UpdateTime, AvailableSeats }`); the query filters the
   `AvailableSeats` items. During disruptions THSR freezes the board at the last normal state.
 - `alerts` returns a single "全線營運正常(Normal)" record with an empty `Status` on a normal day.
+- Timetables: `timetable(from, to, date)` is the station-pair view; `dailyTimetable(date)` every
+  train's full stop list for a day, `trainTimetable(trainNo, date)` one train's, and
+  `stationTimetable(station, date)` every train calling at a station. `generalTimetable(trainNo?)`
+  is the regular timetable with weekdays (`ServiceDay` uses 0/1), an `EffectiveDate` and an
+  `ExpiringDate` that is `""` while open-ended. `trainDates()` lists the covered dates (about
+  four weeks). Dates default to today in Taiwan.
+- `availableSeats()` without a station returns the board for every station. `stationExits()`
+  gives each exit's position and accessibility flags. `news()` items carry HTML with inline CSS
+  in `Description` and a free-text `NewsCategory`. Not wrapped: shapes, stations of line, the
+  OD seat-status feeds and free-seating cars; use `tdx.get`.
 
 ## See also
 
@@ -65,4 +82,4 @@ const board = await tdx.thsr.availableSeats('1000');
 
 ## 繁體中文
 
-高鐵：`tdx.thsr.timetable('1000', '1070', '2026-10-21')` 查詢指定日期起迄站時刻表（日期可為 `Date` 或 `YYYY-MM-DD`，預設為臺灣時間今天；僅提供約四週內的資料），另有 `odFare`（票價）、`availableSeats`（對號座剩餘座位：O 尚有、L 有限、X 已無）與 `alerts`（營運通阻）。
+高鐵：`tdx.thsr.timetable('1000', '1070', '2026-10-21')` 查詢指定日期起迄站時刻表（日期可為 `Date` 或 `YYYY-MM-DD`，預設為臺灣時間今天；僅提供約四週內的資料），另有 `odFare`（票價）、`availableSeats`（對號座剩餘座位：O 尚有、L 有限、X 已無）與 `alerts`（營運通阻）。時刻表另有 `dailyTimetable(date?)`（當日全部車次）、`trainTimetable(trainNo, date?)`、`stationTimetable(station, date?)`（站別時刻表）、`generalTimetable(trainNo?)`（定期時刻表）與 `trainDates()`（可查日期）；`availableSeats()` 不帶車站可取得全部車站看板；另有 `news()` 與 `stationExits()`。
