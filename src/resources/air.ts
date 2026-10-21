@@ -4,8 +4,16 @@ import type {
   AirAirportBoard,
   AirAirportId,
   AirArrival,
+  AirDailyFlightSchedule,
   AirDeparture,
+  AirDomesticAirline,
   AirFlight,
+  AirGeneralSchedule,
+  AirMetar,
+  AirNews,
+  AirRouteFare,
+  AirScheduleScope,
+  AirSeatAvailability,
 } from '../types/air.js';
 import {
   type ListRequester,
@@ -13,6 +21,7 @@ import {
   type QueryInput,
   optional,
   segment,
+  trainDate,
 } from './requester.js';
 
 /**
@@ -121,5 +130,94 @@ export class AirApi {
   ): Promise<AirAirportBoard[]> {
     const base = '/v2/Air/FIDS/Airport';
     return this.list(...optional(base, 'airport', airportOrQuery, query), 'realtime');
+  }
+
+  /**
+   * Current weather observations (METAR) at Taiwan's 18 airports, or at one airport. Every
+   * value is a string with its unit; an unknown airport yields an empty list. Cached with the
+   * real-time TTL. `GET /v2/Air/METAR/Airport[/{IATA}]`
+   */
+  metar(query?: QueryInput<AirMetar>): Promise<AirMetar[]>;
+  metar(airport: AirAirportId, query?: QueryInput<AirMetar>): Promise<AirMetar[]>;
+  metar(
+    airportOrQuery?: AirAirportId | QueryInput<AirMetar>,
+    query?: QueryInput<AirMetar>,
+  ): Promise<AirMetar[]> {
+    const base = '/v2/Air/METAR/Airport';
+    return this.list(...optional(base, 'airport', airportOrQuery, query), 'realtime');
+  }
+
+  /**
+   * The published timetable: every scheduled flight with its weekdays and validity period.
+   * `Domestic` is about 1,200 rows, `International` 6,700 (2 MB), so filter on `AirlineID` or the
+   * airports. Cached with the static TTL. `GET /v2/Air/GeneralSchedule/{Domestic|International}`
+   *
+   * @example tdx.air.generalSchedule('International', { filter: "DepartureAirportID eq 'TPE' and ArrivalAirportID eq 'NRT'" })
+   */
+  generalSchedule(
+    scope: AirScheduleScope,
+    query?: QueryInput<AirGeneralSchedule>,
+  ): Promise<AirGeneralSchedule[]> {
+    return this.list(`/v2/Air/GeneralSchedule/${segment(scope, 'scope')}`, query, 'static');
+  }
+
+  /**
+   * Day-by-day domestic flights of one airline: `AE` (華信, through the end of next month),
+   * `B7` (立榮, about 15 days) or `DA` (德安, about 60 days). AE alone is 6,600 rows (3 MB), so
+   * filter on `FlightDate` or `AirRouteID`. Cached with the static TTL.
+   * `GET /v2/Air/DailyFlightSchedule/Domestic/{IATA}`
+   *
+   * @example tdx.air.dailySchedule('AE', { filter: "FlightDate eq '2026-10-22' and AirRouteID eq 'TSA-KNH'" })
+   */
+  dailySchedule(
+    airline: AirDomesticAirline,
+    query?: QueryInput<AirDailyFlightSchedule>,
+  ): Promise<AirDailyFlightSchedule[]> {
+    const path = `/v2/Air/DailyFlightSchedule/Domestic/${segment(airline, 'airline')}`;
+    return this.list(path, query, 'static');
+  }
+
+  /**
+   * Published fares of one domestic airline's routes (`AE`, `B7` or `DA`). Cached with the
+   * static TTL. `GET /v2/Air/RouteFare/Domestic/{IATA}`
+   */
+  routeFares(
+    airline: AirDomesticAirline,
+    query?: QueryInput<AirRouteFare>,
+  ): Promise<AirRouteFare[]> {
+    const path = `/v2/Air/RouteFare/Domestic/${segment(airline, 'airline')}`;
+    return this.list(path, query, 'static');
+  }
+
+  /**
+   * Seats left on one domestic flight. Take `airRoute` (`TSA-KNH`), the date and the digits-only
+   * number from `dailySchedule`. TDX forwards each call to the airline with a 30 s timeout, so
+   * expect slow answers and occasional 500s even for valid flights (consider `maxRetries: 0` on a
+   * client used for this); a flight not in the daily schedule is a 400. 立榮 (B7) limits it to
+   * 100 calls per half hour per IP. Cached with the real-time TTL.
+   * `GET /v2/Air/SeatAvailability/Domestic/{IATA}/AirRoute/{AirRoute}/FlightDate/{FlightDate}/FlightNumber/{FlightNumber}`
+   *
+   * @example tdx.air.seatAvailability('AE', 'TSA-KNH', '2026-10-22', '1281')
+   */
+  seatAvailability(
+    airline: AirDomesticAirline,
+    airRoute: string,
+    flightDate: Date | string,
+    flightNumber: string,
+    query?: QueryInput<AirSeatAvailability>,
+  ): Promise<AirSeatAvailability[]> {
+    const path =
+      `/v2/Air/SeatAvailability/Domestic/${segment(airline, 'airline')}` +
+      `/AirRoute/${segment(airRoute, 'airRoute')}/FlightDate/${trainDate(flightDate)}` +
+      `/FlightNumber/${segment(flightNumber, 'flightNumber')}`;
+    return this.list(path, query, 'realtime');
+  }
+
+  /**
+   * News from the Civil Aeronautics Administration (民用航空局). Cached with the real-time TTL.
+   * `GET /v2/Air/News`
+   */
+  news(query?: QueryInput<AirNews>): Promise<AirNews[]> {
+    return this.list('/v2/Air/News', query, 'realtime');
   }
 }

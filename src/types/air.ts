@@ -208,3 +208,233 @@ export interface AirAirportBoard {
   FIDSArrival: AirArrival[];
   UpdateTime: DateTimeString;
 }
+
+/** `Domestic` or `International` general schedule. */
+export type AirScheduleScope = OpenString<'Domestic' | 'International'>;
+
+/** Domestic airlines with daily schedules, fares and seat availability: `AE` 華信, `B7` 立榮, `DA` 德安. */
+export type AirDomesticAirline = OpenString<'AE' | 'B7' | 'DA'>;
+
+/**
+ * Airport weather observation (METAR) — `GET /v2/Air/METAR/Airport[/{IATA}]`. Every measurement
+ * is a string with its unit, as TDX sends it (`"25 KT"`, `"26°C"`, `"9999 M"`); `MetarText` is
+ * the raw report.
+ */
+export interface AirMetar {
+  AirportID: string;
+  /** ICAO station code, e.g. `RCTP`. */
+  StationID: string;
+  CountryName: AirName;
+  /** `{}` in live data. */
+  CityName: AirName;
+  AirportName: AirName;
+  StationPosition: PointType;
+  ObservationTime: DateTimeString;
+  /** Raw METAR / SPECI report. */
+  MetarText: string;
+  MetarTime: DateTimeString;
+  /** e.g. `40 degree`. */
+  WindDirection: string;
+  /** e.g. `25 KT`. */
+  WindSpeed: string;
+  /** e.g. `9999 M` (10 km or more). */
+  Visibility: string;
+  /** e.g. `800 FT`. */
+  Ceiling: string;
+  /** e.g. `26°C`. */
+  Temperature: string;
+  WeatherDescription: AirName;
+  UpdateTime: DateTimeString;
+}
+
+/** Code-share flight in a general schedule (CodeShare). */
+export interface AirCodeShare {
+  AirlineID: string;
+  /** Digits only. */
+  FlightNumber: string;
+}
+
+/**
+ * Scheduled flight valid for a date range (GeneralFlightSchedule) —
+ * `GET /v2/Air/GeneralSchedule/{Domestic|International}`. Unlike the FIDS records,
+ * `FlightNumber` here includes the airline code (`AE1261`), zero-padded to three digits.
+ */
+export interface AirGeneralSchedule {
+  AirlineID: string;
+  /** `yyyy-MM-dd`. */
+  ScheduleStartDate: string;
+  ScheduleEndDate: string;
+  /** With the airline prefix, e.g. `AE1261`. */
+  FlightNumber: string;
+  DepartureAirportID: string;
+  /** Local `HH:mm`; `+1` marks the next day. */
+  DepartureTime: string;
+  /** Always `[]` in live data. */
+  CodeShare?: AirCodeShare[];
+  ArrivalAirportID: string;
+  ArrivalTime: string;
+  Monday: boolean;
+  Tuesday: boolean;
+  Wednesday: boolean;
+  Thursday: boolean;
+  Friday: boolean;
+  Saturday: boolean;
+  Sunday: boolean;
+  Terminal?: string;
+  UpdateTime: DateTimeString;
+  VersionID: number;
+}
+
+/** Airport reference in schedules and fares (Airport). */
+export interface AirScheduleAirport {
+  AirportID: string;
+  AirportName: AirName;
+}
+
+/** Intermediate stop of a daily flight (TransitAirport). */
+export interface AirTransitAirport {
+  /** From 1. */
+  TransitSequence: number;
+  TransitAirportID: string;
+  TransitCause?: string;
+  ArrivalTime: string;
+  DepartureTime: string;
+}
+
+/** Alternative aircraft type (SecondaryAircraftType). */
+export interface AirSecondaryAircraftType {
+  /** From 1. */
+  Priority: number;
+  /** IATA aircraft code. */
+  AircraftType: string;
+}
+
+/** Code-share flight number on a daily flight (CodeShare). */
+export interface AirDailyCodeShare {
+  FlightNumber: string;
+}
+
+/**
+ * One day's scheduled domestic flight (DailyFlightSchedule) —
+ * `GET /v2/Air/DailyFlightSchedule/Domestic/{IATA}`. `FlightRemark` is `""` for a normal flight,
+ * `X` cancelled, `S` code share. `IsCargo`, `AirFlightType`, `SeatCapacity`, `LoadCapacity` and
+ * `FlightDistance` are in the spec but never present in live data.
+ */
+export interface AirDailyFlightSchedule {
+  AirlineID: string;
+  /** `DEP-ARR`, e.g. `TSA-KNH`; the `airRoute` of `seatAvailability`. */
+  AirRouteID: string;
+  /** `yyyy-MM-dd`. */
+  FlightDate: string;
+  /** Digits only. */
+  FlightNumber: string;
+  DepartureAirport: AirScheduleAirport;
+  /** Local `HH:mm`; `+1` marks the next day. */
+  DepartureTime: string;
+  TransitAirports?: AirTransitAirport[];
+  /** IATA aircraft code, e.g. `AT7`. */
+  AircraftType: string;
+  SecondaryAircraftTypes?: AirSecondaryAircraftType[];
+  CodeShares?: AirDailyCodeShare[];
+  ArrivalAirport: AirScheduleAirport;
+  ArrivalTime: string;
+  FlightRemark: string;
+  AirFlightType?: AirRouteType;
+  /** 0 = 否, 1 = 是. */
+  IsCargo?: 0 | 1;
+  SeatCapacity?: number;
+  /** Tonnes. */
+  LoadCapacity?: number;
+  /** Miles. */
+  FlightDistance?: number;
+  SrcUpdateTime: DateTimeString;
+  UpdateTime: DateTimeString;
+}
+
+/** 票種類型: 1 = 一般民眾 (general public), 2 = 離島居民 (outlying-island residents). */
+export type AirFareTicketType = 1 | 2;
+
+/**
+ * 費率等級: 1 = 成人, 2 = 學生, 3 = 孩童, 4 = 敬老, 5 = 愛心, 6 = 愛心孩童, 7 = 愛心優待/愛心陪伴,
+ * 8 = 軍警, 9 = 縣府補助愛心, 10 = 縣府補助愛心陪同, 11 = 促銷優惠.
+ */
+export type AirFareClass = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
+
+/** 艙等: 1 = 頭等艙 (first), 2 = 商務艙 (business), 3 = 豪華經濟艙 (premium economy), 4 = 經濟艙 (economy). */
+export type AirCabinClass = 1 | 2 | 3 | 4;
+
+/** One fare of a route (Fare). */
+export interface AirFare {
+  /** e.g. `全額票`, `敬老票`. */
+  FareName: string;
+  TicketType: AirFareTicketType;
+  FareClass: AirFareClass;
+  CabinClass?: AirCabinClass;
+  /** NT$. */
+  Price: number;
+}
+
+/** Published fares of a domestic route (RouteFare) — `GET /v2/Air/RouteFare/Domestic/{IATA}`. */
+export interface AirRouteFare {
+  AirlineID: string;
+  /** `DEP-ARR`, e.g. `HUN-KHH`. */
+  AirRouteID: string;
+  DepartureAirport: AirScheduleAirport;
+  ArrivalAirport: AirScheduleAirport;
+  Fares: AirFare[];
+  SrcUpdateTime: DateTimeString;
+  UpdateTime: DateTimeString;
+}
+
+/** 售票狀態: 1 = 尚有空位 (available), 2 = 座位有限 (fewer than 5), 3 = 無座位 (sold out). */
+export type AirSeatStatus = 1 | 2 | 3;
+
+/** Seats per cabin class (CabinSeat). */
+export interface AirCabinSeat {
+  CabinClass: AirCabinClass;
+  TotalSeats: number;
+  SoldSeats: number;
+  SeatStatus: AirSeatStatus;
+}
+
+/**
+ * Live seats left on a domestic flight (SeatAvailability) —
+ * `GET /v2/Air/SeatAvailability/Domestic/{IATA}/AirRoute/{AirRoute}/FlightDate/{FlightDate}/FlightNumber/{FlightNumber}`.
+ */
+export interface AirSeatAvailability {
+  AirlineID: string;
+  AirRouteID: string;
+  FlightDate: string;
+  FlightNumber: string;
+  DepartureAirport: AirScheduleAirport;
+  ArrivalAirport: AirScheduleAirport;
+  TotalSeats?: number;
+  SoldSeats?: number;
+  SeatStatus: AirSeatStatus;
+  CabinSeats?: AirCabinSeat[];
+  UpdateTime: DateTimeString;
+}
+
+/** 消息類別: 1 = 最新消息 (news), 2 = 營運資訊 (operations), 3 = 通阻資訊 (disruptions), 99 = 其他. */
+export type AirNewsCategory = 1 | 2 | 3 | 99;
+
+/** News item (News) — `GET /v2/Air/News`. Published by 民用航空局; `AirportID` and `AirlineID` are `""`. */
+export interface AirNews {
+  NewsID: string;
+  /** `Zh_tw`, `En`, `Zh_cn`, `Ja` or `Ko`. */
+  Language: string;
+  Department: string;
+  AirportID?: string;
+  AirlineID?: string;
+  Title: string;
+  NewsCategory?: AirNewsCategory;
+  Description: string;
+  ContactName: string;
+  ContactPhone: string;
+  NewsURL?: string;
+  AttachmentURL?: string;
+  StartTime?: DateTimeString;
+  EndTime?: DateTimeString;
+  PublishTime: DateTimeString;
+  UpdateTime: DateTimeString;
+}

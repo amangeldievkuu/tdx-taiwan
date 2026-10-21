@@ -143,7 +143,7 @@ they share are in [docs/conventions.md](https://github.com/amangeldievkuu/tdx-ta
 | `tdx.tra`     | Stations, timetables, fares, live boards, train positions, alerts | [Taiwan Railway](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/tra.md)   | [`tra-trains.ts`](examples/tra-trains.ts)                 |
 | `tdx.parking` | Car parks and curbside segments with live free spaces             | [Parking](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/parking.md)      | [`nearest-parking.ts`](examples/nearest-parking.ts)       |
 | `tdx.ev`      | Stations, chargers, connectors, live status, prices               | [EV charging](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/ev.md)       | [`nearest-ev-charger.ts`](examples/nearest-ev-charger.ts) |
-| `tdx.air`     | Airports, airlines, live departure and arrival boards             | [Flights](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/air.md)          | [`flight-board.ts`](examples/flight-board.ts)             |
+| `tdx.air`     | Airports, airlines, live boards, weather, schedules, fares        | [Flights](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/air.md)          | [`flight-board.ts`](examples/flight-board.ts)             |
 | `tdx.traffic` | Live section speeds, cameras, signs, detectors, eTag, events      | [Road traffic](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/traffic.md) | [`road-traffic.ts`](examples/road-traffic.ts)             |
 | `tdx.ship`    | Ports, routes, timetables, fares, live boards, AIS positions      | [Ferries](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/ship.md)         | [`ferry-departures.ts`](examples/ferry-departures.ts)     |
 

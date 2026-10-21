@@ -169,6 +169,12 @@ describe('TdxClient response cache', () => {
       await lists.tdx.air.arrivals('TSA');
       await lists.tdx.air.flights('100');
       await lists.tdx.air.boards('KHH');
+      await lists.tdx.air.metar('TPE');
+      await lists.tdx.air.generalSchedule('Domestic');
+      await lists.tdx.air.dailySchedule('AE');
+      await lists.tdx.air.routeFares('AE');
+      await lists.tdx.air.seatAvailability('AE', 'TSA-KNH', '2026-10-22', '1281');
+      await lists.tdx.air.news();
       await objects.tdx.air.airport('TPE');
       await objects.tdx.air.airline('CI');
     };
@@ -176,7 +182,7 @@ describe('TdxClient response cache', () => {
     vi.advanceTimersByTime(15_000);
     await fetchAll();
 
-    expect(lists.apiUrls).toHaveLength(10); // only the four FIDS requests repeat
+    expect(lists.apiUrls).toHaveLength(19); // 12 calls + the 7 real-time ones repeated
     expect(objects.apiUrls).toHaveLength(2);
   });
 

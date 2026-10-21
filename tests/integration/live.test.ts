@@ -310,13 +310,16 @@ describe.skipIf(!hasCredentials)('live TDX API: flights', () => {
     expect(tpe.AirportPosition.PositionLat).toEqual(expect.any(Number));
   });
 
-  it('air.departures lists live Songshan departures with digits-only flight numbers', async () => {
-    const departures = await tdx.air.departures('TSA', { top: 5 });
-    expect(departures.length).toBeGreaterThan(0);
-    for (const d of departures) {
-      expect(d.FlightNumber).toMatch(/^\d+$/);
-      expect(d.DepartureAirportID).toBe('TSA');
-    }
+  it('air.metar reports the Taoyuan weather', async () => {
+    const [tpe] = await tdx.air.metar('TPE');
+    expect(tpe?.MetarText).toMatch(/^METAR RCTP /);
+    expect(tpe?.Temperature).toMatch(/°C$/);
+  });
+
+  it('air.routeFares lists Mandarin Airlines fares with an adult price', async () => {
+    const fares = await tdx.air.routeFares('AE');
+    expect(fares.length).toBeGreaterThan(0);
+    expect(fares[0]?.Fares.some((f) => f.FareClass === 1 && f.Price > 0)).toBe(true);
   });
 
   it('air.boards returns one element for a single airport', async () => {

@@ -52,7 +52,11 @@ foreign airports have), the `/Airport/TPE` object, two airlines (中華航空 an
 `AirlineID` and `AirlineNameAlias`), three TPE departures (a passenger flight, a cargo flight with
 an `Apron` instead of a `Gate`, and a cancelled one with a blank `Gate`), two TPE arrivals with
 baggage claims and padded gates (`" A8"`), the `/FIDS/Flight/100` record, and the 松山 board cut
-to two departures and two arrivals. None were edited.
+to two departures and two arrivals. None were edited. Added for 0.13.0: the Taoyuan METAR observation, two
+general-schedule rows (AE and DA, `FlightNumber` with the airline prefix), two AE daily flights
+(one normal, one cancelled with `FlightRemark: "X"`), one AE route's fares and the shortest CAA
+news item, and one B7 seat-availability answer (sold out, no seat counts; the AE call timed out
+upstream).
 
 The `traffic-*.json` files are trimmed 路況資訊 v2 and 道路事件 v1 wrappers (2026-10-21), cut to one
 to three items each and not edited. They keep the places where live data departs from the spec:

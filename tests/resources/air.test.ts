@@ -4,8 +4,14 @@ import {
   type AirAirport,
   type AirAirportBoard,
   type AirArrival,
+  type AirDailyFlightSchedule,
   type AirDeparture,
   type AirFlight,
+  type AirGeneralSchedule,
+  type AirMetar,
+  type AirNews,
+  type AirRouteFare,
+  type AirSeatAvailability,
   TdxApiError,
   query,
 } from '../../src/index.js';
@@ -18,6 +24,12 @@ const departuresFixture = loadFixture('air-fids-departure-tpe.json') as AirDepar
 const arrivalsFixture = loadFixture('air-fids-arrival-tpe.json') as AirArrival[];
 const flightsFixture = loadFixture('air-fids-flight.json') as AirFlight[];
 const boardFixture = loadFixture('air-fids-airport-tsa.json') as AirAirportBoard[];
+const metarFixture = loadFixture('air-metar-tpe.json') as AirMetar[];
+const generalFixture = loadFixture('air-general-schedule-domestic.json') as AirGeneralSchedule[];
+const dailyFixture = loadFixture('air-daily-schedule-ae.json') as AirDailyFlightSchedule[];
+const fareFixture = loadFixture('air-route-fare-ae.json') as AirRouteFare[];
+const seatFixture = loadFixture('air-seat-availability-b7.json') as AirSeatAvailability[];
+const newsFixture = loadFixture('air-news.json') as AirNews[];
 
 describe('tdx.air paths', () => {
   it('requests each list endpoint as JSON, with and without the optional segment', async () => {
@@ -232,5 +244,117 @@ describe('tdx.air parsing', () => {
     expect(boards[0]?.FIDSArrival).toHaveLength(2);
     expect(boards[0]?.FIDSDeparture[0]?.DepartureAirportID).toBe('TSA');
     expect(boards[0]?.FIDSArrival[0]?.ArrivalAirportID).toBe('TSA');
+  });
+});
+
+describe('tdx.air weather, schedules, fares and news', () => {
+  it('requests each endpoint as JSON', async () => {
+    const { tdx, apiUrls } = clientWithResponse([]);
+
+    await tdx.air.metar();
+    await tdx.air.metar('TPE');
+    await tdx.air.generalSchedule('Domestic');
+    await tdx.air.generalSchedule('International', { top: 2 });
+    await tdx.air.dailySchedule('AE');
+    await tdx.air.routeFares('B7');
+    await tdx.air.seatAvailability('AE', 'TSA-KNH', '2026-10-22', '1281');
+    await tdx.air.seatAvailability('B7', 'CYI-KNH', new Date('2026-10-29T20:00:00Z'), '8901');
+    await tdx.air.news();
+
+    expect(apiUrls).toEqual(
+      [
+        '/METAR/Airport',
+        '/METAR/Airport/TPE',
+        '/GeneralSchedule/Domestic',
+        '/GeneralSchedule/International?$top=2',
+        '/DailyFlightSchedule/Domestic/AE',
+        '/RouteFare/Domestic/B7',
+        '/SeatAvailability/Domestic/AE/AirRoute/TSA-KNH/FlightDate/2026-10-22/FlightNumber/1281',
+        '/SeatAvailability/Domestic/B7/AirRoute/CYI-KNH/FlightDate/2026-10-30/FlightNumber/8901',
+        '/News',
+      ].map((path) => `${API}/v2/Air${path}${path.includes('?') ? '&' : '?'}$format=JSON`),
+    );
+  });
+
+  it('passes queries through and validates path segments', async () => {
+    const { tdx, apiUrls } = clientWithResponse([]);
+
+    await tdx.air.dailySchedule(
+      'AE',
+      query<AirDailyFlightSchedule>().filter("AirRouteID eq 'TSA-KNH'").top(3),
+    );
+    expect(decodeURIComponent(apiUrls[0] ?? '')).toBe(
+      `${API}/v2/Air/DailyFlightSchedule/Domestic/AE?$filter=AirRouteID eq 'TSA-KNH'&$top=3&$format=JSON`,
+    );
+
+    expect(() => tdx.air.metar('')).toThrow(TypeError);
+    expect(() => tdx.air.generalSchedule('')).toThrow(TypeError);
+    expect(() => tdx.air.dailySchedule(' ')).toThrow(TypeError);
+    expect(() => tdx.air.seatAvailability('AE', '', '2026-10-22', '1281')).toThrow(TypeError);
+    expect(() => tdx.air.seatAvailability('AE', 'TSA-KNH', '2026/10/22', '1281')).toThrow(
+      TypeError,
+    );
+    await expect(clientWithResponse({}).tdx.air.news()).rejects.toBeInstanceOf(TdxApiError);
+  });
+
+  it('parses a METAR observation with its unit strings', async () => {
+    const { tdx } = clientWithResponse(metarFixture);
+
+    const [tpe] = await tdx.air.metar('TPE');
+    expectTypeOf(tpe).toEqualTypeOf<AirMetar | undefined>();
+
+    expect(tpe).toMatchObject({
+      AirportID: 'TPE',
+      StationID: 'RCTP',
+      WindSpeed: '25 KT',
+      Temperature: '26°C',
+      Visibility: '9999 M',
+    });
+    expect(tpe?.MetarText).toMatch(/^METAR RCTP /);
+    expect(tpe?.CityName).toEqual({});
+  });
+
+  it('parses general and daily schedules', async () => {
+    const general = await clientWithResponse(generalFixture).tdx.air.generalSchedule('Domestic');
+    const daily = await clientWithResponse(dailyFixture).tdx.air.dailySchedule('AE');
+    expectTypeOf(general).toEqualTypeOf<AirGeneralSchedule[]>();
+    expectTypeOf(daily).toEqualTypeOf<AirDailyFlightSchedule[]>();
+
+    expect(general.map((g) => [g.AirlineID, g.FlightNumber, g.DepartureTime, g.Monday])).toEqual([
+      ['AE', 'AE1261', '06:40', true],
+      ['DA', expect.stringMatching(/^DA\d{3,4}$/), expect.any(String), expect.any(Boolean)],
+    ]);
+    expect(general[0]?.CodeShare).toEqual([]);
+    expect(daily.map((d) => [d.AirRouteID, d.FlightNumber, d.FlightRemark])).toEqual([
+      ['KHH-KNH', '307', ''],
+      ['HUN-KHH', '7932', 'X'],
+    ]);
+    expect(daily[0]?.DepartureAirport.AirportName.Zh_tw).toBe('高雄小港國際機場');
+    expect(daily[0]?.IsCargo).toBeUndefined();
+  });
+
+  it('parses route fares, seat availability and news', async () => {
+    const fares = await clientWithResponse(fareFixture).tdx.air.routeFares('AE');
+    const seats = await clientWithResponse(seatFixture).tdx.air.seatAvailability(
+      'B7',
+      'CYI-KNH',
+      '2026-10-30',
+      '8901',
+    );
+    const news = await clientWithResponse(newsFixture).tdx.air.news();
+    expectTypeOf(fares).toEqualTypeOf<AirRouteFare[]>();
+    expectTypeOf(seats).toEqualTypeOf<AirSeatAvailability[]>();
+    expectTypeOf(news).toEqualTypeOf<AirNews[]>();
+
+    expect(fares[0]?.AirRouteID).toBe('HUN-KHH');
+    expect(fares[0]?.Fares.find((f) => f.FareClass === 1)).toEqual({
+      FareName: '全額票',
+      TicketType: 1,
+      FareClass: 1,
+      Price: 2329,
+    });
+    expect(seats[0]).toMatchObject({ AirRouteID: 'CYI-KNH', FlightNumber: '8901', SeatStatus: 3 });
+    expect(seats[0]?.TotalSeats).toBeUndefined();
+    expect(news[0]).toMatchObject({ Department: '民用航空局', AirportID: '', NewsCategory: 2 });
   });
 });

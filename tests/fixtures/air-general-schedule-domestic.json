@@ -1,0 +1,42 @@
+[
+  {
+    "AirlineID": "AE",
+    "ScheduleStartDate": "2026-10-01",
+    "ScheduleEndDate": "2026-10-31",
+    "FlightNumber": "AE1261",
+    "DepartureAirportID": "TSA",
+    "DepartureTime": "06:40",
+    "CodeShare": [],
+    "ArrivalAirportID": "KNH",
+    "ArrivalTime": "08:00",
+    "Monday": true,
+    "Tuesday": false,
+    "Wednesday": false,
+    "Thursday": true,
+    "Friday": true,
+    "Saturday": true,
+    "Sunday": false,
+    "UpdateTime": "2026-10-21T14:25:36+08:00",
+    "VersionID": 5842
+  },
+  {
+    "AirlineID": "DA",
+    "ScheduleStartDate": "2026-10-01",
+    "ScheduleEndDate": "2026-10-31",
+    "FlightNumber": "DA7001",
+    "DepartureAirportID": "KHH",
+    "DepartureTime": "08:00",
+    "CodeShare": [],
+    "ArrivalAirportID": "CMJ",
+    "ArrivalTime": "08:40",
+    "Monday": false,
+    "Tuesday": false,
+    "Wednesday": false,
+    "Thursday": false,
+    "Friday": true,
+    "Saturday": false,
+    "Sunday": false,
+    "UpdateTime": "2026-10-21T14:25:36+08:00",
+    "VersionID": 5842
+  }
+]

@@ -6,6 +6,17 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-10-21
+
+### Added
+
+- The rest of 公共運輸-航空 v2 under `tdx.air`: `metar(airport?)` (airport weather, values as
+  strings with units), `generalSchedule('Domestic' | 'International')` (the published timetable;
+  `FlightNumber` includes the airline code there), `dailySchedule(airline)`, `routeFares(airline)`
+  and `seatAvailability(airline, airRoute, date, flightNumber)` for the domestic airlines AE, B7
+  and DA, and `news()`. Seat availability is forwarded to the airline by TDX with a 30 s timeout,
+  so it is slow and may answer 500; the docs say how to cope.
+
 ## [0.12.0] - 2026-10-21
 
 ### Added
@@ -265,7 +276,8 @@ All notable changes to this project are documented here. The format is based on
   - CI runs the dist tests against each NestJS major and smoke-tests the packed tarball on
     Node 20, 22 and 24.
 
-[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.9.0...v0.10.0
