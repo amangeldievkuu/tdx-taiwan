@@ -5,6 +5,7 @@ import { TdxApiError } from './errors.js';
 import { HttpClient, type TdxHooks } from './http/http-client.js';
 import { RateLimiter } from './http/rate-limiter.js';
 import { type ODataOptions, ODataQuery } from './odata/query-builder.js';
+import { AirApi } from './resources/air.js';
 import { BikeApi } from './resources/bike.js';
 import { BusApi } from './resources/bus.js';
 import { EvApi } from './resources/ev.js';
@@ -71,6 +72,8 @@ export class TdxClient {
   readonly parking: ParkingApi;
   /** EV charging (充電樁) endpoints. */
   readonly ev: EvApi;
+  /** Air (航空) endpoints: airports, airlines and live flight boards (FIDS). */
+  readonly air: AirApi;
 
   private readonly tokens: TokenManager;
   private readonly http: HttpClient;
@@ -120,6 +123,7 @@ export class TdxClient {
     this.tra = new TraApi(object);
     this.parking = new ParkingApi(object);
     this.ev = new EvApi(object);
+    this.air = new AirApi(list, object);
   }
 
   /** Returns a valid OAuth2 access token (cached in memory, refreshed 60s before expiry). */

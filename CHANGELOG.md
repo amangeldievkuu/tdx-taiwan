@@ -6,6 +6,23 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-10-21
+
+### Added
+
+- Air (公共運輸-航空 v2) endpoints under `tdx.air`: `airports` / `airport(iata)`,
+  `airlines` / `airline(iata)`, and the live FIDS boards `departures(airport?)`,
+  `arrivals(airport?)`, `flights(flightNo?)` (both legs of a flight) and `boards(airport?)`
+  (departures and arrivals grouped per airport). The single-code lookups return one object and
+  fail with a 404 `TdxApiError` for unknown codes. Types follow the spec and live data: names are
+  `AirName` (both parts optional, since most foreign airports have an empty `AirportCityName` and
+  no position), flight times are `AirLocalDateTime` (`yyyy-MM-ddTHH:mm`, Taiwan local time, no
+  offset), flight numbers are digits only with the airline in `AirlineID`, and the README lists
+  the fields the spec promises but live data never sends (`*RemarkEn`, `FlightStatus*`,
+  `CodeShare`). Cargo flights are filtered with `IsCargo eq false` (TDX's `IsCargo` parameter is
+  not needed).
+- `examples/flight-board.ts` (`npm run example:flights`).
+
 ## [0.7.0] - 2026-10-21
 
 ### Added
@@ -175,7 +192,8 @@ All notable changes to this project are documented here. The format is based on
   - CI runs the dist tests against each NestJS major and smoke-tests the packed tarball on
     Node 20, 22 and 24.
 
-[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.4.0...v0.5.0

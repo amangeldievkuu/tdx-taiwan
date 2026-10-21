@@ -293,6 +293,41 @@ describe.skipIf(!hasCredentials)('live TDX API: EV charging', () => {
   });
 });
 
+describe.skipIf(!hasCredentials)('live TDX API: flights', () => {
+  let tdx: TdxClient;
+
+  beforeAll(() => {
+    tdx = new TdxClient({
+      clientId: clientId ?? '',
+      clientSecret: clientSecret ?? '',
+      requestsPerSecond: 2,
+    });
+  });
+
+  it('air.airport returns Taoyuan with its position', async () => {
+    const tpe = await tdx.air.airport('TPE');
+    expect(tpe.AirportName.Zh_tw).toBe('桃園國際機場');
+    expect(tpe.AirportPosition.PositionLat).toEqual(expect.any(Number));
+  });
+
+  it('air.departures lists live Songshan departures with digits-only flight numbers', async () => {
+    const departures = await tdx.air.departures('TSA', { top: 5 });
+    expect(departures.length).toBeGreaterThan(0);
+    for (const d of departures) {
+      expect(d.FlightNumber).toMatch(/^\d+$/);
+      expect(d.DepartureAirportID).toBe('TSA');
+    }
+  });
+
+  it('air.boards returns one element for a single airport', async () => {
+    const boards = await tdx.air.boards('TSA');
+    expect(boards).toHaveLength(1);
+    expect(boards[0]?.AirportID).toBe('TSA');
+    expect(Array.isArray(boards[0]?.FIDSDeparture)).toBe(true);
+    expect(Array.isArray(boards[0]?.FIDSArrival)).toBe(true);
+  });
+});
+
 describe.skipIf(hasCredentials)('live TDX API (skipped)', () => {
   it.skip('set TDX_CLIENT_ID and TDX_CLIENT_SECRET in .env to run the live tests', () => {});
 });

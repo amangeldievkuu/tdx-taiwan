@@ -8,8 +8,8 @@
 Unofficial TypeScript SDK for Taiwan's [TDX (Transport Data eXchange)](https://tdx.transportdata.tw) API
 — YouBike availability, city and InterCity bus routes, arrival estimates and live positions, metro stations, live boards, alerts,
 timetables and fares, high speed rail timetables, fares and seat availability, Taiwan
-Railway timetables, fares, live boards and train positions, parking availability, and EV
-charging stations with live connector status.
+Railway timetables, fares, live boards and train positions, parking availability, EV
+charging stations with live connector status, and live airport departure and arrival boards.
 
 - OAuth2 client-credentials auth with in-memory token caching and automatic refresh
 - Retries with exponential backoff + jitter on 429 / 5xx, and a client-side rate limiter
@@ -75,6 +75,7 @@ npx tsx examples/thsr-trains.ts 1000 1070              # today's THSR trains wit
 npx tsx examples/tra-trains.ts 1000 4400               # today's TRA trains with fares
 npx tsx examples/nearest-parking.ts 25.0478 121.5170   # 5 nearest car parks with free spaces
 npx tsx examples/nearest-ev-charger.ts 25.0478 121.5170 Taipei 2  # nearest free CCS2 chargers
+npx tsx examples/flight-board.ts TSA departures      # live departure board of an airport
 ```
 
 ### 2. NestJS
@@ -196,6 +197,14 @@ still typed as the full item, so treat unselected fields as absent.
 | `tdx.ev.liveStatus(city, query?)`                   | `GET /v1/EV/ConnectorLiveStatus/City/{City}`                      | `EvLiveStatuses`               |
 | `tdx.ev.chargingRates(city, query?)`                | `GET /v1/EV/ChargingRate/City/{City}`                             | `EvChargingRates`              |
 | `tdx.ev.freeway.*(query?)`                          | The same five, at `…/Freeway/ServiceArea`                         | same types                     |
+| `tdx.air.airports(query?)`                          | `GET /v2/Air/Airport`                                             | `AirAirport[]`                 |
+| `tdx.air.airport(iata)`                             | `GET /v2/Air/Airport/{IATA}`                                      | `AirAirport`                   |
+| `tdx.air.airlines(query?)`                          | `GET /v2/Air/Airline`                                             | `AirAirline[]`                 |
+| `tdx.air.airline(iata)`                             | `GET /v2/Air/Airline/{IATA}`                                      | `AirAirline`                   |
+| `tdx.air.departures(airport?, query?)`              | `GET /v2/Air/FIDS/Airport/Departure[/{IATA}]`                     | `AirDeparture[]`               |
+| `tdx.air.arrivals(airport?, query?)`                | `GET /v2/Air/FIDS/Airport/Arrival[/{IATA}]`                       | `AirArrival[]`                 |
+| `tdx.air.flights(flightNo?, query?)`                | `GET /v2/Air/FIDS/Flight[/{FlightNo}]`                            | `AirFlight[]`                  |
+| `tdx.air.boards(airport?, query?)`                  | `GET /v2/Air/FIDS/Airport[/{IATA}]`                               | `AirAirportBoard[]`            |
 | `tdx.get(path, query?)`                             | Any other TDX endpoint (auth, retries, rate limit applied)        | `unknown`                      |
 | `tdx.getAccessToken()`                              | The current access token                                          | `string`                       |
 | `tdx.clearCache()`                                  | Empties the response cache                                        | `void`                         |
@@ -465,6 +474,54 @@ const { Stations: serviceAreas } = await tdx.ev.freeway.stations();
 - [`examples/nearest-ev-charger.ts`](examples/nearest-ev-charger.ts) prints the 5 nearest
   stations with a free connector of a chosen type.
 
+### Flights
+
+Live airport boards (FIDS, 航班顯示) for departures and arrivals, flight records with both legs,
+and the airport and airline reference lists.
+
+```ts
+// Today's passenger departures from Songshan, with destination names
+const [departures, airports] = await Promise.all([
+  tdx.air.departures('TSA', { filter: 'IsCargo eq false', orderBy: 'ScheduleDepartureTime' }),
+  tdx.air.airports({ select: ['AirportID', 'AirportName'] }),
+]);
+const nameOf = new Map(airports.map((a) => [a.AirportID, a.AirportName.En]));
+for (const d of departures) {
+  console.log(d.AirlineID + d.FlightNumber, nameOf.get(d.ArrivalAirportID), d.DepartureRemark);
+}
+
+// One flight, both legs. The number is digits only; the airline is a separate field.
+const [ci100] = await tdx.air.flights('100', { filter: "AirlineID eq 'CI'" });
+
+// Departures and arrivals of every airport in one call (one element per airport)
+const boards = await tdx.air.boards();
+```
+
+- Flight numbers are digits only (`FlightNumber: '100'`, `AirlineID: 'CI'`), and so is the
+  `{FlightNo}` path segment: `flights('CI100')` returns nothing. Numbers are shared across
+  airlines, so filter on `AirlineID`.
+- Flight times (`Schedule…`, `Estimated…`, `Actual…`) are `yyyy-MM-ddTHH:mm` in Taiwan local
+  time with no offset; only `UpdateTime` is a full timestamp. `FlightDate` is `yyyy-MM-dd`.
+  Songshan (TSA) fills `ActualDepartureTime` with the scheduled time before the flight has left,
+  so read the remark (`已飛` / `出發DEPARTED`) rather than the field to tell whether it has gone.
+- Remarks are free text from each airport. Taoyuan (TPE) joins Chinese and English in one
+  string (`出發DEPARTED`, `準時ON TIME`, `已到ARRIVED`, `取消CANCELLED`); domestic airports use
+  Chinese only (`準時`, `報到`, `登機`, `出發`, `已飛`, `抵達`, `延誤`, `取消`, `預計14:00到站`). The
+  spec's `DepartureRemarkEn` / `ArrivalRemarkEn`, `FlightStatus*`, `FlightRemark` and `CodeShare`
+  fields were never present in live data; `AirRouteType` only appears on `flights`.
+- `Terminal`, `Gate` and `CheckCounter` are `""` when unknown, and TPE pads gates (`" A8"`, or
+  blanks for a cancelled flight): trim before displaying. Cargo flights (`IsCargo: true`) have an
+  `Apron` instead of a `Gate`; filter them out with `IsCargo eq false`.
+- TPE lists yesterday, today and tomorrow (about 2,000 departures, 770 KB per call); other
+  airports list today. Use `$filter` / `$top` where you can, since TDX bills by response size.
+- The airport list has 469 airports worldwide, but only the 17 Taiwan airports carry a position,
+  address and phone; `AirportCityName` (and once `AirportName`) is `{}` for most others, so
+  `AirName` has both parts optional. A few airlines have an empty `AirlineID`.
+- `airport(iata)` and `airline(iata)` return one object; an unknown code rejects with a 404
+  `TdxApiError`.
+- [`examples/flight-board.ts`](examples/flight-board.ts) prints the next 20 of today's
+  departures or arrivals at an airport.
+
 ## Options
 
 ```ts
@@ -560,7 +617,7 @@ Development tooling requires Node.js 22+; the published package supports Node.js
 ## 繁體中文
 
 `tdx-taiwan` 是存取交通部 [TDX 運輸資料流通服務](https://tdx.transportdata.tw) 的**非官方** TypeScript SDK（與交通部無隸屬或合作關係），
-支援公共自行車（YouBike）站點與即時車位、市區公車路線、站序與預估到站時間、捷運車站、路線、即時到站看板、首末班車與票價，以及高鐵時刻表、票價與剩餘座位。
+支援公共自行車（YouBike）站點與即時車位、市區公車路線、站序與預估到站時間、捷運車站、路線、即時到站看板、首末班車與票價、高鐵與臺鐵時刻表、票價與即時看板、停車場與充電樁即時資訊，以及機場即時航班看板。
 
 **安裝**（需要 Node.js 20 以上版本）
 
@@ -603,6 +660,7 @@ const top = await tdx.bike.availability(
 - 遇到 429 或 5xx 會以指數退避（含隨機抖動）重試最多 3 次，並內建用戶端限流（預設每秒 5 次，請依您的 TDX 方案調整）。
 - 路線名稱預設以中文名稱（`RouteName/Zh_tw`）完全比對：`tdx.bus.eta('Taipei', '307')` 只回傳 307，不含「307西藏三民」。若要使用 TDX 原本的前綴比對，請傳入 `{ exact: false }`。
 - 公車：`tdx.bus.positions('Taipei', '307')` 取得公車即時位置（A1）、`tdx.bus.stops('Taipei')` 取得縣市全部站牌（資料量大，建議篩選）；公路客運使用 `tdx.bus.interCity.routes('1610')`、`eta`、`positions` 等，路線名稱同樣預設完全比對。捷運另有 `tdx.metro.alerts('TRTC')` 營運通阻資料。
+- 航空：`tdx.air.departures('TSA')`／`arrivals('TSA')` 取得機場即時出境／入境航班（FIDS），`flights('100', { filter: "AirlineID eq 'CI'" })` 查詢單一航班（班號僅數字，航空公司另見 `AirlineID`），`boards()` 依機場分組，另有 `airports`／`airport('TPE')` 與 `airlines`／`airline('CI')`。航班時間為臺灣當地時間且不含時區（`yyyy-MM-ddTHH:mm`）；桃園機場的狀態為中英合併字串（如 `出發DEPARTED`），且列出前一日至次日共三天的航班；貨機請以 `IsCargo eq false` 過濾。機場清單含全球 469 座機場，僅臺灣機場有座標。
 - 電動車充電：`tdx.ev.stations('Taipei')`（充電站）、`chargingPoints`（充電樁）、`connectors`（充電槍）、`liveStatus`（充電槍即時狀態：1 可使用、2 使用中、3 故障）與 `chargingRates`（費率）；高速公路服務區使用 `tdx.ev.freeway.*`。各清單以 `StationID`、`ChargingPointID`、`ConnectorID` 對應（規格未列出這些欄位，但實際資料皆有；這些欄位無法用於 `$filter`／`$select`，請於程式中對應）。即時狀態請先以 `ConnectorID` 對應充電槍，再以充電槍的 `StationID` 對應充電站（即時狀態本身的 `StationID` 可能使用另一套代碼）。
 - 停車：`tdx.parking.carParks('Taipei')`（路外停車場）、`availability`（即時剩餘車位）、`segments`（路邊停車路段）與 `segmentAvailability`（路段即時剩餘車位）。停車場與剩餘車位以 `CarParkID` 對應，但兩份清單僅部分重疊（臺北 1,180 筆剩餘車位中僅 455 筆有對應停車場）；新北市僅有路邊停車資料，無資料的縣市回傳空清單。
 - 臺鐵（TDX v3）：`tdx.tra.timetable('1000', '4400', '2026-10-22')` 查詢起迄站時刻表，另有 `stations`、`odFare`（票價，依車種**及行駛方向**區分：臺北→高雄自強號順向 371 公里 994 元，經東部環島方向 1286 元）、`liveBoard`（車站即時到離站，含月台與延誤分鐘）、`trainLiveBoard`（列車即時位置）與 `alerts`。回應皆為包裝物件，名稱欄位使用 `TraNameType`（韓文為 `Kr`）。

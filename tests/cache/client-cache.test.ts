@@ -158,6 +158,28 @@ describe('TdxClient response cache', () => {
     expect(apiUrls).toHaveLength(8); // only the two live-status requests repeat
   });
 
+  it('caches airports and airlines as static, FIDS boards as real-time', async () => {
+    // Two clients: list endpoints need an array body, single-object endpoints an object.
+    const lists = clientWithResponse([], { cache: true });
+    const objects = clientWithResponse({}, { cache: true });
+    const fetchAll = async () => {
+      await lists.tdx.air.airports();
+      await lists.tdx.air.airlines();
+      await lists.tdx.air.departures('TSA');
+      await lists.tdx.air.arrivals('TSA');
+      await lists.tdx.air.flights('100');
+      await lists.tdx.air.boards('KHH');
+      await objects.tdx.air.airport('TPE');
+      await objects.tdx.air.airline('CI');
+    };
+    await fetchAll();
+    vi.advanceTimersByTime(15_000);
+    await fetchAll();
+
+    expect(lists.apiUrls).toHaveLength(10); // only the four FIDS requests repeat
+    expect(objects.apiUrls).toHaveLength(2);
+  });
+
   it('returns copies of cached objects too', async () => {
     const { tdx } = clientWithResponse(
       { UpdateTime: 'now', AvailableSeats: [{ TrainNo: '0803' }] },
