@@ -1,7 +1,7 @@
 {
   "name": "tdx-taiwan",
   "version": "0.9.0",
-  "description": "Unofficial TypeScript SDK for Taiwan's TDX (Transport Data eXchange) API — YouBike, bus routes and ETA, metro, high speed rail and Taiwan Railway timetables, fares and live boards, parking availability, EV charging, live airport flight boards and live road traffic",
+  "description": "Unofficial TypeScript SDK for Taiwan's TDX (Transport Data eXchange) API — YouBike, bus routes and ETA, metro, high speed rail and Taiwan Railway timetables, fares and live boards, parking availability, EV charging, live airport flight boards, live road traffic and ferry timetables, fares and live boards",
   "keywords": [
     "tdx",
     "taiwan",
@@ -22,6 +22,9 @@
     "road",
     "congestion",
     "cctv",
+    "ferry",
+    "ship",
+    "blue-highway",
     "mrt",
     "odata",
     "ptx",
@@ -93,7 +96,8 @@
     "example:parking": "tsx examples/nearest-parking.ts",
     "example:ev": "tsx examples/nearest-ev-charger.ts",
     "example:flights": "tsx examples/flight-board.ts",
-    "example:traffic": "tsx examples/road-traffic.ts"
+    "example:traffic": "tsx examples/road-traffic.ts",
+    "example:ferry": "tsx examples/ferry-departures.ts"
   },
   "peerDependencies": {
     "@nestjs/common": "^10.0.0 || ^11.0.0 || ^12.0.0"

@@ -9,8 +9,9 @@ Unofficial TypeScript SDK for Taiwan's [TDX (Transport Data eXchange)](https://t
 — YouBike availability, city and InterCity bus routes, arrival estimates and live positions, metro stations, live boards, alerts,
 timetables and fares, high speed rail timetables, fares and seat availability, Taiwan
 Railway timetables, fares, live boards and train positions, parking availability, EV
-charging stations with live connector status, live airport departure and arrival boards, and
-road traffic with live section speeds, cameras, detectors, eTag travel times and road events.
+charging stations with live connector status, live airport departure and arrival boards, road
+traffic with live section speeds, cameras, detectors, eTag travel times and road events, and
+ferry routes, timetables, fares and live port boards.
 
 - OAuth2 client-credentials auth with in-memory token caching and automatic refresh
 - Retries with exponential backoff + jitter on 429 / 5xx, and a client-side rate limiter
@@ -78,6 +79,7 @@ npx tsx examples/nearest-parking.ts 25.0478 121.5170   # 5 nearest car parks wit
 npx tsx examples/nearest-ev-charger.ts 25.0478 121.5170 Taipei 2  # nearest free CCS2 chargers
 npx tsx examples/flight-board.ts TSA departures      # live departure board of an airport
 npx tsx examples/road-traffic.ts freeway             # most congested freeway sections and live events
+npx tsx examples/ferry-departures.ts TW001           # today's ferry departures from a port
 ```
 
 ### 2. NestJS
@@ -221,6 +223,22 @@ still typed as the full item, so treat unselected fields as absent.
 | `tdx.traffic.authorities(query?)`                   | `GET /v2/Road/Traffic/Basic/Authority`                            | `TrafficAuthorities`           |
 | `tdx.traffic.freeway.*(query?)`                     | The same at `…/Freeway`, without `events` and `authorities`       | same types                     |
 | `tdx.traffic.highway.*(query?)`                     | The same at `…/Highway`, with `events()` but no `authorities`     | same types                     |
+| `tdx.ship.ports(query?)`                            | `GET /v3/Ship/Port`                                               | `ShipPorts`                    |
+| `tdx.ship.routes(query?)`                           | `GET /v3/Ship/Route`                                              | `ShipRoutes`                   |
+| `tdx.ship.operators(query?)`                        | `GET /v3/Ship/Operator`                                           | `ShipOperators`                |
+| `tdx.ship.vessels(query?)`                          | `GET /v3/Ship/Vessel`                                             | `ShipVessels`                  |
+| `tdx.ship.stopsOfRoute(query?)`                     | `GET /v3/Ship/StopOfRoute`                                        | `ShipStopOfRoutes`             |
+| `tdx.ship.odFare(query?)`                           | `GET /v3/Ship/ODFare`                                             | `ShipRouteFares`               |
+| `tdx.ship.odFareBetween(from, to, query?)`          | `GET /v3/Ship/ODFare/{O}/to/{D}`                                  | `ShipRouteFare[]`              |
+| `tdx.ship.generalSchedule(routeId?, query?)`        | `GET /v3/Ship/GeneralSchedule[/{RouteID}]`                        | `ShipGeneralSchedules`         |
+| `tdx.ship.dailySchedule(routeId?, query?)`          | `GET /v3/Ship/DailySchedule[/{RouteID}]`                          | `ShipDailySchedules`           |
+| `tdx.ship.liveBoard(query?)`                        | `GET /v3/Ship/ShipLiveBoard`                                      | `ShipLiveBoards`               |
+| `tdx.ship.livePosition(query?)`                     | `GET /v3/Ship/LivePosition`                                       | `ShipLivePositions`            |
+| `tdx.ship.seatAvailability(query?)`                 | `GET /v3/Ship/SeatAvailability`                                   | `ShipSeatAvailabilities`       |
+| `tdx.ship.alerts(query?)`                           | `GET /v3/Ship/Alert`                                              | `ShipAlerts`                   |
+| `tdx.ship.news(query?)`                             | `GET /v3/Ship/News`                                               | `ShipNewsList`                 |
+| `tdx.ship.authorities(query?)`                      | `GET /v3/Ship/Authority`                                          | `ShipAuthorities`              |
+| `tdx.ship.domestic.*(city, query?)`                 | The city feeds at `…/Domestic/City/{City}` (routes … news)        | same types                     |
 | `tdx.get(path, query?)`                             | Any other TDX endpoint (auth, retries, rate limit applied)        | `unknown`                      |
 | `tdx.getAccessToken()`                              | The current access token                                          | `string`                       |
 | `tdx.clearCache()`                                  | Empties the response cache                                        | `void`                         |
@@ -606,6 +624,65 @@ const { CCTVs: cameras } = await tdx.traffic.freeway.cctvs({
 - [`examples/road-traffic.ts`](examples/road-traffic.ts) prints the most congested sections of a
   road network and its latest live events.
 
+### Ferries
+
+Ports, routes, operators, vessels, stop sequences, fares, regular and daily timetables, live
+departure and arrival boards per port, AIS positions, seat availability, alerts and news, from
+the 航港局 nationwide feed (outlying islands, cross-strait, 小三通) and from the county and city
+blue-highway feeds under `tdx.ship.domestic`.
+
+```ts
+// Today's departures from 小琉球白沙港, with route names
+const [{ ShipLiveBoardses: boards }, { Routes: routes }] = await Promise.all([
+  tdx.ship.liveBoard({ filter: "PortID eq 'TW001'" }),
+  tdx.ship.routes(),
+]);
+const routeName = new Map(routes.map((r) => [r.RouteID, r.RouteName.Zh_tw]));
+for (const d of boards[0]?.DepartureLiveBoards ?? []) {
+  console.log(d.ScheduledDepartureTime, routeName.get(d.RouteID ?? ''), d.DepartureRemark);
+}
+
+// Tomorrow's timetable of one route, and the fares between two ports
+const { DailySchedules: days } = await tdx.ship.dailySchedule('FGGI', {
+  filter: "Date eq '2026-10-22'",
+});
+const fares = await tdx.ship.odFareBetween('TWKEL', 'TW007'); // Keelung → Nangan
+
+// Penghu's inter-island lines are published by the county, not the nationwide feed
+const { Routes: penghu } = await tdx.ship.domestic.routes('PenghuCounty');
+```
+
+- Every response is a wrapper object named per kind (`Ports`, `Routes`, `Operators`, `Vessels`,
+  `StopOfRoutes`, `RouteFares`, `GeneralSchedules`, `DailySchedules`, `ShipLiveBoardses` (sic),
+  `LivePositions`, `SeatAvailabilities`, `Alerts`, `Newses`, `Authorities`); `Count` is never
+  sent and static wrappers carry `VersionID`. Queries apply to the items. `odFareBetween` is the
+  one plain-array endpoint.
+- Fares list `TicketType` and `FareClass` codes; live data uses `FareClass: 254` (其他, e.g. an
+  insurance-only ticket) beyond the spec's 1-9, so the field is a plain number.
+- **The city feeds are separate data.** `tdx.ship.domestic.routes(city)` returns routes run by
+  that county or city (Penghu 11, Kaohsiung 10, NewTaipei 5, Taipei 2, Kinmen 2) with their own
+  IDs (`2048`, `KHH005`, `ZH101`), none of which are in the nationwide list; Lienchiang,
+  Pingtung, Taitung and Nantou answer empty wrappers. Routes, operators, vessels, stops, fares,
+  schedules, alerts and news accept Taipei, NewTaipei, Kaohsiung, NantouCounty, PingtungCounty,
+  TaitungCounty, KinmenCounty, PenghuCounty and LienchiangCounty; `domestic.liveBoard` only
+  LienchiangCounty. TDX answers an unsupported city with a 400 `TdxApiError` listing the accepted
+  ones.
+- Timetable times are not zero-padded (`6:15`) and `ArrivalTime` is `""` at the first port;
+  nationwide dates are `YYYY-MM-DD`, city dates `YYYY/MM/DD`. `dailySchedule()` without a route
+  is about 850 rows and 1.3 MB: pass a route ID.
+- Live boards: one element per port (25 ports), names spelt `PortName.ZhTw`; departures carry
+  `ScheduledDepartureTime`, `EstimateDepartureTime` and, once sailed, `ActualDepartureTime`, with
+  remarks `準時`, `離港`, `已離港`, `取消`, `安檢中` (English in `DepartureRemarkEn`). Some boards
+  publish stale scheduled dates (a 2014 date on the Green Island board): use `ShipDate` and the
+  time of day.
+- Ports never carry `Country` / `CountryCode`; `City` is Chinese (`澎湖縣`) and `CityCode` an
+  abbreviation (`PEN`). `livePosition` is AIS data (`MMSI`, `SOG` knots, `COG`, `NAVSTAT`);
+  `seatAvailability` currently covers only the 金門–石井 sailings; `news` is empty.
+- Not wrapped: `SpecificSchedule` (TDX answers 404) and the legacy `…/RouteType/{Internal|OutlyingIslands|Bilateral|MiniThreeLinks|Other}`
+  arrays, which merge the nationwide and county routes; use `tdx.get` for those.
+- [`examples/ferry-departures.ts`](examples/ferry-departures.ts) prints today's departures from
+  a port, from the live board or the daily timetable.
+
 ## Options
 
 ```ts
@@ -701,7 +778,7 @@ Development tooling requires Node.js 22+; the published package supports Node.js
 ## 繁體中文
 
 `tdx-taiwan` 是存取交通部 [TDX 運輸資料流通服務](https://tdx.transportdata.tw) 的**非官方** TypeScript SDK（與交通部無隸屬或合作關係），
-支援公共自行車（YouBike）站點與即時車位、市區公車路線、站序與預估到站時間、捷運車站、路線、即時到站看板、首末班車與票價、高鐵與臺鐵時刻表、票價與即時看板、停車場與充電樁即時資訊、機場即時航班看板，以及即時路況。
+支援公共自行車（YouBike）站點與即時車位、市區公車路線、站序與預估到站時間、捷運車站、路線、即時到站看板、首末班車與票價、高鐵與臺鐵時刻表、票價與即時看板、停車場與充電樁即時資訊、機場即時航班看板、即時路況，以及船運航線、班表、票價與港口即時看板。
 
 **安裝**（需要 Node.js 20 以上版本）
 
@@ -746,6 +823,7 @@ const top = await tdx.bike.availability(
 - 公車：`tdx.bus.positions('Taipei', '307')` 取得公車即時位置（A1）、`tdx.bus.stops('Taipei')` 取得縣市全部站牌（資料量大，建議篩選）；公路客運使用 `tdx.bus.interCity.routes('1610')`、`eta`、`positions` 等，路線名稱同樣預設完全比對。捷運另有 `tdx.metro.alerts('TRTC')` 營運通阻資料。
 - 航空：`tdx.air.departures('TSA')`／`arrivals('TSA')` 取得機場即時出境／入境航班（FIDS），`flights('100', { filter: "AirlineID eq 'CI'" })` 查詢單一航班（班號僅數字，航空公司另見 `AirlineID`），`boards()` 依機場分組，另有 `airports`／`airport('TPE')` 與 `airlines`／`airline('CI')`。航班時間為臺灣當地時間且不含時區（`yyyy-MM-ddTHH:mm`）；桃園機場的狀態為中英合併字串（如 `出發DEPARTED`），且列出前一日至次日共三天的航班；貨機請以 `IsCargo eq false` 過濾。機場清單含全球 469 座機場，僅臺灣機場有座標。
 - 路況：`tdx.traffic.liveTraffic('Taipei')` 取得路段即時速率、旅行時間與壅塞程度，`sections`（發布路段）、`congestionLevels`（壅塞水準定義）、`cctvs`（攝影機）、`vds`／`vdLive`（車輛偵測器與即時車流）、`etagPairs`／`etagPairLive`（eTag 配對路段與即時旅行時間）、`news`、`events`（預告性事件）與 `liveEvents`（即時事件）；國道使用 `tdx.traffic.freeway.*`，省道使用 `tdx.traffic.highway.*`。回應為包裝物件，陣列依種類命名（`Sections`、`LiveTraffics`…）。各種類支援的縣市不同（如 eTag 不含臺北市、即時路況僅 9 個縣市），不支援時 TDX 回傳 400 並列出可用縣市。`CongestionLevel` 為字串，級別名稱需對應 `congestionLevels`；`-99` 表示資料異常、`-1` 表示道路封閉。
+- 航運：`tdx.ship.liveBoard()` 取得各港口即時出發／抵達看板（陣列名稱為 `ShipLiveBoardses`，港口名稱欄位為 `ZhTw`），`routes`、`ports`、`operators`、`vessels`、`stopsOfRoute`、`odFare`／`odFareBetween('TWKEL', 'TW007')`、`generalSchedule(routeId?)`／`dailySchedule(routeId?)`（全部每日班表約 1.3 MB，請指定航線）、`livePosition`（AIS 船位）、`seatAvailability`、`alerts`、`news` 與 `authorities`。縣市藍色公路（澎湖離島、高雄港、淡水河、金門九宮）由各縣市政府發布，與航港局全國資料互不重疊，請用 `tdx.ship.domestic.routes('PenghuCounty')` 等方法查詢。班表時間不補零（`6:15`），縣市每日班表日期為 `YYYY/MM/DD`。
 - 電動車充電：`tdx.ev.stations('Taipei')`（充電站）、`chargingPoints`（充電樁）、`connectors`（充電槍）、`liveStatus`（充電槍即時狀態：1 可使用、2 使用中、3 故障）與 `chargingRates`（費率）；高速公路服務區使用 `tdx.ev.freeway.*`。各清單以 `StationID`、`ChargingPointID`、`ConnectorID` 對應（規格未列出這些欄位，但實際資料皆有；這些欄位無法用於 `$filter`／`$select`，請於程式中對應）。即時狀態請先以 `ConnectorID` 對應充電槍，再以充電槍的 `StationID` 對應充電站（即時狀態本身的 `StationID` 可能使用另一套代碼）。
 - 停車：`tdx.parking.carParks('Taipei')`（路外停車場）、`availability`（即時剩餘車位）、`segments`（路邊停車路段）與 `segmentAvailability`（路段即時剩餘車位）。停車場與剩餘車位以 `CarParkID` 對應，但兩份清單僅部分重疊（臺北 1,180 筆剩餘車位中僅 455 筆有對應停車場）；新北市僅有路邊停車資料，無資料的縣市回傳空清單。
 - 臺鐵（TDX v3）：`tdx.tra.timetable('1000', '4400', '2026-10-22')` 查詢起迄站時刻表，另有 `stations`、`odFare`（票價，依車種**及行駛方向**區分：臺北→高雄自強號順向 371 公里 994 元，經東部環島方向 1286 元）、`liveBoard`（車站即時到離站，含月台與延誤分鐘）、`trainLiveBoard`（列車即時位置）與 `alerts`。回應皆為包裝物件，名稱欄位使用 `TraNameType`（韓文為 `Kr`）。

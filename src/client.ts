@@ -11,6 +11,7 @@ import { BusApi } from './resources/bus.js';
 import { EvApi } from './resources/ev.js';
 import { MetroApi } from './resources/metro.js';
 import { ParkingApi } from './resources/parking.js';
+import { ShipApi } from './resources/ship.js';
 import { ThsrApi } from './resources/thsr.js';
 import { TraApi } from './resources/tra.js';
 import { TrafficApi } from './resources/traffic.js';
@@ -75,6 +76,8 @@ export class TdxClient {
   readonly ev: EvApi;
   /** Air (航空) endpoints: airports, airlines and live flight boards (FIDS). */
   readonly air: AirApi;
+  /** Ferries (航運) endpoints: ports, routes, timetables, fares and live boards. */
+  readonly ship: ShipApi;
   /** Road traffic (路況) endpoints: sections, live speeds, CCTV, detectors, eTag, news and road events. */
   readonly traffic: TrafficApi;
 
@@ -127,6 +130,7 @@ export class TdxClient {
     this.parking = new ParkingApi(object);
     this.ev = new EvApi(object);
     this.air = new AirApi(list, object);
+    this.ship = new ShipApi(list, object);
     this.traffic = new TrafficApi(object);
   }
 

@@ -363,6 +363,38 @@ describe.skipIf(!hasCredentials)('live TDX API: road traffic', () => {
   });
 });
 
+describe.skipIf(!hasCredentials)('live TDX API: ferries', () => {
+  let tdx: TdxClient;
+
+  beforeAll(() => {
+    tdx = new TdxClient({
+      clientId: clientId ?? '',
+      clientSecret: clientSecret ?? '',
+      requestsPerSecond: 2,
+    });
+  });
+
+  it('ship.routes join to ship.ports on the start port', async () => {
+    const [routes, ports] = await Promise.all([tdx.ship.routes(), tdx.ship.ports()]);
+    const portIds = new Set(ports.Ports.map((p) => p.PortID));
+    expect(routes.VersionID).toEqual(expect.any(Number));
+    expect(routes.Routes.length).toBeGreaterThan(0);
+    expect(routes.Routes.every((r) => portIds.has(r.StartPortID))).toBe(true);
+  });
+
+  it('ship.liveBoard returns per-port boards', async () => {
+    const boards = await tdx.ship.liveBoard({ top: 3 });
+    expect(Array.isArray(boards.ShipLiveBoardses)).toBe(true);
+    expect(boards.AuthorityCode).toBe('MPB');
+  });
+
+  it('ship.domestic.routes returns the Penghu county routes', async () => {
+    const penghu = await tdx.ship.domestic.routes('PenghuCounty');
+    expect(penghu.AuthorityCode).toBe('PEN');
+    expect(penghu.Routes.length).toBeGreaterThan(0);
+  });
+});
+
 describe.skipIf(hasCredentials)('live TDX API (skipped)', () => {
   it.skip('set TDX_CLIENT_ID and TDX_CLIENT_SECRET in .env to run the live tests', () => {});
 });

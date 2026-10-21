@@ -205,6 +205,36 @@ describe('TdxClient response cache', () => {
     expect(apiUrls).toHaveLength(21); // 14 calls + the 7 real-time ones repeated
   });
 
+  it('caches ship ports, routes, fares, schedules and authorities as static, boards, positions, seats, alerts and news as real-time', async () => {
+    const objects = clientWithResponse({}, { cache: true });
+    const lists = clientWithResponse([], { cache: true });
+    const fetchAll = async () => {
+      await objects.tdx.ship.ports();
+      await objects.tdx.ship.routes();
+      await objects.tdx.ship.operators();
+      await objects.tdx.ship.vessels();
+      await objects.tdx.ship.stopsOfRoute();
+      await objects.tdx.ship.odFare();
+      await objects.tdx.ship.generalSchedule('FGGI');
+      await objects.tdx.ship.dailySchedule('FGGI');
+      await objects.tdx.ship.liveBoard();
+      await objects.tdx.ship.livePosition();
+      await objects.tdx.ship.seatAvailability();
+      await objects.tdx.ship.alerts();
+      await objects.tdx.ship.news();
+      await objects.tdx.ship.authorities();
+      await objects.tdx.ship.domestic.routes('PenghuCounty');
+      await objects.tdx.ship.domestic.liveBoard('LienchiangCounty');
+      await lists.tdx.ship.odFareBetween('TWKEL', 'TW007');
+    };
+    await fetchAll();
+    vi.advanceTimersByTime(15_000);
+    await fetchAll();
+
+    expect(objects.apiUrls).toHaveLength(22); // 16 calls + the 6 real-time ones repeated
+    expect(lists.apiUrls).toHaveLength(1);
+  });
+
   it('returns copies of cached objects too', async () => {
     const { tdx } = clientWithResponse(
       { UpdateTime: 'now', AvailableSeats: [{ TrainNo: '0803' }] },

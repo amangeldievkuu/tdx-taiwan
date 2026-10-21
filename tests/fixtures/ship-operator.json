@@ -1,0 +1,30 @@
+{
+  "UpdateInterval": -1,
+  "SrcUpdateInterval": -1,
+  "AuthorityCode": "MPB",
+  "VersionID": 4443,
+  "Operators": [
+    {
+      "OperatorID": "MPBETMAC22979327",
+      "OperatorName": {
+        "Zh_tw": "帆利航運有限公司",
+        "En": ""
+      },
+      "OperatorPhone": "(089)281047",
+      "OperatorAddress": "臺東縣臺東市豐樂里大勇路3號3-1號",
+      "BusinessAdminstrationNo": "22979327"
+    },
+    {
+      "OperatorID": "MPBNTMAC27257572",
+      "OperatorName": {
+        "Zh_tw": "南北海運股份有限公司",
+        "En": "NORTH & SOUTH MARINE CORP. LTD."
+      },
+      "OperatorPhone": "(0836)23407",
+      "OperatorAddress": "連江縣南竿鄉福沃村90之3號",
+      "BusinessAdminstrationNo": "27257572"
+    }
+  ],
+  "UpdateTime": "2026-10-15T16:17:26+08:00",
+  "SrcUpdateTime": "2026-10-15T14:47:31+08:00"
+}

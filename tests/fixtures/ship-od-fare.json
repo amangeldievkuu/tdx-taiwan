@@ -1,0 +1,97 @@
+{
+  "UpdateInterval": -1,
+  "SrcUpdateInterval": -1,
+  "AuthorityCode": "MPB",
+  "VersionID": 4443,
+  "RouteFares": [
+    {
+      "RouteID": "FGGI",
+      "RouteName": {
+        "Zh_tw": "臺東（富岡）─綠島",
+        "En": "Fugang,Taitung－Green Island,Taitung"
+      },
+      "OperatorID": "MPB80217430",
+      "FareID": " FGGI04",
+      "ODFares": [
+        {
+          "Direction": 0,
+          "OriginPort": {
+            "PortID": "TWTTT",
+            "PortName": {
+              "Zh_tw": "台東富岡漁港",
+              "En": "Taitung Fugang"
+            }
+          },
+          "DestinationPort": {
+            "PortID": "TWGNI",
+            "PortName": {
+              "Zh_tw": "綠島南寮漁港",
+              "En": "Green Island Nanlao"
+            }
+          },
+          "Fares": [
+            {
+              "FareName": "天王星",
+              "TicketType": 1,
+              "FareClass": 254,
+              "CabinClass": "保險票不占位",
+              "Price": 100
+            },
+            {
+              "FareName": "天王星",
+              "TicketType": 1,
+              "FareClass": 3,
+              "Price": 280
+            },
+            {
+              "FareName": "天王星",
+              "TicketType": 1,
+              "FareClass": 1,
+              "Price": 560
+            }
+          ]
+        },
+        {
+          "Direction": 1,
+          "OriginPort": {
+            "PortID": "TWGNI",
+            "PortName": {
+              "Zh_tw": "綠島南寮漁港",
+              "En": "Green Island Nanlao"
+            }
+          },
+          "DestinationPort": {
+            "PortID": "TWTTT",
+            "PortName": {
+              "Zh_tw": "台東富岡漁港",
+              "En": "Taitung Fugang"
+            }
+          },
+          "Fares": [
+            {
+              "FareName": "天王星",
+              "TicketType": 1,
+              "FareClass": 1,
+              "Price": 560
+            },
+            {
+              "FareName": "天王星",
+              "TicketType": 1,
+              "FareClass": 254,
+              "CabinClass": "保險票不占位",
+              "Price": 100
+            },
+            {
+              "FareName": "天王星",
+              "TicketType": 1,
+              "FareClass": 3,
+              "Price": 280
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "UpdateTime": "2026-10-15T16:17:26+08:00",
+  "SrcUpdateTime": "2026-10-15T14:47:31+08:00"
+}

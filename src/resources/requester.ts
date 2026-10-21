@@ -64,3 +64,17 @@ export function trainDate(date: Date | string = new Date()): string {
   }
   return taipeiDate.format(date);
 }
+
+/**
+ * Resolves an optional trailing path segment that may have been omitted in favour of the query:
+ * `[path, query]` for `method(value, query?)` and `method(query?)` overloads.
+ */
+export function optional<T>(
+  base: string,
+  name: string,
+  valueOrQuery: string | QueryInput<T> | undefined,
+  query: QueryInput<T> | undefined,
+): [string, QueryInput<T> | undefined] {
+  if (typeof valueOrQuery === 'string') return [`${base}/${segment(valueOrQuery, name)}`, query];
+  return [base, valueOrQuery ?? query];
+}

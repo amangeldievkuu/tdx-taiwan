@@ -6,6 +6,23 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-10-21
+
+### Added
+
+- Ferry (公共運輸-航運 v3) endpoints under `tdx.ship`: `ports`, `routes`, `operators`, `vessels`,
+  `stopsOfRoute`, `odFare`, `odFareBetween(from, to)`, `generalSchedule(routeId?)`,
+  `dailySchedule(routeId?)`, `liveBoard` (per-port departure and arrival boards), `livePosition`
+  (AIS), `seatAvailability`, `alerts`, `news` and `authorities`, plus the county and city
+  blue-highway feeds under `tdx.ship.domestic.*(city, …)`, which hold routes the nationwide feed
+  lacks (Penghu, Kaohsiung, New Taipei, Taipei, Kinmen). Responses are wrapper objects named per
+  kind (`Ports`, `Routes`, `ShipLiveBoardses`, `Newses`, …) and never carry `Count`; static
+  wrappers carry `VersionID`. Types follow live data where it departs from the spec: ports have no
+  `Country`, live-board port names use `ZhTw`, timetable times are unpadded (`6:15`), and city
+  daily schedules use `YYYY/MM/DD` dates. `SpecificSchedule` (HTTP 404) and the legacy
+  `RouteType` array endpoints are not wrapped.
+- `examples/ferry-departures.ts` (`npm run example:ferry`).
+
 ## [0.9.0] - 2026-10-21
 
 ### Added
@@ -210,7 +227,8 @@ All notable changes to this project are documented here. The format is based on
   - CI runs the dist tests against each NestJS major and smoke-tests the packed tarball on
     Node 20, 22 and 24.
 
-[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.6.0...v0.7.0

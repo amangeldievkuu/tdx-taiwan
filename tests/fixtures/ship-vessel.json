@@ -1,0 +1,46 @@
+{
+  "UpdateInterval": -1,
+  "SrcUpdateInterval": -1,
+  "AuthorityCode": "MPB",
+  "VersionID": 4443,
+  "Vessels": [
+    {
+      "VesselID": "015785",
+      "MMSI": "416005255",
+      "VesselNo": "015785",
+      "CallSign": "BR3893",
+      "VesselName": {
+        "Zh_tw": "金星6號",
+        "En": "JIN XING NO.6"
+      },
+      "Nationality": "TW",
+      "OperatorID": "MPB27951489",
+      "GrossTonnage": 236,
+      "Length": 33.68,
+      "Width": 7.07,
+      "MaxPassengerCount": 280,
+      "VesselClass": "A11",
+      "LoadDraft": 1.182
+    },
+    {
+      "VesselID": "015745",
+      "MMSI": "416005121",
+      "VesselNo": "015745",
+      "CallSign": "BR3805",
+      "VesselName": {
+        "Zh_tw": "吉順9號",
+        "En": "JI SHUN NO.9"
+      },
+      "Nationality": "TW",
+      "OperatorID": "MPB27257572",
+      "GrossTonnage": 99.88,
+      "Length": 28.32,
+      "Width": 5.9,
+      "MaxPassengerCount": 145,
+      "VesselClass": "A11",
+      "LoadDraft": 1.1
+    }
+  ],
+  "UpdateTime": "2026-10-15T16:17:26+08:00",
+  "SrcUpdateTime": "2026-10-15T14:47:31+08:00"
+}

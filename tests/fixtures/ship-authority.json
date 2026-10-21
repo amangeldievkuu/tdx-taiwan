@@ -1,0 +1,50 @@
+{
+  "UpdateInterval": -1,
+  "AuthorityCode": "MPB",
+  "VersionID": 4443,
+  "Authorities": [
+    {
+      "AuthorityCode": "TIPC",
+      "AuthorityName": {
+        "Zh_tw": "臺灣港務股份有限公司",
+        "En": "Taiwan International Ports Corpotation"
+      },
+      "AuthorityOID": "2.16.886.101.20003.20008.20077",
+      "AuthorityID": "041",
+      "AuthorityPhone": "07-5219000",
+      "AuthorityEmail": "scar918@twport.com.tw",
+      "AuthorityAddress": "",
+      "AuthorityUrl": "https://www.twport.com.tw/",
+      "UpdateTime": "2019-06-11T17:12:22+08:00"
+    },
+    {
+      "AuthorityCode": "NWT",
+      "AuthorityName": {
+        "Zh_tw": "新北市政府",
+        "En": ""
+      },
+      "AuthorityOID": "2.16.886.101.90026.20002.20021",
+      "AuthorityID": "005",
+      "AuthorityPhone": "02-29603456",
+      "AuthorityEmail": "",
+      "AuthorityAddress": "",
+      "AuthorityUrl": "http://www.traffic.ntpc.gov.tw/",
+      "UpdateTime": "2016-12-20T18:00:00+08:00"
+    },
+    {
+      "AuthorityCode": "NAN",
+      "AuthorityName": {
+        "Zh_tw": "南投縣政府",
+        "En": ""
+      },
+      "AuthorityOID": "",
+      "AuthorityID": "016",
+      "AuthorityPhone": "(049) 2222106#9",
+      "AuthorityEmail": "",
+      "AuthorityAddress": "",
+      "AuthorityUrl": "http://www.nantou.gov.tw/big5/index.asp?dptid=376480000AU250000",
+      "UpdateTime": "2016-12-20T18:00:00+08:00"
+    }
+  ],
+  "UpdateTime": "2026-10-15T16:17:26+08:00"
+}

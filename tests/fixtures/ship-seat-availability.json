@@ -1,0 +1,79 @@
+{
+  "UpdateTime": "2026-10-21T15:39:25+08:00",
+  "UpdateInterval": -1,
+  "SrcUpdateTime": "2026-10-21T15:38:25+08:00",
+  "SrcUpdateInterval": 86400,
+  "AuthorityCode": "MPB",
+  "SeatAvailabilities": [
+    {
+      "RouteID": "KMQZ",
+      "RouteName": {
+        "Zh_tw": "金門 - 石井",
+        "En": "Kinmen - Shijinggang"
+      },
+      "PortID": "TWSHT",
+      "PortName": {
+        "Zh_tw": "金門水頭",
+        "En": "Kinmen Shuitou Harbor"
+      },
+      "Availabilities": [
+        {
+          "VesselID": "N1NUDN7P",
+          "VesselName": {
+            "Zh_tw": "八方輪",
+            "En": "BVDY8"
+          },
+          "ArrivalPortID": "CNSIJ",
+          "ArrivalPortName": {
+            "Zh_tw": "石井",
+            "En": "Shijinggang"
+          },
+          "DepartureTime": "2026-10-21T09:50:00",
+          "TotalSeats": 238,
+          "BookedSeats": 12,
+          "ReservedSeats": 29,
+          "SeatStatus": 5,
+          "ShipStatus": 2,
+          "CabinSeats": [
+            {
+              "CabinClass": "普通艙",
+              "TotalSeats": 238,
+              "BookedSeats": 12,
+              "ReservedSeats": 29,
+              "SeatStatus": 5
+            }
+          ],
+          "UpdateTime": "2026-10-21T15:38:25+08:00"
+        },
+        {
+          "VesselID": "N1NUDN7V",
+          "VesselName": {
+            "Zh_tw": "八方輪",
+            "En": "BVDY8"
+          },
+          "ArrivalPortID": "CNSIJ",
+          "ArrivalPortName": {
+            "Zh_tw": "石井",
+            "En": "Shijinggang"
+          },
+          "DepartureTime": "2026-10-21T16:35:00",
+          "TotalSeats": 238,
+          "BookedSeats": 54,
+          "ReservedSeats": 46,
+          "SeatStatus": 1,
+          "ShipStatus": 1,
+          "CabinSeats": [
+            {
+              "CabinClass": "普通艙",
+              "TotalSeats": 238,
+              "BookedSeats": 54,
+              "ReservedSeats": 46,
+              "SeatStatus": 1
+            }
+          ],
+          "UpdateTime": "2026-10-21T15:38:25+08:00"
+        }
+      ]
+    }
+  ]
+}

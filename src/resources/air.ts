@@ -7,7 +7,13 @@ import type {
   AirDeparture,
   AirFlight,
 } from '../types/air.js';
-import { type ListRequester, type ObjectRequester, type QueryInput, segment } from './requester.js';
+import {
+  type ListRequester,
+  type ObjectRequester,
+  type QueryInput,
+  optional,
+  segment,
+} from './requester.js';
 
 /**
  * Air (航空) endpoints: airports, airlines and live flight boards (FIDS). Flight numbers are
@@ -116,15 +122,4 @@ export class AirApi {
     const base = '/v2/Air/FIDS/Airport';
     return this.list(...optional(base, 'airport', airportOrQuery, query), 'realtime');
   }
-}
-
-/** Resolves an optional trailing path segment that may have been omitted in favour of the query. */
-function optional<T>(
-  base: string,
-  name: string,
-  valueOrQuery: string | QueryInput<T> | undefined,
-  query: QueryInput<T> | undefined,
-): [string, QueryInput<T> | undefined] {
-  if (typeof valueOrQuery === 'string') return [`${base}/${segment(valueOrQuery, name)}`, query];
-  return [base, valueOrQuery ?? query];
 }

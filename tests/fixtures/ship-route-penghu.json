@@ -1,0 +1,70 @@
+{
+  "UpdateInterval": -1,
+  "SrcUpdateInterval": -1,
+  "AuthorityCode": "PEN",
+  "VersionID": 123,
+  "Routes": [
+    {
+      "RouteID": "2048",
+      "RouteName": {
+        "Zh_tw": "望安-將軍-馬公",
+        "En": "Wangan-Jiangjiyuenyu-Makung"
+      },
+      "ServiceStatus": 1,
+      "Description": "望安-將軍-馬公航程約55分",
+      "Operators": [
+        {
+          "OperatorID": "PENPEN-BR96402002"
+        }
+      ],
+      "StartPortID": "TWWOT",
+      "StartPortName": "望安港",
+      "EndPortID": "TWMZG03",
+      "EndPortName": "馬公第三漁港",
+      "TicketPriceDescription": {
+        "Zh_tw": "全票280元、半票140元。",
+        "En": "1 Segment,Adult NT$280、Children/Senior/Disabled NT$140"
+      },
+      "RouteType": 2,
+      "Vessels": [
+        {
+          "VesselID": "015717",
+          "VesselName": {
+            "Zh_tw": "金八達10號",
+            "En": "KINGBADA NO.10"
+          }
+        }
+      ],
+      "RouteDistance": 19,
+      "WeatherURL": ""
+    },
+    {
+      "RouteID": "2041",
+      "RouteName": {
+        "Zh_tw": "重光漁港-大倉漁港",
+        "En": "Chongguang-Dachang"
+      },
+      "ServiceStatus": 1,
+      "Description": "重光漁港-大倉漁港航程約15分鐘",
+      "Operators": [
+        {
+          "OperatorID": "PENPEN-BR96922355"
+        }
+      ],
+      "StartPortID": "TW045",
+      "StartPortName": "澎湖大倉漁港",
+      "EndPortID": "TW046",
+      "EndPortName": "澎湖重光漁港",
+      "TicketPriceDescription": {
+        "Zh_tw": "單趟100元",
+        "En": "1 Segment,Adult NT$100、Children/Senior/Disabled NT$50"
+      },
+      "RouteType": 2,
+      "Vessels": [],
+      "RouteDistance": 2,
+      "WeatherURL": ""
+    }
+  ],
+  "UpdateTime": "2026-10-12T08:47:26+08:00",
+  "SrcUpdateTime": "2026-10-12T08:47:26+08:00"
+}

@@ -1,0 +1,98 @@
+{
+  "UpdateInterval": -1,
+  "SrcUpdateInterval": -1,
+  "AuthorityCode": "MPB",
+  "VersionID": 4443,
+  "GeneralSchedules": [
+    {
+      "RouteID": "BGHQ",
+      "RouteName": {
+        "Zh_tw": "馬祖(北竿白沙)─福州(黃岐)",
+        "En": "Matsu－Huangqi　"
+      },
+      "OperatorID": "MPB913501057845298842",
+      "EffectiveDate": "2026-10-26",
+      "ExpireDate": "2026-10-26",
+      "Direction": 0,
+      "TimeTables": [
+        {
+          "ServiceDay": {
+            "Monday": 1,
+            "Tuesday": 1,
+            "Wednesday": 1,
+            "Thursday": 1,
+            "Friday": 1,
+            "Saturday": 1,
+            "Sunday": 1,
+            "NationalHolidays": 0
+          },
+          "TripID": "20728777",
+          "StopTimes": [
+            {
+              "StopSequence": 1,
+              "PortID": "TW008",
+              "PortName": {
+                "Zh_tw": "北竿白沙港",
+                "En": "Baisha Port"
+              },
+              "ArrivalTime": "15:00",
+              "DepartureTime": "15:00",
+              "TravelTime": 30
+            },
+            {
+              "StopSequence": 2,
+              "PortID": "CNHGQ",
+              "PortName": {
+                "Zh_tw": "福州黃岐港",
+                "En": "Huangqi Port"
+              },
+              "ArrivalTime": "15:30",
+              "DepartureTime": "15:30",
+              "TravelTime": 0
+            }
+          ]
+        },
+        {
+          "ServiceDay": {
+            "Monday": 1,
+            "Tuesday": 1,
+            "Wednesday": 1,
+            "Thursday": 1,
+            "Friday": 1,
+            "Saturday": 1,
+            "Sunday": 1,
+            "NationalHolidays": 0
+          },
+          "TripID": "20728962",
+          "StopTimes": [
+            {
+              "StopSequence": 1,
+              "PortID": "CNHGQ",
+              "PortName": {
+                "Zh_tw": "福州黃岐港",
+                "En": "Huangqi Port"
+              },
+              "ArrivalTime": "10:00",
+              "DepartureTime": "10:00",
+              "TravelTime": 30
+            },
+            {
+              "StopSequence": 2,
+              "PortID": "TW008",
+              "PortName": {
+                "Zh_tw": "北竿白沙港",
+                "En": "Baisha Port"
+              },
+              "ArrivalTime": "10:30",
+              "DepartureTime": "10:30",
+              "TravelTime": 0
+            }
+          ]
+        }
+      ],
+      "Frequencies": []
+    }
+  ],
+  "UpdateTime": "2026-10-15T16:17:26+08:00",
+  "SrcUpdateTime": "2026-10-15T14:47:31+08:00"
+}

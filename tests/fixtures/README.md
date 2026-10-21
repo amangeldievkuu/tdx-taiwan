@@ -1,7 +1,7 @@
 # Test fixtures
 
 > 資料來源：交通部運輸資料流通服務平臺 (MOTC Transport Data eXchange, TDX). The `metro-*.json`,
-> `thsr-*.json`, `tra-*.json`, `parking-*.json`, `ev-*.json`, `air-*.json`, `traffic-*.json`, `bus-stop-taipei.json`, `bus-position-taipei-307.json` and
+> `thsr-*.json`, `tra-*.json`, `parking-*.json`, `ev-*.json`, `air-*.json`, `traffic-*.json`, `ship-*.json`, `bus-stop-taipei.json`, `bus-position-taipei-307.json` and
 > `bus-intercity-*.json` files contain TDX data and are used under the
 > [TDX 資料授權利用條款](https://tdx.transportdata.tw/term), not this repository's MIT license.
 
@@ -64,6 +64,17 @@ detector reading with per-vehicle-class volumes; a freeway eTag pair with its WK
 its live flows; freeway news items without the `Description` the spec requires and with the
 `0001-01-01` update time; a planned Taipei event located only by `Other`; two freeway live events
 (congestion at an interchange exit, roadworks with blocked lanes); and three authorities.
+
+The `ship-*.json` files are trimmed 公共運輸-航運 v3 wrappers (2026-10-21), cut to one to three
+items each and not edited. They keep: the per-kind array names (`Ports`, `Routes`,
+`ShipLiveBoardses`, `Newses`) and the static header with `VersionID` but no `Count`; ports without
+the `Country` the spec requires; two nationwide routes and two Penghu county routes (authority
+`PEN`, IDs absent from the nationwide feed); a daily timetable with unpadded `6:15` times and an
+empty `ArrivalTime`, and a county one dated `2026/11/27`; the 小琉球白沙港 live board with `ZhTw`
+port names and a departed and an on-time sailing; two AIS positions (one with an empty Chinese
+name); the 金門–石井 seat availability with cabin seats; a typhoon alert with its scope; the empty
+news list; and three authorities. `ship-od-fare-between.json` is the plain array the
+`/ODFare/{O}/to/{D}` endpoint returns.
 
 To compare against real data, add your keys to `.env` and run `npm run test:integration`,
 which exercises the same endpoints against the live API.
