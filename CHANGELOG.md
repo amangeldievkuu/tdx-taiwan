@@ -6,6 +6,20 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-21
+
+### Added
+
+- Parking (停車資訊 v1) endpoints by city: `parking.carParks`, `parking.availability` (live free
+  spaces in car parks), `parking.segments` (on-street segments) and
+  `parking.segmentAvailability` (live free curbside spaces). Responses are wrapper objects using
+  the live array names (`CarParks`, `ParkingAvailabilities`, `ParkingSegments`,
+  `CurbParkingSegmentAvailabilities`) rather than the spec's `Items`. Types are checked against
+  every city's live data; fields the spec requires but live data omits (such as `CarParkRegNo`,
+  `Telephone`, `Email`, `TownName`, `TownID` and road-section ends) are optional.
+- README notes that car parks and availability join only partly on `CarParkID`.
+- `examples/nearest-parking.ts` (`npm run example:parking`).
+
 ## [0.5.0] - 2026-10-21
 
 ### Added
@@ -149,7 +163,8 @@ All notable changes to this project are documented here. The format is based on
   - CI runs the dist tests against each NestJS major and smoke-tests the packed tarball on
     Node 20, 22 and 24.
 
-[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.3.0...v0.3.1

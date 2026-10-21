@@ -126,6 +126,21 @@ describe('TdxClient response cache', () => {
     expect(apiUrls).toHaveLength(9); // only the three real-time requests repeat
   });
 
+  it('caches parking car parks and segments as static, availability as real-time', async () => {
+    const { tdx, apiUrls } = clientWithResponse({}, { cache: true });
+    const fetchAll = async () => {
+      await tdx.parking.carParks('Taipei');
+      await tdx.parking.availability('Taipei');
+      await tdx.parking.segments('Taipei');
+      await tdx.parking.segmentAvailability('Taipei');
+    };
+    await fetchAll();
+    vi.advanceTimersByTime(15_000);
+    await fetchAll();
+
+    expect(apiUrls).toHaveLength(6); // only the two availability requests repeat
+  });
+
   it('returns copies of cached objects too', async () => {
     const { tdx } = clientWithResponse(
       { UpdateTime: 'now', AvailableSeats: [{ TrainNo: '0803' }] },

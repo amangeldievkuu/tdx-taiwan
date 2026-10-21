@@ -229,6 +229,39 @@ describe.skipIf(!hasCredentials)('live TDX API: TRA', () => {
   });
 });
 
+describe.skipIf(!hasCredentials)('live TDX API: parking', () => {
+  let tdx: TdxClient;
+
+  beforeAll(() => {
+    tdx = new TdxClient({
+      clientId: clientId ?? '',
+      clientSecret: clientSecret ?? '',
+      requestsPerSecond: 2,
+    });
+  });
+
+  it('parking.carParks and availability return Taipei car parks that partly join', async () => {
+    const carParks = await tdx.parking.carParks('Taipei');
+    const availability = await tdx.parking.availability('Taipei');
+    expect(carParks.CarParks.length).toBeGreaterThan(0);
+    expect(availability.ParkingAvailabilities.length).toBeGreaterThan(0);
+    const ids = new Set(carParks.CarParks.map((c) => c.CarParkID));
+    expect(availability.ParkingAvailabilities.some((a) => ids.has(a.CarParkID))).toBe(true);
+  });
+
+  it('parking.segments and segmentAvailability return Taipei on-street data', async () => {
+    const segments = await tdx.parking.segments('Taipei', { top: 2 });
+    expect(segments.ParkingSegments).toHaveLength(2);
+    const live = await tdx.parking.segmentAvailability('Taipei', { top: 2 });
+    expect(live.CurbParkingSegmentAvailabilities[0]).toHaveProperty('AvailableSpaces');
+  });
+
+  it('returns an empty list for a city without data', async () => {
+    const result = await tdx.parking.carParks('NewTaipei');
+    expect(result.CarParks).toEqual([]);
+  });
+});
+
 describe.skipIf(hasCredentials)('live TDX API (skipped)', () => {
   it.skip('set TDX_CLIENT_ID and TDX_CLIENT_SECRET in .env to run the live tests', () => {});
 });

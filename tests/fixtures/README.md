@@ -1,7 +1,7 @@
 # Test fixtures
 
 > 資料來源：交通部運輸資料流通服務平臺 (MOTC Transport Data eXchange, TDX). The `metro-*.json`,
-> `thsr-*.json`, `tra-*.json`, `bus-stop-taipei.json`, `bus-position-taipei-307.json` and
+> `thsr-*.json`, `tra-*.json`, `parking-*.json`, `bus-stop-taipei.json`, `bus-position-taipei-307.json` and
 > `bus-intercity-*.json` files contain TDX data and are used under the
 > [TDX 資料授權利用條款](https://tdx.transportdata.tw/term), not this repository's MIT license.
 
@@ -34,6 +34,12 @@ OData filters: two stations, two 臺北 → 高雄 trains (without the `Authorit
 requires), the 自強 and 區間 fares in both directions, the 板橋 live board with a delayed train,
 a train live board, and the normal-day alert (without `AlertID` and `Description`). None were
 edited.
+
+The `parking-*.json` files are trimmed Taipei wrappers (2026-10-21), fetched through the SDK
+with OData filters and not edited. They show how loosely the lists join: car park `TPE0448` has
+no availability record (although it is flagged `LiveOccuppancyAvailable`), availability
+`TPE0096` has no car park, and only `TPE0567` appears in both. Segment `6018000` has a road
+section without `End`.
 
 To compare against real data, add your keys to `.env` and run `npm run test:integration`,
 which exercises the same endpoints against the live API.

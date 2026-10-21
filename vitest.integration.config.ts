@@ -5,7 +5,8 @@ const config: ViteUserConfig = mergeConfig(
   baseConfig,
   defineConfig({
     test: {
-      testTimeout: 60_000,
+      // TDX may answer 429 with Retry-After up to 30 s; three retries can take ~90 s.
+      testTimeout: 150_000,
     },
   }),
 );
