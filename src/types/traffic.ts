@@ -6,7 +6,7 @@
 // the observations come from checking Taipei, the freeways and the provincial highways on
 // 2026-10-21. Optional (`?`) means the field is not in the schema's `required` list; the spec
 // marks nothing nullable.
-import type { DateTimeString, OpenString } from './common.js';
+import type { DateTimeString, Flag, OpenString } from './common.js';
 
 /**
  * `City` path values. Each kind accepts its own subset and TDX answers 400 with the accepted
@@ -77,7 +77,7 @@ export type TrafficVDType = 1 | 2 | 3 | 4 | 5 | 6;
 export type TrafficDetectionType = 1 | 2 | 3 | 4;
 
 /** 0 = 不包含 / 偵測單向 (no), 1 = 包含 / 偵測雙向 (yes). */
-export type TrafficFlag = 0 | 1;
+export type TrafficFlag = Flag;
 
 /** 壅塞衡量基準: `Combined` 綜合指標, `Occupancy` 佔有率, `Speed` 速率, `TravelTime` 旅行時間. */
 export type TrafficMeasureIndex = OpenString<'Combined' | 'Occupancy' | 'Speed' | 'TravelTime'>;

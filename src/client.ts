@@ -18,9 +18,15 @@ import { TrafficApi } from './resources/traffic.js';
 import type { CacheClass, ListRequester, ObjectRequester } from './resources/requester.js';
 
 export interface TdxCacheOptions {
-  /** TTL for static data: bike stations, bus routes, stops of route. Default: 1 hour. */
+  /**
+   * TTL for static data (stations, routes, timetables, fares, reference lists).
+   * Default: 1 hour.
+   */
   staticTtlMs?: number;
-  /** TTL for real-time data: bike availability, bus ETA. Default: 15 seconds. */
+  /**
+   * TTL for real-time data (availability, ETAs, live boards, positions, alerts).
+   * Default: 15 seconds.
+   */
   realtimeTtlMs?: number;
   /** Maximum number of cached responses (one per distinct URL). Default: 500. */
   maxEntries?: number;
@@ -60,9 +66,9 @@ const DEFAULT_CACHE: Required<TdxCacheOptions> = {
 };
 
 export class TdxClient {
-  /** Public bike (YouBike) endpoints. */
+  /** Public bike (YouBike / Moovo) endpoints. */
   readonly bike: BikeApi;
-  /** City bus endpoints. */
+  /** City bus endpoints, plus InterCity coaches under `bus.interCity`. */
   readonly bus: BusApi;
   /** Metro, light rail and gondola endpoints. */
   readonly metro: MetroApi;
@@ -76,9 +82,12 @@ export class TdxClient {
   readonly ev: EvApi;
   /** Air (航空) endpoints: airports, airlines and live flight boards (FIDS). */
   readonly air: AirApi;
-  /** Ferries (航運) endpoints: ports, routes, timetables, fares and live boards. */
+  /** Ferry and ship (航運) endpoints: ports, routes, timetables, fares and live boards. */
   readonly ship: ShipApi;
-  /** Road traffic (路況) endpoints: sections, live speeds, CCTV, detectors, eTag, news and road events. */
+  /**
+   * Road traffic (路況) endpoints by city, plus `traffic.freeway` and `traffic.highway`:
+   * sections, live speeds, CCTV, detectors, eTag, news and road events.
+   */
   readonly traffic: TrafficApi;
 
   private readonly tokens: TokenManager;
@@ -143,7 +152,7 @@ export class TdxClient {
    * Low-level GET for any TDX endpoint not wrapped by this SDK yet, with auth, rate
    * limiting, retries and `$format=JSON` applied. Not cached.
    *
-   * @example tdx.get<BusRoute[]>('/v2/Bus/Route/InterCity', { top: 10 })
+   * @example tdx.get<ShipRoute[]>('/v3/Ship/Route/RouteType/OutlyingIslands', { top: 10 })
    */
   async get<T = unknown, Item = Record<string, unknown>>(
     path: string,

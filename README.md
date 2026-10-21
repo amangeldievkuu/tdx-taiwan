@@ -14,7 +14,7 @@ traffic with live section speeds, cameras, detectors, eTag travel times and road
 ferry routes, timetables, fares and live port boards.
 
 - OAuth2 client-credentials auth with in-memory token caching and automatic refresh
-- Retries with exponential backoff + jitter on 429 / 5xx, and a client-side rate limiter
+- Retries with exponential backoff + jitter on 429, 5xx and network errors, and a client-side rate limiter
 - Typed OData query builder (`$filter`, `$select`, `$orderby`, `$top`, `$skip`)
 - Response types transcribed from the official TDX OpenAPI specs
 - Optional in-memory response cache
@@ -45,9 +45,7 @@ The client exchanges these for an access token on the first request, caches it i
 refreshes it 60 seconds before it expires, and makes sure concurrent requests share a single
 token request.
 
-## Examples
-
-### 1. Plain Node.js
+## Quick start
 
 ```ts
 import { TdxClient } from 'tdx-taiwan';
@@ -82,54 +80,24 @@ npx tsx examples/road-traffic.ts freeway             # most congested freeway se
 npx tsx examples/ferry-departures.ts TW001           # today's ferry departures from a port
 ```
 
-### 2. NestJS
+## NestJS
 
 ```ts
 // app.module.ts
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TdxModule } from 'tdx-taiwan/nestjs';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot(),
-    TdxModule.forRootAsync({
-      isGlobal: true,
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        clientId: config.getOrThrow('TDX_CLIENT_ID'),
-        clientSecret: config.getOrThrow('TDX_CLIENT_SECRET'),
-        cache: true,
-      }),
-    }),
-  ],
+  imports: [TdxModule.forRoot({ clientId, clientSecret, isGlobal: true })],
 })
 export class AppModule {}
 ```
 
-```ts
-// bus.service.ts
-import { Inject, Injectable } from '@nestjs/common';
-import { TdxClient } from 'tdx-taiwan';
+Inject `TdxClient` into your services. `forRootAsync` (for `ConfigService`), the explicit
+`@Inject(TdxClient)` form and the optional `@nestjs/common` v10–v12 peer dependency are
+described in [docs/nestjs.md](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/nestjs.md).
 
-@Injectable()
-export class BusService {
-  // Explicit @Inject works even when your build does not emit decorator metadata
-  // (esbuild, SWC without metadata, Vitest).
-  constructor(@Inject(TdxClient) private readonly tdx: TdxClient) {}
-
-  arrivals(route: string) {
-    return this.tdx.bus.eta('Taipei', route);
-  }
-}
-```
-
-`TdxModule.forRoot({ clientId, clientSecret, isGlobal })` is also available for static
-configuration. `@nestjs/common` (v10–v12) is an optional peer dependency — the core package
-never loads it.
-
-### 3. OData queries
+## OData queries
 
 Every endpoint accepts a query builder or a plain object. Field names are type-checked
 against the response type.
@@ -158,530 +126,35 @@ const stops = await tdx.bus.eta('Taipei', '307', {
 `$format=JSON` is always added. `$select` limits which fields TDX returns, but the result is
 still typed as the full item, so treat unselected fields as absent.
 
-## API
+## Resources
 
-| Method                                              | TDX endpoint                                                      | Returns                        |
-| --------------------------------------------------- | ----------------------------------------------------------------- | ------------------------------ |
-| `tdx.bike.stations(city, query?)`                   | `GET /v2/Bike/Station/City/{City}`                                | `BikeStation[]`                |
-| `tdx.bike.availability(city, query?)`               | `GET /v2/Bike/Availability/City/{City}`                           | `BikeAvailability[]`           |
-| `tdx.bus.routes(city, routeName?, query?)`          | `GET /v2/Bus/Route/City/{City}[/{RouteName}]`                     | `BusRoute[]`                   |
-| `tdx.bus.stopsOfRoute(city, routeName, query?)`     | `GET /v2/Bus/StopOfRoute/City/{City}/{RouteName}`                 | `BusStopOfRoute[]`             |
-| `tdx.bus.eta(city, routeName, query?)`              | `GET /v2/Bus/EstimatedTimeOfArrival/City/{City}/{RouteName}`      | `BusEstimatedTimeOfArrival[]`  |
-| `tdx.bus.stops(city, query?)`                       | `GET /v2/Bus/Stop/City/{City}`                                    | `BusStopInfo[]`                |
-| `tdx.bus.positions(city, routeName, query?)`        | `GET /v2/Bus/RealTimeByFrequency/City/{City}/{RouteName}`         | `BusPosition[]`                |
-| `tdx.bus.interCity.routes(routeName?, query?)`      | `GET /v2/Bus/Route/InterCity[/{RouteName}]`                       | `BusRoute[]`                   |
-| `tdx.bus.interCity.stopsOfRoute(routeName, query?)` | `GET /v2/Bus/StopOfRoute/InterCity/{RouteName}`                   | `BusStopOfRoute[]`             |
-| `tdx.bus.interCity.eta(routeName, query?)`          | `GET /v2/Bus/EstimatedTimeOfArrival/InterCity/{RouteName}`        | `BusEstimatedTimeOfArrival[]`  |
-| `tdx.bus.interCity.positions(routeName, query?)`    | `GET /v2/Bus/RealTimeByFrequency/InterCity/{RouteName}`           | `BusPosition[]`                |
-| `tdx.metro.stations(system, query?)`                | `GET /v2/Rail/Metro/Station/{RailSystem}`                         | `MetroStation[]`               |
-| `tdx.metro.lines(system, query?)`                   | `GET /v2/Rail/Metro/Line/{RailSystem}`                            | `MetroLine[]`                  |
-| `tdx.metro.stationsOfLine(system, query?)`          | `GET /v2/Rail/Metro/StationOfLine/{RailSystem}`                   | `MetroStationOfLine[]`         |
-| `tdx.metro.liveBoard(system, query?)`               | `GET /v2/Rail/Metro/LiveBoard/{RailSystem}`                       | `MetroLiveBoard[]`             |
-| `tdx.metro.firstLastTimetable(system, query?)`      | `GET /v2/Rail/Metro/FirstLastTimetable/{RailSystem}`              | `MetroFirstLastTimetable[]`    |
-| `tdx.metro.odFare(system, query?)`                  | `GET /v2/Rail/Metro/ODFare/{RailSystem}`                          | `MetroODFare[]`                |
-| `tdx.metro.alerts(system, query?)`                  | `GET /v2/Rail/Metro/Alert/{RailSystem}`                           | `MetroAlerts`                  |
-| `tdx.thsr.stations(query?)`                         | `GET /v2/Rail/THSR/Station`                                       | `ThsrStation[]`                |
-| `tdx.thsr.timetable(from, to, date?, query?)`       | `GET /v2/Rail/THSR/DailyTimetable/OD/{O}/to/{D}/{TrainDate}`      | `ThsrODTimetable[]`            |
-| `tdx.thsr.odFare(from, to, query?)`                 | `GET /v2/Rail/THSR/ODFare/{O}/to/{D}`                             | `ThsrODFare[]`                 |
-| `tdx.thsr.availableSeats(station, query?)`          | `GET /v2/Rail/THSR/AvailableSeatStatusList/{StationID}`           | `ThsrAvailableSeats`           |
-| `tdx.thsr.alerts(query?)`                           | `GET /v2/Rail/THSR/AlertInfo`                                     | `ThsrAlert[]`                  |
-| `tdx.tra.stations(query?)`                          | `GET /v3/Rail/TRA/Station`                                        | `TraStations`                  |
-| `tdx.tra.timetable(from, to, date?, query?)`        | `GET /v3/Rail/TRA/DailyTrainTimetable/OD/{O}/to/{D}/{TrainDate}`  | `TraTimetable`                 |
-| `tdx.tra.odFare(from, to, query?)`                  | `GET /v3/Rail/TRA/ODFare/{O}/to/{D}`                              | `TraODFares`                   |
-| `tdx.tra.liveBoard(station, query?)`                | `GET /v3/Rail/TRA/StationLiveBoard/Station/{StationID}`           | `TraStationLiveBoards`         |
-| `tdx.tra.trainLiveBoard(trainNo, query?)`           | `GET /v3/Rail/TRA/TrainLiveBoard/TrainNo/{TrainNo}`               | `TraTrainLiveBoards`           |
-| `tdx.tra.alerts(query?)`                            | `GET /v3/Rail/TRA/Alert`                                          | `TraAlerts`                    |
-| `tdx.parking.carParks(city, query?)`                | `GET /v1/Parking/OffStreet/CarPark/City/{City}`                   | `ParkingCarParks`              |
-| `tdx.parking.availability(city, query?)`            | `GET /v1/Parking/OffStreet/ParkingAvailability/City/{City}`       | `ParkingAvailabilities`        |
-| `tdx.parking.segments(city, query?)`                | `GET /v1/Parking/OnStreet/ParkingSegment/City/{City}`             | `ParkingSegments`              |
-| `tdx.parking.segmentAvailability(city, query?)`     | `GET /v1/Parking/OnStreet/ParkingSegmentAvailability/City/{City}` | `ParkingSegmentAvailabilities` |
-| `tdx.ev.stations(city, query?)`                     | `GET /v1/EV/Station/City/{City}`                                  | `EvStations`                   |
-| `tdx.ev.chargingPoints(city, query?)`               | `GET /v1/EV/ChargingPoint/City/{City}`                            | `EvChargingPoints`             |
-| `tdx.ev.connectors(city, query?)`                   | `GET /v1/EV/Connector/City/{City}`                                | `EvConnectors`                 |
-| `tdx.ev.liveStatus(city, query?)`                   | `GET /v1/EV/ConnectorLiveStatus/City/{City}`                      | `EvLiveStatuses`               |
-| `tdx.ev.chargingRates(city, query?)`                | `GET /v1/EV/ChargingRate/City/{City}`                             | `EvChargingRates`              |
-| `tdx.ev.freeway.*(query?)`                          | The same five, at `…/Freeway/ServiceArea`                         | same types                     |
-| `tdx.air.airports(query?)`                          | `GET /v2/Air/Airport`                                             | `AirAirport[]`                 |
-| `tdx.air.airport(iata)`                             | `GET /v2/Air/Airport/{IATA}`                                      | `AirAirport`                   |
-| `tdx.air.airlines(query?)`                          | `GET /v2/Air/Airline`                                             | `AirAirline[]`                 |
-| `tdx.air.airline(iata)`                             | `GET /v2/Air/Airline/{IATA}`                                      | `AirAirline`                   |
-| `tdx.air.departures(airport?, query?)`              | `GET /v2/Air/FIDS/Airport/Departure[/{IATA}]`                     | `AirDeparture[]`               |
-| `tdx.air.arrivals(airport?, query?)`                | `GET /v2/Air/FIDS/Airport/Arrival[/{IATA}]`                       | `AirArrival[]`                 |
-| `tdx.air.flights(flightNo?, query?)`                | `GET /v2/Air/FIDS/Flight[/{FlightNo}]`                            | `AirFlight[]`                  |
-| `tdx.air.boards(airport?, query?)`                  | `GET /v2/Air/FIDS/Airport[/{IATA}]`                               | `AirAirportBoard[]`            |
-| `tdx.traffic.sections(city, query?)`                | `GET /v2/Road/Traffic/Section/City/{City}`                        | `TrafficSections`              |
-| `tdx.traffic.liveTraffic(city, query?)`             | `GET /v2/Road/Traffic/Live/City/{City}`                           | `TrafficLiveTraffics`          |
-| `tdx.traffic.congestionLevels(city, query?)`        | `GET /v2/Road/Traffic/CongestionLevel/City/{City}`                | `TrafficCongestionLevels`      |
-| `tdx.traffic.cctvs(city, query?)`                   | `GET /v2/Road/Traffic/CCTV/City/{City}`                           | `TrafficCCTVs`                 |
-| `tdx.traffic.vds(city, query?)`                     | `GET /v2/Road/Traffic/VD/City/{City}`                             | `TrafficVDs`                   |
-| `tdx.traffic.vdLive(city, query?)`                  | `GET /v2/Road/Traffic/Live/VD/City/{City}`                        | `TrafficVDLives`               |
-| `tdx.traffic.etagPairs(city, query?)`               | `GET /v2/Road/Traffic/ETagPair/City/{City}`                       | `TrafficETagPairs`             |
-| `tdx.traffic.etagPairLive(city, query?)`            | `GET /v2/Road/Traffic/Live/ETag/City/{City}`                      | `TrafficETagPairLives`         |
-| `tdx.traffic.news(city, query?)`                    | `GET /v2/Road/Traffic/Live/News/City/{City}`                      | `TrafficNewsList`              |
-| `tdx.traffic.events(city, query?)`                  | `GET /v1/Traffic/RoadEvent/Event/City/{City}`                     | `TrafficEvents`                |
-| `tdx.traffic.liveEvents(city, query?)`              | `GET /v1/Traffic/RoadEvent/LiveEvent/City/{City}`                 | `TrafficLiveEvents`            |
-| `tdx.traffic.authorities(query?)`                   | `GET /v2/Road/Traffic/Basic/Authority`                            | `TrafficAuthorities`           |
-| `tdx.traffic.freeway.*(query?)`                     | The same at `…/Freeway`, without `events` and `authorities`       | same types                     |
-| `tdx.traffic.highway.*(query?)`                     | The same at `…/Highway`, with `events()` but no `authorities`     | same types                     |
-| `tdx.ship.ports(query?)`                            | `GET /v3/Ship/Port`                                               | `ShipPorts`                    |
-| `tdx.ship.routes(query?)`                           | `GET /v3/Ship/Route`                                              | `ShipRoutes`                   |
-| `tdx.ship.operators(query?)`                        | `GET /v3/Ship/Operator`                                           | `ShipOperators`                |
-| `tdx.ship.vessels(query?)`                          | `GET /v3/Ship/Vessel`                                             | `ShipVessels`                  |
-| `tdx.ship.stopsOfRoute(query?)`                     | `GET /v3/Ship/StopOfRoute`                                        | `ShipStopOfRoutes`             |
-| `tdx.ship.odFare(query?)`                           | `GET /v3/Ship/ODFare`                                             | `ShipRouteFares`               |
-| `tdx.ship.odFareBetween(from, to, query?)`          | `GET /v3/Ship/ODFare/{O}/to/{D}`                                  | `ShipRouteFare[]`              |
-| `tdx.ship.generalSchedule(routeId?, query?)`        | `GET /v3/Ship/GeneralSchedule[/{RouteID}]`                        | `ShipGeneralSchedules`         |
-| `tdx.ship.dailySchedule(routeId?, query?)`          | `GET /v3/Ship/DailySchedule[/{RouteID}]`                          | `ShipDailySchedules`           |
-| `tdx.ship.liveBoard(query?)`                        | `GET /v3/Ship/ShipLiveBoard`                                      | `ShipLiveBoards`               |
-| `tdx.ship.livePosition(query?)`                     | `GET /v3/Ship/LivePosition`                                       | `ShipLivePositions`            |
-| `tdx.ship.seatAvailability(query?)`                 | `GET /v3/Ship/SeatAvailability`                                   | `ShipSeatAvailabilities`       |
-| `tdx.ship.alerts(query?)`                           | `GET /v3/Ship/Alert`                                              | `ShipAlerts`                   |
-| `tdx.ship.news(query?)`                             | `GET /v3/Ship/News`                                               | `ShipNewsList`                 |
-| `tdx.ship.authorities(query?)`                      | `GET /v3/Ship/Authority`                                          | `ShipAuthorities`              |
-| `tdx.ship.domestic.*(city, query?)`                 | The city feeds at `…/Domestic/City/{City}` (routes … news)        | same types                     |
-| `tdx.get(path, query?)`                             | Any other TDX endpoint (auth, retries, rate limit applied)        | `unknown`                      |
-| `tdx.getAccessToken()`                              | The current access token                                          | `string`                       |
-| `tdx.clearCache()`                                  | Empties the response cache                                        | `void`                         |
+Responses keep TDX's original field names (`StationUID`, `AvailableRentBikes`, …) so they match
+the [TDX documentation](https://tdx.transportdata.tw/api-service/swagger) and the field names
+you use in `$filter`; city names autocomplete but any string is accepted. Each resource page
+lists its methods, an example and the places where live data departs from the spec; the rules
+they share are in [docs/conventions.md](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/conventions.md).
 
-Responses keep TDX's original field names (`StationUID`, `AvailableRentBikes`, …) so they
-match the [TDX documentation](https://tdx.transportdata.tw/api-service/swagger) and the field
-names you use in `$filter`. Fields are optional or nullable exactly as the OpenAPI spec
-declares them.
+| Namespace     | Scope                                                             | Docs                                                                                   | Example                                                   |
+| ------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| `tdx.bike`    | YouBike / Moovo stations and live availability                    | [Public bikes](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/bike.md)    | [`nearest-youbike.ts`](examples/nearest-youbike.ts)       |
+| `tdx.bus`     | City and InterCity routes, stops, ETAs and live positions         | [Buses](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/bus.md)            | —                                                         |
+| `tdx.metro`   | Stations, lines, live boards, first/last trains, fares, alerts    | [Metro](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/metro.md)          | [`next-metro-train.ts`](examples/next-metro-train.ts)     |
+| `tdx.thsr`    | Stations, timetables, fares, seat availability, alerts            | [High speed rail](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/thsr.md) | [`thsr-trains.ts`](examples/thsr-trains.ts)               |
+| `tdx.tra`     | Stations, timetables, fares, live boards, train positions, alerts | [Taiwan Railway](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/tra.md)   | [`tra-trains.ts`](examples/tra-trains.ts)                 |
+| `tdx.parking` | Car parks and curbside segments with live free spaces             | [Parking](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/parking.md)      | [`nearest-parking.ts`](examples/nearest-parking.ts)       |
+| `tdx.ev`      | Stations, chargers, connectors, live status, prices               | [EV charging](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/ev.md)       | [`nearest-ev-charger.ts`](examples/nearest-ev-charger.ts) |
+| `tdx.air`     | Airports, airlines, live departure and arrival boards             | [Flights](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/air.md)          | [`flight-board.ts`](examples/flight-board.ts)             |
+| `tdx.traffic` | Live section speeds, cameras, detectors, eTag, events             | [Road traffic](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/traffic.md) | [`road-traffic.ts`](examples/road-traffic.ts)             |
+| `tdx.ship`    | Ports, routes, timetables, fares, live boards, AIS positions      | [Ferries](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/ship.md)         | [`ferry-departures.ts`](examples/ferry-departures.ts)     |
 
-City names autocomplete (`'Taipei'`, `'NewTaipei'`, `'Kaohsiung'`, …) but any string is
-accepted. Route names may be Chinese (`'紅5'`); they are URL-encoded for you.
+Sub-APIs follow the same pattern: `tdx.bus.interCity`, `tdx.ev.freeway`, `tdx.traffic.freeway`,
+`tdx.traffic.highway` and `tdx.ship.domestic`.
 
-Route names are matched exactly against the Chinese name (`RouteName/Zh_tw`). TDX itself
-treats the `{RouteName}` path segment as a prefix, so `'307'` would also return `307西藏三民`
-and `'紅5'` would also return `紅50`, `紅55`, …; the SDK adds an exact `$filter` for you. Pass
-`exact: false` (plain-object queries only) to get TDX's prefix matching instead:
-
-```ts
-await tdx.bus.eta('Taipei', '307'); // route 307 only
-await tdx.bus.eta('Taipei', '307', { exact: false }); // 307, 307西藏三民, …
-```
-
-Names that contain `/` (a few Kinmen routes, such as `15A往烈嶼 (后頭進/黃厝出)`) work too.
-
-### Bus positions, stops and InterCity coaches
-
-```ts
-// Where are the route 307 buses right now?
-const buses = await tdx.bus.positions('Taipei', '307');
-for (const b of buses) {
-  console.log(
-    b.PlateNumb,
-    b.BusPosition?.PositionLat,
-    b.BusPosition?.PositionLon,
-    `${b.Speed} km/h`,
-  );
-}
-
-// InterCity coaches (公路客運) have the same methods without a city
-const coaches = await tdx.bus.interCity.eta('1610');
-const where = await tdx.bus.interCity.positions('1610');
-```
-
-- `positions` and every `interCity` method match route names exactly, like the city methods:
-  TDX would return all 91 `9xxx` coach routes for `'9'`. Pass `{ exact: false }` to opt out.
-- `interCity` returns the same types as the city methods (`BusRoute`, `BusStopOfRoute`,
-  `BusEstimatedTimeOfArrival`).
-- `stops(city)` returns every stop in a city as `BusStopInfo` (about 29,000 for Taipei), so
-  narrow it with `$filter` / `$select`. `BusStop` remains the stop type inside
-  `BusStopOfRoute`. `StationGroupID` is optional because Taipei and Kaohsiung omit it.
-
-### Metro
-
-Metro methods take a rail system code: `TRTC` 臺北捷運, `KRTC` 高雄捷運, `TYMC` 桃園捷運,
-`TMRT` 臺中捷運, `KLRT` 高雄輕軌, `NTDLRT` 淡海輕軌, `TRTCMG` 貓空纜車, `NTMC` 新北捷運,
-`NTALRT` 安坑輕軌.
-
-```ts
-// Next trains at Formosa Boulevard (美麗島, R10) in Kaohsiung
-const board = await tdx.metro.liveBoard('KRTC', { filter: "StationID eq 'R10'" });
-for (const b of board) console.log(b.TripHeadSign, b.EstimateTime, 'min');
-
-// Adult single-journey fare from Taipei Main Station to Dingpu
-const [od] = await tdx.metro.odFare('TRTC', {
-  filter: ["OriginStationID eq 'BL12'", "DestinationStationID eq 'BL01'"],
-});
-const adult = od?.Fares.find((f) => f.TicketType === 1 && f.FareClass === 1);
-console.log(adult?.Price); // 40
-```
-
-- [`examples/next-metro-train.ts`](examples/next-metro-train.ts) prints the next trains at a
-  station.
-- `alerts(system)` returns an object (`{ UpdateTime, AuthorityCode, Alerts, … }`); the query
-  filters its `Alerts`. On a normal day there is one "正常營運" alert with `Status: 1`. It
-  supports TRTC, KRTC, TYMC, KLRT, TRTCMG and TMRT.
-- `liveBoard` `EstimateTime` is in **minutes**; bus `eta` `EstimateTime` is in seconds.
-- `liveBoard` only supports `TRTC`, `KRTC`, `TYMC` and `KLRT`; other systems get a
-  `TdxApiError` (400). KRTC, TYMC and KLRT list the next train for every station. TRTC only
-  lists trains arriving right now (`EstimateTime` is always `0`), so most Taipei stations are
-  absent at any given moment.
-- `odFare` returns every station pair (about 15,000 for TRTC), so filter on
-  `OriginStationID` / `DestinationStationID`.
-- Where live data departs from the spec, the types follow the data: `StationAddress` and
-  `LineColor` are optional, and `LineSectionName` is often `{}`.
-
-### High speed rail (THSR)
-
-Stations are identified by ID: `0990` 南港, `1000` 台北, `1010` 板橋, `1020` 桃園, `1030` 新竹,
-`1035` 苗栗, `1040` 台中, `1043` 彰化, `1047` 雲林, `1050` 嘉義, `1060` 台南, `1070` 左營.
-
-```ts
-import { query, type ThsrODTimetable } from 'tdx-taiwan';
-
-// Evening trains from Taipei to Zuoying tomorrow, with the standard adult fare
-const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
-const trains = await tdx.thsr.timetable(
-  '1000',
-  '1070',
-  tomorrow,
-  query<ThsrODTimetable>().filter("OriginStopTime/DepartureTime ge '18:00'"),
-);
-const [od] = await tdx.thsr.odFare('1000', '1070');
-const standard = od?.Fares.find(
-  (f) => f.TicketType === 1 && f.FareClass === 1 && f.CabinClass === 1,
-);
-
-for (const t of trains) {
-  console.log(
-    t.DailyTrainInfo.TrainNo,
-    t.OriginStopTime.DepartureTime,
-    '→',
-    t.DestinationStopTime.ArrivalTime,
-  );
-}
-console.log(`NT$${standard?.Price}`); // NT$1490
-
-// Seats left on trains leaving Taipei: O = available, L = limited, X = sold out
-const board = await tdx.thsr.availableSeats('1000');
-```
-
-- `date` is a `Date` or a `'YYYY-MM-DD'` string and defaults to today. A `Date` is read as the
-  calendar day in Taiwan (UTC+8), whatever the machine's time zone; `trainDate()` exposes the
-  same conversion for `tdx.get` paths.
-- TDX only publishes timetables about four weeks ahead; later dates fail with a `TdxApiError`
-  (400).
-- Times are `HH:mm`, although the spec says `HH:mm:ss`.
-- `availableSeats` returns an object (`{ UpdateTime, AvailableSeats }`); the query filters the
-  `AvailableSeats` items. During disruptions THSR freezes the board at the last normal state.
-- `alerts` returns a single "全線營運正常(Normal)" record with an empty `Status` on a normal day.
-- [`examples/thsr-trains.ts`](examples/thsr-trains.ts) prints the day's trains between two
-  stations with fares.
-
-### Taiwan Railway (TRA)
-
-TRA methods use the TDX **v3** API. Stations have 4-digit IDs, e.g. `0900` 基隆, `1000` 臺北,
-`1020` 板橋, `1210` 新竹, `3300` 臺中, `4220` 臺南, `4400` 高雄, `7000` 花蓮, `7190` 宜蘭;
-`tdx.tra.stations()` lists all of them.
-
-```ts
-// Tomorrow's trains from Taipei to Kaohsiung, with the adult fare for each train's type
-const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
-const [timetable, fares] = await Promise.all([
-  tdx.tra.timetable('1000', '4400', tomorrow),
-  tdx.tra.odFare('1000', '4400'),
-]);
-
-for (const {
-  TrainInfo: info,
-  StopTimes: [from, to],
-} of timetable.TrainTimetables ?? []) {
-  // TRA lines form a ring: match the fare on train type *and* direction.
-  const fare = fares.ODFares.find(
-    (f) => String(f.TrainType) === info.TrainTypeCode && f.Direction === info.Direction,
-  )?.Fares.find((p) => p.TicketType === 1 && p.FareClass === 1);
-  console.log(
-    info.TrainNo,
-    info.TrainTypeName.Zh_tw,
-    from?.DepartureTime,
-    '→',
-    to?.ArrivalTime,
-    fare?.Price,
-  );
-}
-
-// Is my train late? Where is it now?
-const {
-  TrainLiveBoards: [now],
-} = await tdx.tra.trainLiveBoard('103');
-console.log(now?.StationName.Zh_tw, `${now?.DelayTime} min late`);
-```
-
-- Every TRA response is a wrapper object (`{ UpdateTime, …, Stations }`, `{ …, TrainTimetables }`,
-  …); queries apply to the items inside it.
-- Names use `TraNameType`: every field is optional and Korean is `Kr`, not `Ko`.
-- `odFare` returns one entry per train type **and direction**. 臺北 → 高雄 by 自強 costs NT$994
-  the short way (`Direction` 1, 371 km) and NT$1286 around the east coast (`Direction` 0), so
-  match the train's `TrainInfo.Direction`. Live data also uses train type `11` (自強 3000),
-  which the spec does not list.
-- Timetable times are `HH:mm`; live board scheduled times are `HH:mm:ss`. Timetables are
-  published about two months ahead; `date` works as for THSR (`trainDate()`).
-- `liveBoard(station)` lists only trains about to arrive or depart (with `Platform`,
-  `DelayTime` in minutes and `RunningStatus`); use `timetable` for planning.
-- Where live data departs from the spec, the types follow the data: the timetable and fare
-  wrappers have no `AuthorityCode`, and the normal-day alert has no `AlertID` or `Description`.
-- [`examples/tra-trains.ts`](examples/tra-trains.ts) prints the day's trains between two
-  stations with fares.
-
-### Parking
-
-Off-street car parks and on-street (curbside) segments, each with a live availability list.
-
-```ts
-// Open car parks in Taipei with free car spaces right now
-const [{ CarParks: carParks }, { ParkingAvailabilities: live }] = await Promise.all([
-  tdx.parking.carParks('Taipei'),
-  tdx.parking.availability('Taipei', { filter: 'ServiceStatus eq 1 and AvailableSpaces gt 0' }),
-]);
-const byId = new Map(carParks.map((c) => [c.CarParkID, c]));
-for (const a of live) {
-  const carPark = byId.get(a.CarParkID);
-  if (carPark) console.log(carPark.CarParkName.Zh_tw, a.AvailableSpaces, carPark.Address);
-}
-
-// On-street: free curbside spaces per segment
-const { CurbParkingSegmentAvailabilities: curb } = await tdx.parking.segmentAvailability('Taipei');
-```
-
-- Responses are wrapper objects. The spec names every array `Items`, but TDX returns
-  `CarParks`, `ParkingAvailabilities`, `ParkingSegments` and `CurbParkingSegmentAvailabilities`;
-  the types follow the live data. Queries apply to the items.
-- **The lists join only partly.** In Taipei, 455 of 1,180 availability records match a car park,
-  and some car parks flagged `LiveOccuppancyAvailable` have no availability record. Treat a
-  missing match as "unknown", not "full".
-- Coverage differs per city: car parks exist for 21 cities but not NewTaipei (which has
-  on-street data only). A city without data returns an empty list, not an error.
-- `Occupancy` is a string ratio (`"0.56"`), `Geometry` is WKT, and the `Availabilities` array
-  breaks spaces down by `SpaceType` (1 = car, 2 = scooter, …).
-- Several fields the spec marks required are missing in live data and are optional here (for
-  example `Telephone`, `Email`, `TownName`), as are the wrapper's `UpdateTime` and
-  `AuthorityCode` for cities without data.
-- The lists are large (Taichung has 1,414 car parks); filter or `$select` where you can.
-- [`examples/nearest-parking.ts`](examples/nearest-parking.ts) prints the 5 nearest car parks
-  with free car spaces.
-
-### EV charging
-
-Charging stations, their charging points and connectors (plugs), live connector status and
-charging prices, by city or for freeway service areas (`tdx.ev.freeway.*`).
-
-```ts
-// Free DC fast chargers (CCS2) in Taipei right now
-const [{ Stations: stations }, { LiveStatuses: live }, { Connectors: connectors }] =
-  await Promise.all([
-    tdx.ev.stations('Taipei'),
-    tdx.ev.liveStatus('Taipei', { filter: 'ConnectorStatus eq 1 and ConnectorType eq 2' }),
-    tdx.ev.connectors('Taipei', { filter: 'Power eq 2' }), // 2 = DC
-  ]);
-// Join in code: the ID fields cannot be used in OData queries.
-const dc = new Map(connectors.map((c) => [c.ConnectorID, c]));
-const stationById = new Map(stations.map((s) => [s.StationID, s]));
-for (const status of live) {
-  const connector = dc.get(status.ConnectorID);
-  const station = connector && stationById.get(connector.StationID);
-  if (connector && station) console.log(station.StationName.Zh_tw, connector.PowerRating);
-}
-
-// Along the freeway
-const { Stations: serviceAreas } = await tdx.ev.freeway.stations();
-```
-
-- Join the lists on `StationID`, `ChargingPointID` and `ConnectorID`. Live data has these IDs
-  although the spec omits them (`StationID` on stations, `ChargingPointID` on charging points,
-  `ConnectorID` on connectors, statuses and rates); the types include them. Because they are not
-  in TDX's query model, **they cannot be used in `$filter`, `$select` or `$orderby`** (TDX
-  answers 400): fetch the lists and join in code. ID formats vary by operator.
-- Join a live status to its connector on `ConnectorID`, then to the station via the
-  **connector's** `StationID`. A status's own `StationID` can use another ID scheme (227 of
-  1,628 in Taipei, e.g. `TPE0117` instead of `33029464-STP6780001`).
-- Some lists are incomplete: Taichung publishes 261 connectors for 1,531 live statuses. Treat a
-  missing connector as unknown details, not a missing charger.
-- `ConnectorStatus`: 1 free, 2 in use, 3 out of order. Connector `Type`: 1 CCS1, 2 CCS2,
-  3 CHAdeMO, 4 Tesla TPC, 5 J1772 (Type 1), 6 Mennekes (Type 2); `Power`: 1 AC, 2 DC.
-- `PowerRating`, `Voltage` and `CurrentRating` are text (`"7KW"`, `"220V"`, `"32A"`), as are a
-  station's `ServiceTime`, `ParkingRate` and `ChargingRate`. Structured prices are in
-  `chargingRates` (`RateType`: 1 free, 2 per kWh, 3 per minute, 4 per hour).
-- A station's `Reference` can point to a car park or on-street segment from `tdx.parking`.
-- [`examples/nearest-ev-charger.ts`](examples/nearest-ev-charger.ts) prints the 5 nearest
-  stations with a free connector of a chosen type.
-
-### Flights
-
-Live airport boards (FIDS, 航班顯示) for departures and arrivals, flight records with both legs,
-and the airport and airline reference lists.
-
-```ts
-// Today's passenger departures from Songshan, with destination names
-const [departures, airports] = await Promise.all([
-  tdx.air.departures('TSA', { filter: 'IsCargo eq false', orderBy: 'ScheduleDepartureTime' }),
-  tdx.air.airports({ select: ['AirportID', 'AirportName'] }),
-]);
-const nameOf = new Map(airports.map((a) => [a.AirportID, a.AirportName.En]));
-for (const d of departures) {
-  console.log(d.AirlineID + d.FlightNumber, nameOf.get(d.ArrivalAirportID), d.DepartureRemark);
-}
-
-// One flight, both legs. The number is digits only; the airline is a separate field.
-const [ci100] = await tdx.air.flights('100', { filter: "AirlineID eq 'CI'" });
-
-// Departures and arrivals of every airport in one call (one element per airport)
-const boards = await tdx.air.boards();
-```
-
-- Flight numbers are digits only (`FlightNumber: '100'`, `AirlineID: 'CI'`), and so is the
-  `{FlightNo}` path segment: `flights('CI100')` returns nothing. Numbers are shared across
-  airlines, so filter on `AirlineID`.
-- Flight times (`Schedule…`, `Estimated…`, `Actual…`) are `yyyy-MM-ddTHH:mm` in Taiwan local
-  time with no offset; only `UpdateTime` is a full timestamp. `FlightDate` is `yyyy-MM-dd`.
-  Songshan (TSA) fills `ActualDepartureTime` with the scheduled time before the flight has left,
-  so read the remark (`已飛` / `出發DEPARTED`) rather than the field to tell whether it has gone.
-- Remarks are free text from each airport. Taoyuan (TPE) joins Chinese and English in one
-  string (`出發DEPARTED`, `準時ON TIME`, `已到ARRIVED`, `取消CANCELLED`); domestic airports use
-  Chinese only (`準時`, `報到`, `登機`, `出發`, `已飛`, `抵達`, `延誤`, `取消`, `預計14:00到站`). The
-  spec's `DepartureRemarkEn` / `ArrivalRemarkEn`, `FlightStatus*`, `FlightRemark` and `CodeShare`
-  fields were never present in live data; `AirRouteType` only appears on `flights`.
-- `Terminal`, `Gate` and `CheckCounter` are `""` when unknown, and TPE pads gates (`" A8"`, or
-  blanks for a cancelled flight): trim before displaying. Cargo flights (`IsCargo: true`) have an
-  `Apron` instead of a `Gate`; filter them out with `IsCargo eq false`.
-- TPE lists yesterday, today and tomorrow (about 2,000 departures, 770 KB per call); other
-  airports list today. Use `$filter` / `$top` where you can, since TDX bills by response size.
-- The airport list has 469 airports worldwide, but only the 17 Taiwan airports carry a position,
-  address and phone; `AirportCityName` (and once `AirportName`) is `{}` for most others, so
-  `AirName` has both parts optional. A few airlines have an empty `AirlineID`.
-- `airport(iata)` and `airline(iata)` return one object; an unknown code rejects with a 404
-  `TdxApiError`.
-- [`examples/flight-board.ts`](examples/flight-board.ts) prints the next 20 of today's
-  departures or arrivals at an airport.
-
-### Road traffic
-
-Road sections with live speed, travel time and congestion level, the congestion scales, traffic
-cameras, vehicle detectors with live lane flows, eTag gantry pairs with live travel times, traffic
-news and road events. Every kind comes by city, for the national freeways
-(`tdx.traffic.freeway.*`, 高速公路局) and for the provincial highways (`tdx.traffic.highway.*`,
-公路局).
-
-```ts
-// Congested freeway sections right now, with the level name from the congestion scale
-const [{ Sections: sections }, { LiveTraffics: live }, { CongestionLevels: scales }] =
-  await Promise.all([
-    tdx.traffic.freeway.sections(),
-    tdx.traffic.freeway.liveTraffic({ filter: "CongestionLevel ge '3'" }),
-    tdx.traffic.freeway.congestionLevels(),
-  ]);
-const sectionById = new Map(sections.map((s) => [s.SectionID, s]));
-const levelName = new Map(
-  scales.flatMap((s) => s.Levels.map((l) => [`${s.CongestionLevelID}:${l.Level}`, l.LevelName])),
-);
-for (const t of live) {
-  const section = sectionById.get(t.SectionID ?? '');
-  const level = levelName.get(`${t.CongestionLevelID}:${t.CongestionLevel}`);
-  console.log(section?.SectionName, `${t.TravelSpeed} km/h`, level);
-}
-
-// Live incidents in Taipei, and the freeway cameras near Linkou
-const { LiveEvents: incidents } = await tdx.traffic.liveEvents('Taipei', {
-  filter: 'EventType eq 1',
-});
-const { CCTVs: cameras } = await tdx.traffic.freeway.cctvs({
-  filter: "contains(RoadName, '國道1號')",
-});
-```
-
-- Every response is a wrapper object whose array is named per kind (`Sections`, `LiveTraffics`,
-  `CongestionLevels`, `CCTVs`, `VDs`, `VDLives`, `ETagPairs`, `ETagPairLives`, `Newses`, `Events`,
-  `LiveEvents`) rather than the spec's `Items`, and `Count` is never sent. Queries apply to the
-  items. Join live traffic to sections on `SectionID`, detector readings on `VDID` and eTag
-  travel times on `ETagPairID`. The join is loose: 224 of 680 freeway live rows use four-digit
-  IDs (`0475`…) that no published section has, so keep rows whose section is unknown.
-- **Each kind accepts its own cities**, and TDX answers an unsupported one with a 400
-  `TdxApiError` whose message lists the accepted ones. Sections, cameras and news take the
-  spec's 14 cities plus NewTaipei; live traffic only YilanCounty, ChanghuaCounty, YunlinCounty,
-  PingtungCounty, Keelung, Taipei, Taichung, Tainan and Taoyuan; detectors the spec's 14; eTag
-  pairs 13 cities without Taipei (incl. NewTaipei, Hsinchu, Chiayi); events Taipei, NewTaipei,
-  Taoyuan, Taichung, Tainan, Keelung, MiaoliCounty, ChiayiCounty, PingtungCounty, YilanCounty and
-  KinmenCounty, live events also Kaohsiung. The freeways have no announced-events feed.
-- `CongestionLevel` is a **string** (`"3"`) whose meaning depends on the scale in
-  `congestionLevels` (`CongestionLevelID`): the freeways use one scale `A` with levels 1-5 by
-  speed, Taipei one per road class with levels 1-6 (`A`-`F`). `"0"` is unknown, `"-1"` closed and
-  `"-99"` bad data (8 of 818 Taipei sections); `TravelTime` and `TravelSpeed` are `-99` or `-1`
-  then too. Detector speeds and volumes also use `-99`.
-- Detector readings list vehicles by class code string (`S` car, `L` large, `T` truck, `M`
-  motorcycle); eTag flows use the spec's integer class codes. Taipei cameras send
-  `SurveillanceType: -1`, so that field is a plain number.
-- The freeway and highway news feeds omit `Description` (required by the spec) and send
-  `0001-01-01T00:00:00+08:06` as `UpdateTime`. `LinkVersion` is sent only by the freeway and
-  highway authorities (`NFB`, `THB`).
-- Full lists are large: 818 Taipei and 680 freeway live sections (about 260 KB each), 456 freeway
-  sections (250 KB), 384 Taipei cameras (110 KB). Static kinds refresh every 6 hours, live kinds
-  every minute, so cache the static ones and filter the live ones.
-- TDX restricts the CCTV endpoints to API keys (no guest access). CMS signs, eTag gantries,
-  section geometry (`SectionLink`, `SectionShape`) and the by-ID endpoints are not wrapped yet;
-  use `tdx.get` or `$filter`.
-- [`examples/road-traffic.ts`](examples/road-traffic.ts) prints the most congested sections of a
-  road network and its latest live events.
-
-### Ferries
-
-Ports, routes, operators, vessels, stop sequences, fares, regular and daily timetables, live
-departure and arrival boards per port, AIS positions, seat availability, alerts and news, from
-the 航港局 nationwide feed (outlying islands, cross-strait, 小三通) and from the county and city
-blue-highway feeds under `tdx.ship.domestic`.
-
-```ts
-// Today's departures from 小琉球白沙港, with route names
-const [{ ShipLiveBoardses: boards }, { Routes: routes }] = await Promise.all([
-  tdx.ship.liveBoard({ filter: "PortID eq 'TW001'" }),
-  tdx.ship.routes(),
-]);
-const routeName = new Map(routes.map((r) => [r.RouteID, r.RouteName.Zh_tw]));
-for (const d of boards[0]?.DepartureLiveBoards ?? []) {
-  console.log(d.ScheduledDepartureTime, routeName.get(d.RouteID ?? ''), d.DepartureRemark);
-}
-
-// Tomorrow's timetable of one route, and the fares between two ports
-const { DailySchedules: days } = await tdx.ship.dailySchedule('FGGI', {
-  filter: "Date eq '2026-10-22'",
-});
-const fares = await tdx.ship.odFareBetween('TWKEL', 'TW007'); // Keelung → Nangan
-
-// Penghu's inter-island lines are published by the county, not the nationwide feed
-const { Routes: penghu } = await tdx.ship.domestic.routes('PenghuCounty');
-```
-
-- Every response is a wrapper object named per kind (`Ports`, `Routes`, `Operators`, `Vessels`,
-  `StopOfRoutes`, `RouteFares`, `GeneralSchedules`, `DailySchedules`, `ShipLiveBoardses` (sic),
-  `LivePositions`, `SeatAvailabilities`, `Alerts`, `Newses`, `Authorities`); `Count` is never
-  sent and static wrappers carry `VersionID`. Queries apply to the items. `odFareBetween` is the
-  one plain-array endpoint.
-- Fares list `TicketType` and `FareClass` codes; live data uses `FareClass: 254` (其他, e.g. an
-  insurance-only ticket) beyond the spec's 1-9, so the field is a plain number.
-- **The city feeds are separate data.** `tdx.ship.domestic.routes(city)` returns routes run by
-  that county or city (Penghu 11, Kaohsiung 10, NewTaipei 5, Taipei 2, Kinmen 2) with their own
-  IDs (`2048`, `KHH005`, `ZH101`), none of which are in the nationwide list; Lienchiang,
-  Pingtung, Taitung and Nantou answer empty wrappers. Routes, operators, vessels, stops, fares,
-  schedules, alerts and news accept Taipei, NewTaipei, Kaohsiung, NantouCounty, PingtungCounty,
-  TaitungCounty, KinmenCounty, PenghuCounty and LienchiangCounty; `domestic.liveBoard` only
-  LienchiangCounty. TDX answers an unsupported city with a 400 `TdxApiError` listing the accepted
-  ones.
-- Timetable times are not zero-padded (`6:15`) and `ArrivalTime` is `""` at the first port;
-  nationwide dates are `YYYY-MM-DD`, city dates `YYYY/MM/DD`. `dailySchedule()` without a route
-  is about 850 rows and 1.3 MB: pass a route ID.
-- Live boards: one element per port (25 ports), names spelt `PortName.ZhTw`; departures carry
-  `ScheduledDepartureTime`, `EstimateDepartureTime` and, once sailed, `ActualDepartureTime`, with
-  remarks `準時`, `離港`, `已離港`, `取消`, `安檢中` (English in `DepartureRemarkEn`). Some boards
-  publish stale scheduled dates (a 2014 date on the Green Island board): use `ShipDate` and the
-  time of day.
-- Ports never carry `Country` / `CountryCode`; `City` is Chinese (`澎湖縣`) and `CityCode` an
-  abbreviation (`PEN`). `livePosition` is AIS data (`MMSI`, `SOG` knots, `COG`, `NAVSTAT`);
-  `seatAvailability` currently covers only the 金門–石井 sailings; `news` is empty.
-- Not wrapped: `SpecificSchedule` (TDX answers 404) and the legacy `…/RouteType/{Internal|OutlyingIslands|Bilateral|MiniThreeLinks|Other}`
-  arrays, which merge the nationwide and county routes; use `tdx.get` for those.
-- [`examples/ferry-departures.ts`](examples/ferry-departures.ts) prints today's departures from
-  a port, from the live board or the daily timetable.
+| Method                  | What it does                                                           | Returns           |
+| ----------------------- | ---------------------------------------------------------------------- | ----------------- |
+| `tdx.get(path, query?)` | Any TDX endpoint not wrapped yet, with auth, retries and rate limiting | `unknown`         |
+| `tdx.getAccessToken()`  | The current access token                                               | `Promise<string>` |
+| `tdx.clearCache()`      | Empties the response cache                                             | `void`            |
 
 ## Options
 
@@ -732,12 +205,12 @@ Swagger pages). This client requests a token only when its cached one is about t
 the client honours `Retry-After` (capped at 30 s) or backs off exponentially with jitter.
 TDX also bills usage in points by call count and by response size (per its Swagger pages,
 1,500 calls or 150 MB per point), so prefer `$filter` / `$select` on large lists such as city
-stops, whole-city ETAs and metro fares, and consider `cache: true`.
+stops, bus ETAs of busy routes, whole-city live traffic and metro fares, and consider `cache: true`.
 
-**Caching.** With `cache: true`, responses are cached in memory per URL: static data (bike
-stations, bus routes, stops of route) for 1 hour and real-time data (bike availability, bus ETA)
-for 15 seconds. Identical concurrent requests share one HTTP call, failures are never cached, and
-every caller receives its own copy of the data.
+**Caching.** With `cache: true`, responses are cached in memory per URL: static data (stations,
+routes, timetables, fares, reference lists) for 1 hour and real-time data (availability, ETAs,
+live boards, positions, alerts) for 15 seconds. Identical concurrent requests share one HTTP
+call, failures are never cached, and every caller receives its own copy of the data.
 
 ## Errors
 
@@ -767,18 +240,24 @@ try {
 ```sh
 npm install
 npm test                  # unit tests (fixtures only, never calls the live API)
+npm run test:watch
 npm run test:integration  # live API; runs only when TDX_CLIENT_ID / TDX_CLIENT_SECRET are set
-npm run lint
+npm run lint              # eslint + prettier --check
+npm run format
+npm run typecheck
 npm run build
 npm run check:exports     # publint + are-the-types-wrong
+npm run example:<name>    # youbike, metro, thsr, tra, parking, ev, flights, traffic, ferry
 ```
 
-Development tooling requires Node.js 22+; the published package supports Node.js 20+.
+Development tooling requires Node.js 22+; the published package supports Node.js 20+. See
+[CONTRIBUTING.md](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/CONTRIBUTING.md) for
+how endpoints, fixtures and releases are done.
 
 ## 繁體中文
 
 `tdx-taiwan` 是存取交通部 [TDX 運輸資料流通服務](https://tdx.transportdata.tw) 的**非官方** TypeScript SDK（與交通部無隸屬或合作關係），
-支援公共自行車（YouBike）站點與即時車位、市區公車路線、站序與預估到站時間、捷運車站、路線、即時到站看板、首末班車與票價、高鐵與臺鐵時刻表、票價與即時看板、停車場與充電樁即時資訊、機場即時航班看板、即時路況，以及船運航線、班表、票價與港口即時看板。
+支援公共自行車（YouBike）站點與即時車位、市區公車與公路客運路線、站序、預估到站時間與即時位置、捷運車站、路線、即時到站看板、首末班車、票價與營運通阻、高鐵與臺鐵時刻表、票價與即時看板、停車場與充電樁即時資訊、機場即時航班看板、即時路況，以及船運航線、班表、票價與港口即時看板。
 
 **安裝**（需要 Node.js 20 以上版本）
 
@@ -818,20 +297,28 @@ const top = await tdx.bike.availability(
 ```
 
 - 存取權杖（access token）會快取於記憶體，並於到期前 60 秒自動更新；同時多個請求只會發出一次權杖請求。
-- 遇到 429 或 5xx 會以指數退避（含隨機抖動）重試最多 3 次，並內建用戶端限流（預設每秒 5 次，請依您的 TDX 方案調整）。
+- 遇到 429、5xx 或網路錯誤會以指數退避（含隨機抖動）重試最多 3 次，並內建用戶端限流（預設每秒 5 次，請依您的 TDX 方案調整）。
 - 路線名稱預設以中文名稱（`RouteName/Zh_tw`）完全比對：`tdx.bus.eta('Taipei', '307')` 只回傳 307，不含「307西藏三民」。若要使用 TDX 原本的前綴比對，請傳入 `{ exact: false }`。
-- 公車：`tdx.bus.positions('Taipei', '307')` 取得公車即時位置（A1）、`tdx.bus.stops('Taipei')` 取得縣市全部站牌（資料量大，建議篩選）；公路客運使用 `tdx.bus.interCity.routes('1610')`、`eta`、`positions` 等，路線名稱同樣預設完全比對。捷運另有 `tdx.metro.alerts('TRTC')` 營運通阻資料。
-- 航空：`tdx.air.departures('TSA')`／`arrivals('TSA')` 取得機場即時出境／入境航班（FIDS），`flights('100', { filter: "AirlineID eq 'CI'" })` 查詢單一航班（班號僅數字，航空公司另見 `AirlineID`），`boards()` 依機場分組，另有 `airports`／`airport('TPE')` 與 `airlines`／`airline('CI')`。航班時間為臺灣當地時間且不含時區（`yyyy-MM-ddTHH:mm`）；桃園機場的狀態為中英合併字串（如 `出發DEPARTED`），且列出前一日至次日共三天的航班；貨機請以 `IsCargo eq false` 過濾。機場清單含全球 469 座機場，僅臺灣機場有座標。
-- 路況：`tdx.traffic.liveTraffic('Taipei')` 取得路段即時速率、旅行時間與壅塞程度，`sections`（發布路段）、`congestionLevels`（壅塞水準定義）、`cctvs`（攝影機）、`vds`／`vdLive`（車輛偵測器與即時車流）、`etagPairs`／`etagPairLive`（eTag 配對路段與即時旅行時間）、`news`、`events`（預告性事件）與 `liveEvents`（即時事件）；國道使用 `tdx.traffic.freeway.*`，省道使用 `tdx.traffic.highway.*`。回應為包裝物件，陣列依種類命名（`Sections`、`LiveTraffics`…）。各種類支援的縣市不同（如 eTag 不含臺北市、即時路況僅 9 個縣市），不支援時 TDX 回傳 400 並列出可用縣市。`CongestionLevel` 為字串，級別名稱需對應 `congestionLevels`；`-99` 表示資料異常、`-1` 表示道路封閉。
-- 航運：`tdx.ship.liveBoard()` 取得各港口即時出發／抵達看板（陣列名稱為 `ShipLiveBoardses`，港口名稱欄位為 `ZhTw`），`routes`、`ports`、`operators`、`vessels`、`stopsOfRoute`、`odFare`／`odFareBetween('TWKEL', 'TW007')`、`generalSchedule(routeId?)`／`dailySchedule(routeId?)`（全部每日班表約 1.3 MB，請指定航線）、`livePosition`（AIS 船位）、`seatAvailability`、`alerts`、`news` 與 `authorities`。縣市藍色公路（澎湖離島、高雄港、淡水河、金門九宮）由各縣市政府發布，與航港局全國資料互不重疊，請用 `tdx.ship.domestic.routes('PenghuCounty')` 等方法查詢。班表時間不補零（`6:15`），縣市每日班表日期為 `YYYY/MM/DD`。
-- 電動車充電：`tdx.ev.stations('Taipei')`（充電站）、`chargingPoints`（充電樁）、`connectors`（充電槍）、`liveStatus`（充電槍即時狀態：1 可使用、2 使用中、3 故障）與 `chargingRates`（費率）；高速公路服務區使用 `tdx.ev.freeway.*`。各清單以 `StationID`、`ChargingPointID`、`ConnectorID` 對應（規格未列出這些欄位，但實際資料皆有；這些欄位無法用於 `$filter`／`$select`，請於程式中對應）。即時狀態請先以 `ConnectorID` 對應充電槍，再以充電槍的 `StationID` 對應充電站（即時狀態本身的 `StationID` 可能使用另一套代碼）。
-- 停車：`tdx.parking.carParks('Taipei')`（路外停車場）、`availability`（即時剩餘車位）、`segments`（路邊停車路段）與 `segmentAvailability`（路段即時剩餘車位）。停車場與剩餘車位以 `CarParkID` 對應，但兩份清單僅部分重疊（臺北 1,180 筆剩餘車位中僅 455 筆有對應停車場）；新北市僅有路邊停車資料，無資料的縣市回傳空清單。
-- 臺鐵（TDX v3）：`tdx.tra.timetable('1000', '4400', '2026-10-22')` 查詢起迄站時刻表，另有 `stations`、`odFare`（票價，依車種**及行駛方向**區分：臺北→高雄自強號順向 371 公里 994 元，經東部環島方向 1286 元）、`liveBoard`（車站即時到離站，含月台與延誤分鐘）、`trainLiveBoard`（列車即時位置）與 `alerts`。回應皆為包裝物件，名稱欄位使用 `TraNameType`（韓文為 `Kr`）。
-- 高鐵：`tdx.thsr.timetable('1000', '1070', '2026-10-21')` 查詢指定日期起迄站時刻表（日期可為 `Date` 或 `YYYY-MM-DD`，預設為臺灣時間今天；僅提供約四週內的資料），另有 `odFare`（票價）、`availableSeats`（對號座剩餘座位：O 尚有、L 有限、X 已無）與 `alerts`（營運通阻）。
-- 捷運：`tdx.metro.liveBoard('TRTC')` 等方法以軌道系統代碼（`TRTC`、`KRTC`、`TYMC`…）查詢。注意捷運看板的 `EstimateTime` 單位為**分鐘**（公車為秒），且臺北捷運（TRTC）看板只列出即將進站（0 分鐘）的列車；`odFare` 資料量大，建議以 `OriginStationID`／`DestinationStationID` 篩選。
-- 回傳資料維持 TDX 原始欄位名稱（如 `StationUID`、`AvailableRentBikes`），型別依官方 OpenAPI 規格定義。
+- 回應快取：設定 `cache: true` 後，靜態資料（站點、路線、時刻表、票價）快取 1 小時，即時資料（車位、到站、看板、位置）快取 15 秒；可用 `tdx.clearCache()` 清除。
+- 觀測鉤子 `onRequest`／`onRetry`，以及 `TdxAuthError`／`TdxApiError`／`TdxRateLimitError`／`TdxNetworkError` 錯誤類別，詳見上方 Options 與 Errors。
+- 尚未包裝的端點可用 `tdx.get(path, query?)` 呼叫（同樣套用認證、限流與重試）；`trainDate()` 可將 `Date` 轉為臺灣日期 `YYYY-MM-DD`。
+- TDX 依呼叫次數與回應大小計點收費，大量清單請以 `$filter`／`$select` 篩選。
+- 回傳資料維持 TDX 原始欄位名稱（如 `StationUID`、`AvailableRentBikes`），型別依官方 OpenAPI 規格定義；實際資料與規格不符之處以實際資料為準，並記載於各資源說明頁。
+
+各資源的方法、範例與資料注意事項見下列說明頁（英文，每頁末附中文摘要）：
+
+- 公共自行車：`tdx.bike.stations('Taipei')`（站點）、`availability`（即時可借／可還車數）。[說明](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/bike.md)
+- 公車：`tdx.bus.eta('Taipei', '307')`（預估到站）、`routes`、`stopsOfRoute`、`positions`（即時位置）、`stops`（縣市全部站牌）；公路客運使用 `tdx.bus.interCity.*`。[說明](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/bus.md)
+- 捷運：`tdx.metro.liveBoard('TRTC')`（即時到站看板，`EstimateTime` 單位為分鐘）、`stations`、`lines`、`stationsOfLine`、`firstLastTimetable`、`odFare`、`alerts`，以軌道系統代碼查詢。[說明](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/metro.md)
+- 高鐵：`tdx.thsr.timetable('1000', '1070', date)`（起迄站時刻表）、`odFare`、`availableSeats`（對號座剩餘座位）、`alerts`。[說明](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/thsr.md)
+- 臺鐵（TDX v3）：`tdx.tra.timetable('1000', '4400', date)`、`stations`、`odFare`（依車種及行駛方向）、`liveBoard`、`trainLiveBoard`、`alerts`。[說明](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/tra.md)
+- 停車：`tdx.parking.carParks('Taipei')`、`availability`（即時剩餘車位）、`segments`、`segmentAvailability`。[說明](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/parking.md)
+- 電動車充電：`tdx.ev.stations('Taipei')`、`chargingPoints`、`connectors`、`liveStatus`（充電槍即時狀態）、`chargingRates`；高速公路服務區使用 `tdx.ev.freeway.*`。[說明](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/ev.md)
+- 航空：`tdx.air.departures('TSA')`／`arrivals`（機場即時航班看板）、`flights`、`boards`、`airports`／`airport`、`airlines`／`airline`。[說明](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/air.md)
+- 路況：`tdx.traffic.liveTraffic('Taipei')`（路段即時速率與壅塞程度）、`sections`、`congestionLevels`、`cctvs`、`vds`／`vdLive`、`etagPairs`／`etagPairLive`、`news`、`events`／`liveEvents`；國道 `tdx.traffic.freeway.*`、省道 `tdx.traffic.highway.*`。[說明](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/traffic.md)
+- 航運：`tdx.ship.liveBoard()`（港口即時出發／抵達看板）、`routes`、`ports`、`dailySchedule(routeId?)`、`odFare`／`odFareBetween`、`livePosition`（AIS 船位）、`alerts` 等；縣市藍色公路使用 `tdx.ship.domestic.*`。[說明](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/ship.md)
 - 資料來源與授權：資料由交通部運輸資料流通服務平臺提供，並適用其[資料授權利用條款](https://tdx.transportdata.tw/term)。公開發布或展示資料（含加值衍生物）時，須清楚標示資料來源為「交通部運輸資料流通服務平臺」或其資料來源單位；資料可能依平臺收費要點有償提供。
-- NestJS 使用者可匯入 `tdx-taiwan/nestjs` 的 `TdxModule.forRoot()` / `forRootAsync()`（範例見上方英文說明）。
+- NestJS 使用者可匯入 `tdx-taiwan/nestjs` 的 `TdxModule.forRoot()` / `forRootAsync()`，詳見 [docs/nestjs.md](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/nestjs.md)。
 
 ## Data source and terms
 

@@ -76,27 +76,42 @@ export class EvApi {
 export class EvFreewayApi {
   constructor(private readonly object: ObjectRequester) {}
 
-  /** `GET /v1/EV/Station/Freeway/ServiceArea`. Cached with the static TTL. */
+  /**
+   * Charging stations at freeway service areas. Cached with the static TTL.
+   * `GET /v1/EV/Station/Freeway/ServiceArea`
+   */
   stations(query?: QueryInput<EvStation>): Promise<EvStations> {
     return this.object('/v1/EV/Station/Freeway/ServiceArea', query, 'static');
   }
 
-  /** `GET /v1/EV/ChargingPoint/Freeway/ServiceArea`. Cached with the static TTL. */
+  /**
+   * Charging points (chargers) at freeway service areas. Cached with the static TTL.
+   * `GET /v1/EV/ChargingPoint/Freeway/ServiceArea`
+   */
   chargingPoints(query?: QueryInput<EvChargingPoint>): Promise<EvChargingPoints> {
     return this.object('/v1/EV/ChargingPoint/Freeway/ServiceArea', query, 'static');
   }
 
-  /** `GET /v1/EV/Connector/Freeway/ServiceArea`. Cached with the static TTL. */
+  /**
+   * Connectors (plugs) at freeway service areas. Cached with the static TTL.
+   * `GET /v1/EV/Connector/Freeway/ServiceArea`
+   */
   connectors(query?: QueryInput<EvConnector>): Promise<EvConnectors> {
     return this.object('/v1/EV/Connector/Freeway/ServiceArea', query, 'static');
   }
 
-  /** `GET /v1/EV/ConnectorLiveStatus/Freeway/ServiceArea`. Cached with the real-time TTL. */
+  /**
+   * Live connector status at freeway service areas. Cached with the real-time TTL.
+   * `GET /v1/EV/ConnectorLiveStatus/Freeway/ServiceArea`
+   */
   liveStatus(query?: QueryInput<EvLiveStatus>): Promise<EvLiveStatuses> {
     return this.object('/v1/EV/ConnectorLiveStatus/Freeway/ServiceArea', query, 'realtime');
   }
 
-  /** `GET /v1/EV/ChargingRate/Freeway/ServiceArea`. Cached with the static TTL. */
+  /**
+   * Charging prices at freeway service areas. Cached with the static TTL.
+   * `GET /v1/EV/ChargingRate/Freeway/ServiceArea`
+   */
   chargingRates(query?: QueryInput<EvChargingRate>): Promise<EvChargingRates> {
     return this.object('/v1/EV/ChargingRate/Freeway/ServiceArea', query, 'static');
   }

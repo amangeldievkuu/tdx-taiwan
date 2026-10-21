@@ -167,7 +167,10 @@ export class TrafficRoadApi {
     protected readonly scope: 'Freeway' | 'Highway',
   ) {}
 
-  /** Published road sections. Cached with the static TTL. `GET /v2/Road/Traffic/Section/{Freeway|Highway}` */
+  /**
+   * Published road sections.
+   * Cached with the static TTL. `GET /v2/Road/Traffic/Section/{Freeway|Highway}`
+   */
   sections(query?: QueryInput<TrafficSection>): Promise<TrafficSections> {
     return this.object(`${TRAFFIC}/Section/${this.scope}`, query, 'static');
   }
@@ -206,7 +209,10 @@ export class TrafficRoadApi {
     return this.object(`${TRAFFIC}/Live/VD/${this.scope}`, query, 'realtime');
   }
 
-  /** eTag gantry pairs. Cached with the static TTL. `GET /v2/Road/Traffic/ETagPair/{Freeway|Highway}` */
+  /**
+   * eTag gantry pairs.
+   * Cached with the static TTL. `GET /v2/Road/Traffic/ETagPair/{Freeway|Highway}`
+   */
   etagPairs(query?: QueryInput<TrafficETagPair>): Promise<TrafficETagPairs> {
     return this.object(`${TRAFFIC}/ETagPair/${this.scope}`, query, 'static');
   }

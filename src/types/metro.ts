@@ -1,7 +1,7 @@
 // Metro types, transcribed from the TDX 公共運輸-軌道 v2 OpenAPI spec
 // (PTX.Service.DTO.Rail.Specification.V2.Metro.*). Where live data contradicts the spec,
 // the type follows the data and says so.
-import type { DateTimeString, NameType, OpenString, PointType } from './common.js';
+import type { DateTimeString, NameType, OpenString, PointType, WrapperHeader } from './common.js';
 
 /**
  * `RailSystem` path values accepted by most Metro endpoints: TRTC 臺北捷運, KRTC 高雄捷運,
@@ -267,15 +267,6 @@ export interface MetroAlert {
 }
 
 /** Alerts of a rail system (MRTRealTimeWrapper[Metro.Alert]) — `GET /v2/Rail/Metro/Alert/{RailSystem}`. */
-export interface MetroAlerts {
-  /** TDX update time. */
-  UpdateTime: DateTimeString;
-  /** TDX update interval in seconds. */
-  UpdateInterval: number;
-  SrcUpdateTime: DateTimeString;
-  /** Source update interval in seconds; `-1` means irregular. */
-  SrcUpdateInterval: number;
-  AuthorityCode: string;
+export interface MetroAlerts extends WrapperHeader {
   Alerts: MetroAlert[];
-  Count?: number | null;
 }

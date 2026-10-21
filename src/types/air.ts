@@ -3,18 +3,13 @@
 // follows the data and says so; the counts in comments come from checking every endpoint on
 // 2026-10-21. Optional (`?`) means the field is not in the schema's `required` list; the spec
 // marks nothing nullable.
-import type { DateTimeString, OpenString, PointType } from './common.js';
+import type { DateTimeString, OpenString, PointType, ZhEnName } from './common.js';
 
 /**
  * Multilingual name as the Air endpoints return it. Unlike `NameType`, both parts can be
  * missing: `AirportCityName` is `{}` for 302 of 469 airports and `AirportName` for one.
  */
-export interface AirName {
-  /** Traditional Chinese name. */
-  Zh_tw?: string;
-  /** English name. */
-  En?: string;
-}
+export type AirName = ZhEnName;
 
 /**
  * IATA codes of Taiwan's airports: `TPE` 桃園, `TSA` 臺北松山, `KHH` 高雄, `RMQ` 臺中,

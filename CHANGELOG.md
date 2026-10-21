@@ -6,6 +6,32 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-10-21
+
+### Added
+
+- Per-resource documentation in `docs/` (`bike`, `bus`, `metro`, `thsr`, `tra`, `parking`, `ev`,
+  `air`, `traffic`, `ship`), plus `docs/conventions.md` (field names, wrapper objects, cities,
+  dates, large lists) and `docs/nestjs.md`. `CONTRIBUTING.md` describes the scripts, how to fetch
+  a TDX spec, the fixture rules and the release steps. A test checks every documentation link.
+- `ListRequester`, `ObjectRequester` and `CacheClass` are exported as types (the constructor
+  parameters of the exported `*Api` classes).
+- Shared types `ZhEnName`, `WrapperHeader` and `Flag`. `AirName`, `ShipName`, `EvWrapperHeader`,
+  `ShipLiveWrapperHeader`, `ParkingFlag`, `TraFlag`, `ShipFlag` and `TrafficFlag` remain exported
+  as aliases of them.
+
+### Changed
+
+- The README is a quick start plus a resource index; the per-resource notes and examples moved
+  to `docs/` unchanged. The 繁體中文 section now covers every resource, caching, hooks, errors,
+  `tdx.get` and `trainDate`.
+- Documentation fixes: `getAccessToken()` returns `Promise<string>`; retries also cover network
+  errors; the cache TTL descriptions list every data kind; `tdx.ship.domestic` lists its ten
+  methods; the `EvFreewayApi` and ship/traffic method comments are complete and wrapped;
+  `tests/fixtures/README.md` no longer attributes the THSR files to the Metro endpoints.
+- `MetroAlerts` extends `WrapperHeader`; `ShipLiveWrapperHeader.Count` is `number | null`
+  (optional, never sent).
+
 ## [0.10.0] - 2026-10-21
 
 ### Added
@@ -227,7 +253,8 @@ All notable changes to this project are documented here. The format is based on
   - CI runs the dist tests against each NestJS major and smoke-tests the packed tarball on
     Node 20, 22 and 24.
 
-[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.7.0...v0.8.0

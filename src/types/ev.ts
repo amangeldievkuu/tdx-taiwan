@@ -5,7 +5,7 @@
 //
 // The ID fields marked "not in the spec" exist in responses but not in TDX's query model, so
 // they cannot be used in $filter, $select or $orderby (TDX answers 400). Join on them in code.
-import type { DateTimeString, OpenString } from './common.js';
+import type { DateTimeString, OpenString, WrapperHeader } from './common.js';
 
 /** Charging station name (EVName). */
 export interface EvName {
@@ -72,19 +72,7 @@ export type EvDayType = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 export type EvPeak = 0 | 1 | 2 | 3;
 
 /** Header fields shared by every EV wrapper. */
-export interface EvWrapperHeader {
-  /** TDX update time. */
-  UpdateTime: DateTimeString;
-  /** TDX update interval in seconds. */
-  UpdateInterval: number;
-  /** Source update time. */
-  SrcUpdateTime: DateTimeString;
-  /** Source update interval in seconds; `-1` means irregular. */
-  SrcUpdateInterval: number;
-  /** Authority code, e.g. `TPE`. */
-  AuthorityCode: string;
-  Count?: number | null;
-}
+export type EvWrapperHeader = WrapperHeader;
 
 /** Connectors of one kind at a station (StationConnector). */
 export interface EvStationConnector {

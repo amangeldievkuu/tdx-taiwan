@@ -81,7 +81,10 @@ export class ShipApi {
     return this.object(`${SHIP}/Vessel`, query, 'static');
   }
 
-  /** Ordered ports of each route and direction. Cached with the static TTL. `GET /v3/Ship/StopOfRoute` */
+  /**
+   * Ordered ports of each route and direction.
+   * Cached with the static TTL. `GET /v3/Ship/StopOfRoute`
+   */
   stopsOfRoute(query?: QueryInput<ShipStopOfRoute>): Promise<ShipStopOfRoutes> {
     return this.object(`${SHIP}/StopOfRoute`, query, 'static');
   }
@@ -164,7 +167,10 @@ export class ShipApi {
     return this.object(`${SHIP}/SeatAvailability`, query, 'realtime');
   }
 
-  /** Service alerts (typhoon suspensions and the like). Cached with the real-time TTL. `GET /v3/Ship/Alert` */
+  /**
+   * Service alerts (typhoon suspensions and the like).
+   * Cached with the real-time TTL. `GET /v3/Ship/Alert`
+   */
   alerts(query?: QueryInput<ShipAlert>): Promise<ShipAlerts> {
     return this.object(`${SHIP}/Alert`, query, 'realtime');
   }
@@ -174,7 +180,10 @@ export class ShipApi {
     return this.object(`${SHIP}/News`, query, 'realtime');
   }
 
-  /** The 14 authorities behind `AuthorityCode`. Cached with the static TTL. `GET /v3/Ship/Authority` */
+  /**
+   * The 14 authorities behind `AuthorityCode`.
+   * Cached with the static TTL. `GET /v3/Ship/Authority`
+   */
   authorities(query?: QueryInput<ShipAuthority>): Promise<ShipAuthorities> {
     return this.object(`${SHIP}/Authority`, query, 'static');
   }
@@ -188,12 +197,18 @@ export class ShipApi {
 export class ShipDomesticApi {
   constructor(private readonly object: ObjectRequester) {}
 
-  /** Routes of a city or county. Cached with the static TTL. `GET /v3/Ship/Route/Domestic/City/{City}` */
+  /**
+   * Routes of a city or county.
+   * Cached with the static TTL. `GET /v3/Ship/Route/Domestic/City/{City}`
+   */
   routes(city: ShipCity, query?: QueryInput<ShipRoute>): Promise<ShipRoutes> {
     return this.object(`${SHIP}/Route/${cityOf(city)}`, query, 'static');
   }
 
-  /** Operators of a city. Cached with the static TTL. `GET /v3/Ship/Operator/Domestic/City/{City}` */
+  /**
+   * Operators of a city.
+   * Cached with the static TTL. `GET /v3/Ship/Operator/Domestic/City/{City}`
+   */
   operators(city: ShipCity, query?: QueryInput<ShipOperator>): Promise<ShipOperators> {
     return this.object(`${SHIP}/Operator/${cityOf(city)}`, query, 'static');
   }
@@ -203,12 +218,18 @@ export class ShipDomesticApi {
     return this.object(`${SHIP}/Vessel/${cityOf(city)}`, query, 'static');
   }
 
-  /** Stop sequences of a city's routes. Cached with the static TTL. `GET /v3/Ship/StopOfRoute/Domestic/City/{City}` */
+  /**
+   * Stop sequences of a city's routes.
+   * Cached with the static TTL. `GET /v3/Ship/StopOfRoute/Domestic/City/{City}`
+   */
   stopsOfRoute(city: ShipCity, query?: QueryInput<ShipStopOfRoute>): Promise<ShipStopOfRoutes> {
     return this.object(`${SHIP}/StopOfRoute/${cityOf(city)}`, query, 'static');
   }
 
-  /** Fares of a city's routes. Cached with the static TTL. `GET /v3/Ship/ODFare/Domestic/City/{City}` */
+  /**
+   * Fares of a city's routes.
+   * Cached with the static TTL. `GET /v3/Ship/ODFare/Domestic/City/{City}`
+   */
   odFare(city: ShipCity, query?: QueryInput<ShipRouteFare>): Promise<ShipRouteFares> {
     return this.object(`${SHIP}/ODFare/${cityOf(city)}`, query, 'static');
   }

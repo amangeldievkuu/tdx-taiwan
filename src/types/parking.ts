@@ -2,7 +2,7 @@
 // (PTX.Service.DTO.Parking.Specification.V1.*). Every endpoint wraps its items in an object.
 // Where live data contradicts the spec, the type follows the data and says so; the counts in
 // comments come from checking every city on 2026-10-21.
-import type { DateTimeString, OpenString, PointType } from './common.js';
+import type { DateTimeString, Flag, OpenString, PointType } from './common.js';
 
 /** Multilingual name used by the Parking API (V3 Base NameType). Live data often has `{}`. */
 export interface ParkingNameType {
@@ -41,7 +41,7 @@ export type ParkingCity = OpenString<
 >;
 
 /** A yes/no flag: 0 = 否 (no), 1 = 是 (yes). */
-export type ParkingFlag = 0 | 1;
+export type ParkingFlag = Flag;
 
 /**
  * 停車場類型: 1 = 平面 (surface), 2 = 立體 (multi-storey), 3 = 地下 (underground),

@@ -1,7 +1,7 @@
 // Taiwan Railway (臺鐵) types, transcribed from the TDX 公共運輸-軌道 v3 OpenAPI spec
 // (PTX.Service.DTO.Rail.Specification.V3.TRA.*). Every TRA v3 endpoint wraps its items in an
 // object. Where live data contradicts the spec, the type follows the data and says so.
-import type { DateTimeString, OpenString, PointType } from './common.js';
+import type { DateTimeString, Flag, OpenString, PointType } from './common.js';
 
 /**
  * Multilingual name used by TRA v3 (TRANameType). Unlike `NameType`, every field is optional
@@ -28,7 +28,7 @@ export type TraDirection = 0 | 1;
 export type TraTripLine = 0 | 1 | 2 | 3;
 
 /** A yes/no flag: 0 = 否 (no), 1 = 是 (yes). */
-export type TraFlag = 0 | 1;
+export type TraFlag = Flag;
 
 /**
  * 車種簡碼: `1` 太魯閣 Taroko, `2` 普悠瑪 Puyuma, `3` 自強 Tze-Chiang, `4` 莒光 Chu-Kuang,

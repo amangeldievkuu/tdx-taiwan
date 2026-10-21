@@ -4,13 +4,17 @@
 // `Items`, and never sends `Count`. Where live data contradicts the spec, the type follows the
 // data and says so; the observations come from checking every endpoint on 2026-10-21. Optional
 // (`?`) means the field is not in the schema's `required` list; the spec marks nothing nullable.
-import type { DateTimeString, OpenString, PointType } from './common.js';
+import type {
+  DateTimeString,
+  OpenString,
+  PointType,
+  WrapperHeader,
+  ZhEnName,
+  Flag,
+} from './common.js';
 
 /** Multilingual name as the ship endpoints return it (NameType); both parts optional. */
-export interface ShipName {
-  Zh_tw?: string;
-  En?: string;
-}
+export type ShipName = ZhEnName;
 
 /** Port name as the live board spells it: `ZhTw`, unlike every other ship name. */
 export interface ShipLiveBoardName {
@@ -58,7 +62,7 @@ export type ShipDirection = 0 | 1 | 2;
 export type ShipServiceStatus = 0 | 1;
 
 /** 0 = 否 (no), 1 = 是 (yes). */
-export type ShipFlag = 0 | 1;
+export type ShipFlag = Flag;
 
 /** 票種類型: 1 = 一般票 (single), 2 = 來回票 (return), 3 = 電子票證 (e-ticket), 4 = 回數票 (multi-ride). */
 export type ShipTicketType = 1 | 2 | 3 | 4;
@@ -124,15 +128,7 @@ export interface ShipStaticWrapperHeader {
 }
 
 /** Fields of the live wrappers (live boards, positions, seats, alerts, news). */
-export interface ShipLiveWrapperHeader {
-  UpdateTime: DateTimeString;
-  UpdateInterval: number;
-  SrcUpdateTime: DateTimeString;
-  SrcUpdateInterval: number;
-  AuthorityCode: string;
-  /** In the spec but never sent. */
-  Count?: number;
-}
+export type ShipLiveWrapperHeader = WrapperHeader;
 
 /** Port (Port). */
 export interface ShipPort {

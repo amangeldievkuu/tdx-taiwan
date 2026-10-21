@@ -33,7 +33,12 @@ export { AirApi } from './resources/air.js';
 export { ShipApi, ShipDomesticApi } from './resources/ship.js';
 export { TrafficApi, TrafficRoadApi, TrafficHighwayApi } from './resources/traffic.js';
 export { trainDate } from './resources/requester.js';
-export type { QueryInput } from './resources/requester.js';
+export type {
+  QueryInput,
+  ListRequester,
+  ObjectRequester,
+  CacheClass,
+} from './resources/requester.js';
 export type * from './types/common.js';
 export type * from './types/bike.js';
 export type * from './types/bus.js';
