@@ -6,6 +6,24 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-10-21
+
+### Added
+
+- Road traffic (路況資訊 v2 and 道路事件 v1) endpoints under `tdx.traffic`, by city and for the
+  national freeways (`tdx.traffic.freeway.*`) and provincial highways (`tdx.traffic.highway.*`):
+  `sections`, `liveTraffic` (speed, travel time and congestion level per section),
+  `congestionLevels` (the scales those levels refer to), `cctvs`, `vds` and `vdLive` (vehicle
+  detectors with live lane flows), `etagPairs` and `etagPairLive` (eTag gantry pairs with live
+  travel times), `news`, `events` (announced; cities and highways) and `liveEvents`, plus
+  `authorities`. Responses are wrapper objects named per kind (`Sections`, `LiveTraffics`,
+  `Newses`, …) rather than the spec's `Items`, and never carry `Count`. Each kind accepts its own
+  set of cities (eTag pairs exclude Taipei, live traffic covers nine cities); TDX answers 400 with
+  the accepted list, and the README and `TrafficCity` docs list them. Types follow live data where
+  it departs from the spec: `CongestionLevel` is a string, Taipei defines a sixth level, Taipei
+  cameras send `SurveillanceType: -1`, and the freeway news feed omits `Description`.
+- `examples/road-traffic.ts` (`npm run example:traffic`).
+
 ## [0.8.0] - 2026-10-21
 
 ### Added
@@ -192,7 +210,8 @@ All notable changes to this project are documented here. The format is based on
   - CI runs the dist tests against each NestJS major and smoke-tests the packed tarball on
     Node 20, 22 and 24.
 
-[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.5.0...v0.6.0

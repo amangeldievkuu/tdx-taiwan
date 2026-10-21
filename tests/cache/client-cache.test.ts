@@ -180,6 +180,31 @@ describe('TdxClient response cache', () => {
     expect(objects.apiUrls).toHaveLength(2);
   });
 
+  it('caches traffic sections, scales, cameras, detectors, eTag pairs and authorities as static, live data and events as real-time', async () => {
+    const { tdx, apiUrls } = clientWithResponse({}, { cache: true });
+    const fetchAll = async () => {
+      await tdx.traffic.sections('Taipei');
+      await tdx.traffic.liveTraffic('Taipei');
+      await tdx.traffic.congestionLevels('Taipei');
+      await tdx.traffic.cctvs('Taipei');
+      await tdx.traffic.vds('Taipei');
+      await tdx.traffic.vdLive('Taipei');
+      await tdx.traffic.etagPairs('NewTaipei');
+      await tdx.traffic.etagPairLive('NewTaipei');
+      await tdx.traffic.news('Taipei');
+      await tdx.traffic.events('Taipei');
+      await tdx.traffic.liveEvents('Taipei');
+      await tdx.traffic.authorities();
+      await tdx.traffic.freeway.liveTraffic();
+      await tdx.traffic.highway.sections();
+    };
+    await fetchAll();
+    vi.advanceTimersByTime(15_000);
+    await fetchAll();
+
+    expect(apiUrls).toHaveLength(21); // 14 calls + the 7 real-time ones repeated
+  });
+
   it('returns copies of cached objects too', async () => {
     const { tdx } = clientWithResponse(
       { UpdateTime: 'now', AvailableSeats: [{ TrainNo: '0803' }] },

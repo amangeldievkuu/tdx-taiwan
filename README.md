@@ -9,7 +9,8 @@ Unofficial TypeScript SDK for Taiwan's [TDX (Transport Data eXchange)](https://t
 — YouBike availability, city and InterCity bus routes, arrival estimates and live positions, metro stations, live boards, alerts,
 timetables and fares, high speed rail timetables, fares and seat availability, Taiwan
 Railway timetables, fares, live boards and train positions, parking availability, EV
-charging stations with live connector status, and live airport departure and arrival boards.
+charging stations with live connector status, live airport departure and arrival boards, and
+road traffic with live section speeds, cameras, detectors, eTag travel times and road events.
 
 - OAuth2 client-credentials auth with in-memory token caching and automatic refresh
 - Retries with exponential backoff + jitter on 429 / 5xx, and a client-side rate limiter
@@ -76,6 +77,7 @@ npx tsx examples/tra-trains.ts 1000 4400               # today's TRA trains with
 npx tsx examples/nearest-parking.ts 25.0478 121.5170   # 5 nearest car parks with free spaces
 npx tsx examples/nearest-ev-charger.ts 25.0478 121.5170 Taipei 2  # nearest free CCS2 chargers
 npx tsx examples/flight-board.ts TSA departures      # live departure board of an airport
+npx tsx examples/road-traffic.ts freeway             # most congested freeway sections and live events
 ```
 
 ### 2. NestJS
@@ -205,6 +207,20 @@ still typed as the full item, so treat unselected fields as absent.
 | `tdx.air.arrivals(airport?, query?)`                | `GET /v2/Air/FIDS/Airport/Arrival[/{IATA}]`                       | `AirArrival[]`                 |
 | `tdx.air.flights(flightNo?, query?)`                | `GET /v2/Air/FIDS/Flight[/{FlightNo}]`                            | `AirFlight[]`                  |
 | `tdx.air.boards(airport?, query?)`                  | `GET /v2/Air/FIDS/Airport[/{IATA}]`                               | `AirAirportBoard[]`            |
+| `tdx.traffic.sections(city, query?)`                | `GET /v2/Road/Traffic/Section/City/{City}`                        | `TrafficSections`              |
+| `tdx.traffic.liveTraffic(city, query?)`             | `GET /v2/Road/Traffic/Live/City/{City}`                           | `TrafficLiveTraffics`          |
+| `tdx.traffic.congestionLevels(city, query?)`        | `GET /v2/Road/Traffic/CongestionLevel/City/{City}`                | `TrafficCongestionLevels`      |
+| `tdx.traffic.cctvs(city, query?)`                   | `GET /v2/Road/Traffic/CCTV/City/{City}`                           | `TrafficCCTVs`                 |
+| `tdx.traffic.vds(city, query?)`                     | `GET /v2/Road/Traffic/VD/City/{City}`                             | `TrafficVDs`                   |
+| `tdx.traffic.vdLive(city, query?)`                  | `GET /v2/Road/Traffic/Live/VD/City/{City}`                        | `TrafficVDLives`               |
+| `tdx.traffic.etagPairs(city, query?)`               | `GET /v2/Road/Traffic/ETagPair/City/{City}`                       | `TrafficETagPairs`             |
+| `tdx.traffic.etagPairLive(city, query?)`            | `GET /v2/Road/Traffic/Live/ETag/City/{City}`                      | `TrafficETagPairLives`         |
+| `tdx.traffic.news(city, query?)`                    | `GET /v2/Road/Traffic/Live/News/City/{City}`                      | `TrafficNewsList`              |
+| `tdx.traffic.events(city, query?)`                  | `GET /v1/Traffic/RoadEvent/Event/City/{City}`                     | `TrafficEvents`                |
+| `tdx.traffic.liveEvents(city, query?)`              | `GET /v1/Traffic/RoadEvent/LiveEvent/City/{City}`                 | `TrafficLiveEvents`            |
+| `tdx.traffic.authorities(query?)`                   | `GET /v2/Road/Traffic/Basic/Authority`                            | `TrafficAuthorities`           |
+| `tdx.traffic.freeway.*(query?)`                     | The same at `…/Freeway`, without `events` and `authorities`       | same types                     |
+| `tdx.traffic.highway.*(query?)`                     | The same at `…/Highway`, with `events()` but no `authorities`     | same types                     |
 | `tdx.get(path, query?)`                             | Any other TDX endpoint (auth, retries, rate limit applied)        | `unknown`                      |
 | `tdx.getAccessToken()`                              | The current access token                                          | `string`                       |
 | `tdx.clearCache()`                                  | Empties the response cache                                        | `void`                         |
@@ -522,6 +538,74 @@ const boards = await tdx.air.boards();
 - [`examples/flight-board.ts`](examples/flight-board.ts) prints the next 20 of today's
   departures or arrivals at an airport.
 
+### Road traffic
+
+Road sections with live speed, travel time and congestion level, the congestion scales, traffic
+cameras, vehicle detectors with live lane flows, eTag gantry pairs with live travel times, traffic
+news and road events. Every kind comes by city, for the national freeways
+(`tdx.traffic.freeway.*`, 高速公路局) and for the provincial highways (`tdx.traffic.highway.*`,
+公路局).
+
+```ts
+// Congested freeway sections right now, with the level name from the congestion scale
+const [{ Sections: sections }, { LiveTraffics: live }, { CongestionLevels: scales }] =
+  await Promise.all([
+    tdx.traffic.freeway.sections(),
+    tdx.traffic.freeway.liveTraffic({ filter: "CongestionLevel ge '3'" }),
+    tdx.traffic.freeway.congestionLevels(),
+  ]);
+const sectionById = new Map(sections.map((s) => [s.SectionID, s]));
+const levelName = new Map(
+  scales.flatMap((s) => s.Levels.map((l) => [`${s.CongestionLevelID}:${l.Level}`, l.LevelName])),
+);
+for (const t of live) {
+  const section = sectionById.get(t.SectionID ?? '');
+  const level = levelName.get(`${t.CongestionLevelID}:${t.CongestionLevel}`);
+  console.log(section?.SectionName, `${t.TravelSpeed} km/h`, level);
+}
+
+// Live incidents in Taipei, and the freeway cameras near Linkou
+const { LiveEvents: incidents } = await tdx.traffic.liveEvents('Taipei', {
+  filter: 'EventType eq 1',
+});
+const { CCTVs: cameras } = await tdx.traffic.freeway.cctvs({
+  filter: "contains(RoadName, '國道1號')",
+});
+```
+
+- Every response is a wrapper object whose array is named per kind (`Sections`, `LiveTraffics`,
+  `CongestionLevels`, `CCTVs`, `VDs`, `VDLives`, `ETagPairs`, `ETagPairLives`, `Newses`, `Events`,
+  `LiveEvents`) rather than the spec's `Items`, and `Count` is never sent. Queries apply to the
+  items. Join live traffic to sections on `SectionID`, detector readings on `VDID` and eTag
+  travel times on `ETagPairID`. The join is loose: 224 of 680 freeway live rows use four-digit
+  IDs (`0475`…) that no published section has, so keep rows whose section is unknown.
+- **Each kind accepts its own cities**, and TDX answers an unsupported one with a 400
+  `TdxApiError` whose message lists the accepted ones. Sections, cameras and news take the
+  spec's 14 cities plus NewTaipei; live traffic only YilanCounty, ChanghuaCounty, YunlinCounty,
+  PingtungCounty, Keelung, Taipei, Taichung, Tainan and Taoyuan; detectors the spec's 14; eTag
+  pairs 13 cities without Taipei (incl. NewTaipei, Hsinchu, Chiayi); events Taipei, NewTaipei,
+  Taoyuan, Taichung, Tainan, Keelung, MiaoliCounty, ChiayiCounty, PingtungCounty, YilanCounty and
+  KinmenCounty, live events also Kaohsiung. The freeways have no announced-events feed.
+- `CongestionLevel` is a **string** (`"3"`) whose meaning depends on the scale in
+  `congestionLevels` (`CongestionLevelID`): the freeways use one scale `A` with levels 1-5 by
+  speed, Taipei one per road class with levels 1-6 (`A`-`F`). `"0"` is unknown, `"-1"` closed and
+  `"-99"` bad data (8 of 818 Taipei sections); `TravelTime` and `TravelSpeed` are `-99` or `-1`
+  then too. Detector speeds and volumes also use `-99`.
+- Detector readings list vehicles by class code string (`S` car, `L` large, `T` truck, `M`
+  motorcycle); eTag flows use the spec's integer class codes. Taipei cameras send
+  `SurveillanceType: -1`, so that field is a plain number.
+- The freeway and highway news feeds omit `Description` (required by the spec) and send
+  `0001-01-01T00:00:00+08:06` as `UpdateTime`. `LinkVersion` is sent only by the freeway and
+  highway authorities (`NFB`, `THB`).
+- Full lists are large: 818 Taipei and 680 freeway live sections (about 260 KB each), 456 freeway
+  sections (250 KB), 384 Taipei cameras (110 KB). Static kinds refresh every 6 hours, live kinds
+  every minute, so cache the static ones and filter the live ones.
+- TDX restricts the CCTV endpoints to API keys (no guest access). CMS signs, eTag gantries,
+  section geometry (`SectionLink`, `SectionShape`) and the by-ID endpoints are not wrapped yet;
+  use `tdx.get` or `$filter`.
+- [`examples/road-traffic.ts`](examples/road-traffic.ts) prints the most congested sections of a
+  road network and its latest live events.
+
 ## Options
 
 ```ts
@@ -617,7 +701,7 @@ Development tooling requires Node.js 22+; the published package supports Node.js
 ## 繁體中文
 
 `tdx-taiwan` 是存取交通部 [TDX 運輸資料流通服務](https://tdx.transportdata.tw) 的**非官方** TypeScript SDK（與交通部無隸屬或合作關係），
-支援公共自行車（YouBike）站點與即時車位、市區公車路線、站序與預估到站時間、捷運車站、路線、即時到站看板、首末班車與票價、高鐵與臺鐵時刻表、票價與即時看板、停車場與充電樁即時資訊，以及機場即時航班看板。
+支援公共自行車（YouBike）站點與即時車位、市區公車路線、站序與預估到站時間、捷運車站、路線、即時到站看板、首末班車與票價、高鐵與臺鐵時刻表、票價與即時看板、停車場與充電樁即時資訊、機場即時航班看板，以及即時路況。
 
 **安裝**（需要 Node.js 20 以上版本）
 
@@ -661,6 +745,7 @@ const top = await tdx.bike.availability(
 - 路線名稱預設以中文名稱（`RouteName/Zh_tw`）完全比對：`tdx.bus.eta('Taipei', '307')` 只回傳 307，不含「307西藏三民」。若要使用 TDX 原本的前綴比對，請傳入 `{ exact: false }`。
 - 公車：`tdx.bus.positions('Taipei', '307')` 取得公車即時位置（A1）、`tdx.bus.stops('Taipei')` 取得縣市全部站牌（資料量大，建議篩選）；公路客運使用 `tdx.bus.interCity.routes('1610')`、`eta`、`positions` 等，路線名稱同樣預設完全比對。捷運另有 `tdx.metro.alerts('TRTC')` 營運通阻資料。
 - 航空：`tdx.air.departures('TSA')`／`arrivals('TSA')` 取得機場即時出境／入境航班（FIDS），`flights('100', { filter: "AirlineID eq 'CI'" })` 查詢單一航班（班號僅數字，航空公司另見 `AirlineID`），`boards()` 依機場分組，另有 `airports`／`airport('TPE')` 與 `airlines`／`airline('CI')`。航班時間為臺灣當地時間且不含時區（`yyyy-MM-ddTHH:mm`）；桃園機場的狀態為中英合併字串（如 `出發DEPARTED`），且列出前一日至次日共三天的航班；貨機請以 `IsCargo eq false` 過濾。機場清單含全球 469 座機場，僅臺灣機場有座標。
+- 路況：`tdx.traffic.liveTraffic('Taipei')` 取得路段即時速率、旅行時間與壅塞程度，`sections`（發布路段）、`congestionLevels`（壅塞水準定義）、`cctvs`（攝影機）、`vds`／`vdLive`（車輛偵測器與即時車流）、`etagPairs`／`etagPairLive`（eTag 配對路段與即時旅行時間）、`news`、`events`（預告性事件）與 `liveEvents`（即時事件）；國道使用 `tdx.traffic.freeway.*`，省道使用 `tdx.traffic.highway.*`。回應為包裝物件，陣列依種類命名（`Sections`、`LiveTraffics`…）。各種類支援的縣市不同（如 eTag 不含臺北市、即時路況僅 9 個縣市），不支援時 TDX 回傳 400 並列出可用縣市。`CongestionLevel` 為字串，級別名稱需對應 `congestionLevels`；`-99` 表示資料異常、`-1` 表示道路封閉。
 - 電動車充電：`tdx.ev.stations('Taipei')`（充電站）、`chargingPoints`（充電樁）、`connectors`（充電槍）、`liveStatus`（充電槍即時狀態：1 可使用、2 使用中、3 故障）與 `chargingRates`（費率）；高速公路服務區使用 `tdx.ev.freeway.*`。各清單以 `StationID`、`ChargingPointID`、`ConnectorID` 對應（規格未列出這些欄位，但實際資料皆有；這些欄位無法用於 `$filter`／`$select`，請於程式中對應）。即時狀態請先以 `ConnectorID` 對應充電槍，再以充電槍的 `StationID` 對應充電站（即時狀態本身的 `StationID` 可能使用另一套代碼）。
 - 停車：`tdx.parking.carParks('Taipei')`（路外停車場）、`availability`（即時剩餘車位）、`segments`（路邊停車路段）與 `segmentAvailability`（路段即時剩餘車位）。停車場與剩餘車位以 `CarParkID` 對應，但兩份清單僅部分重疊（臺北 1,180 筆剩餘車位中僅 455 筆有對應停車場）；新北市僅有路邊停車資料，無資料的縣市回傳空清單。
 - 臺鐵（TDX v3）：`tdx.tra.timetable('1000', '4400', '2026-10-22')` 查詢起迄站時刻表，另有 `stations`、`odFare`（票價，依車種**及行駛方向**區分：臺北→高雄自強號順向 371 公里 994 元，經東部環島方向 1286 元）、`liveBoard`（車站即時到離站，含月台與延誤分鐘）、`trainLiveBoard`（列車即時位置）與 `alerts`。回應皆為包裝物件，名稱欄位使用 `TraNameType`（韓文為 `Kr`）。

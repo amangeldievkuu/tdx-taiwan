@@ -1,0 +1,55 @@
+{
+  "UpdateTime": "2026-10-21T14:40:38+08:00",
+  "UpdateInterval": 60,
+  "SrcUpdateTime": "2026-10-21T14:33:00+08:00",
+  "SrcUpdateInterval": 300,
+  "AuthorityCode": "NFB",
+  "LinkVersion": "25.06.1",
+  "ETagPairLives": [
+    {
+      "ETagPairID": "01F0017N-01F0005N",
+      "StartETagStatus": 0,
+      "EndETagStatus": 0,
+      "Flows": [
+        {
+          "VehicleType": 31,
+          "TravelTime": 46,
+          "StandardDeviation": 0,
+          "SpaceMeanSpeed": 94,
+          "VehicleCount": 41
+        },
+        {
+          "VehicleType": 32,
+          "TravelTime": 49,
+          "StandardDeviation": 0,
+          "SpaceMeanSpeed": 88,
+          "VehicleCount": 20
+        },
+        {
+          "VehicleType": 41,
+          "TravelTime": 47,
+          "StandardDeviation": 0,
+          "SpaceMeanSpeed": 92,
+          "VehicleCount": 3
+        },
+        {
+          "VehicleType": 42,
+          "TravelTime": 60,
+          "StandardDeviation": 0,
+          "SpaceMeanSpeed": 72,
+          "VehicleCount": 1
+        },
+        {
+          "VehicleType": 5,
+          "TravelTime": 0,
+          "StandardDeviation": 0,
+          "SpaceMeanSpeed": 0,
+          "VehicleCount": 0
+        }
+      ],
+      "StartTime": "2026-10-21T14:35:00+08:00",
+      "EndTime": "2026-10-21T14:40:00+08:00",
+      "DataCollectTime": "2026-10-21T14:40:00+08:00"
+    }
+  ]
+}

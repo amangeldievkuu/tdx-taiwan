@@ -1,7 +1,7 @@
 # Test fixtures
 
 > 資料來源：交通部運輸資料流通服務平臺 (MOTC Transport Data eXchange, TDX). The `metro-*.json`,
-> `thsr-*.json`, `tra-*.json`, `parking-*.json`, `ev-*.json`, `air-*.json`, `bus-stop-taipei.json`, `bus-position-taipei-307.json` and
+> `thsr-*.json`, `tra-*.json`, `parking-*.json`, `ev-*.json`, `air-*.json`, `traffic-*.json`, `bus-stop-taipei.json`, `bus-position-taipei-307.json` and
 > `bus-intercity-*.json` files contain TDX data and are used under the
 > [TDX 資料授權利用條款](https://tdx.transportdata.tw/term), not this repository's MIT license.
 
@@ -53,6 +53,17 @@ foreign airports have), the `/Airport/TPE` object, two airlines (中華航空 an
 an `Apron` instead of a `Gate`, and a cancelled one with a blank `Gate`), two TPE arrivals with
 baggage claims and padded gates (`" A8"`), the `/FIDS/Flight/100` record, and the 松山 board cut
 to two departures and two arrivals. None were edited.
+
+The `traffic-*.json` files are trimmed 路況資訊 v2 and 道路事件 v1 wrappers (2026-10-21), cut to one
+to three items each and not edited. They keep the places where live data departs from the spec:
+the per-kind array names (`Sections`, `LiveTraffics`, `Newses`, …) instead of `Items` and no
+`Count`; Taipei live traffic with congestion level `"6"` and a `-99` reading next to a normal one;
+Taipei's six-level congestion scale and the freeway scale with its `-1` closed level; Taipei
+cameras with `SurveillanceType: -1`; a bi-directional provincial-highway detector; a freeway
+detector reading with per-vehicle-class volumes; a freeway eTag pair with its WKT geometry and
+its live flows; freeway news items without the `Description` the spec requires and with the
+`0001-01-01` update time; a planned Taipei event located only by `Other`; two freeway live events
+(congestion at an interchange exit, roadworks with blocked lanes); and three authorities.
 
 To compare against real data, add your keys to `.env` and run `npm run test:integration`,
 which exercises the same endpoints against the live API.

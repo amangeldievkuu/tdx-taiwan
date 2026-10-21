@@ -13,6 +13,7 @@ import { MetroApi } from './resources/metro.js';
 import { ParkingApi } from './resources/parking.js';
 import { ThsrApi } from './resources/thsr.js';
 import { TraApi } from './resources/tra.js';
+import { TrafficApi } from './resources/traffic.js';
 import type { CacheClass, ListRequester, ObjectRequester } from './resources/requester.js';
 
 export interface TdxCacheOptions {
@@ -74,6 +75,8 @@ export class TdxClient {
   readonly ev: EvApi;
   /** Air (航空) endpoints: airports, airlines and live flight boards (FIDS). */
   readonly air: AirApi;
+  /** Road traffic (路況) endpoints: sections, live speeds, CCTV, detectors, eTag, news and road events. */
+  readonly traffic: TrafficApi;
 
   private readonly tokens: TokenManager;
   private readonly http: HttpClient;
@@ -124,6 +127,7 @@ export class TdxClient {
     this.parking = new ParkingApi(object);
     this.ev = new EvApi(object);
     this.air = new AirApi(list, object);
+    this.traffic = new TrafficApi(object);
   }
 
   /** Returns a valid OAuth2 access token (cached in memory, refreshed 60s before expiry). */

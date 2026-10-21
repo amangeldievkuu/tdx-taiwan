@@ -1,0 +1,39 @@
+{
+  "UpdateTime": "2026-10-21T03:50:44+08:00",
+  "UpdateInterval": 21600,
+  "SrcUpdateTime": "2026-10-21T02:21:06+08:00",
+  "SrcUpdateInterval": 86400,
+  "AuthorityCode": "THB",
+  "LinkVersion": "25.06.1",
+  "VDs": [
+    {
+      "VDID": "VD-11-0020-002-002",
+      "SubAuthorityCode": "THB-1R",
+      "BiDirectional": 1,
+      "DetectionLinks": [
+        {
+          "LinkID": "3000200000176F",
+          "Bearing": "N",
+          "RoadDirection": "E",
+          "LaneNum": 3,
+          "ActualLaneNum": 3
+        },
+        {
+          "LinkID": "3000200100155F",
+          "Bearing": "S",
+          "RoadDirection": "W",
+          "LaneNum": 3,
+          "ActualLaneNum": 3
+        }
+      ],
+      "VDType": 2,
+      "LocationType": 2,
+      "DetectionType": 1,
+      "PositionLon": 121.459501,
+      "PositionLat": 25.149709,
+      "RoadID": "300020",
+      "RoadName": "台2線",
+      "RoadClass": 3
+    }
+  ]
+}

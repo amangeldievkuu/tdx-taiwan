@@ -328,6 +328,41 @@ describe.skipIf(!hasCredentials)('live TDX API: flights', () => {
   });
 });
 
+describe.skipIf(!hasCredentials)('live TDX API: road traffic', () => {
+  let tdx: TdxClient;
+
+  beforeAll(() => {
+    tdx = new TdxClient({
+      clientId: clientId ?? '',
+      clientSecret: clientSecret ?? '',
+      requestsPerSecond: 2,
+    });
+  });
+
+  it('traffic.freeway.liveTraffic returns speeds per section', async () => {
+    const live = await tdx.traffic.freeway.liveTraffic({ top: 5 });
+    expect(live.AuthorityCode).toBe('NFB');
+    expect(live.LiveTraffics.length).toBeGreaterThan(0);
+    for (const t of live.LiveTraffics) {
+      expect(t.TravelSpeed).toEqual(expect.any(Number));
+      expect(t.CongestionLevel).toEqual(expect.any(String));
+    }
+  });
+
+  it('traffic.sections lists Taipei sections', async () => {
+    const sections = await tdx.traffic.sections('Taipei', { top: 3 });
+    expect(sections.Sections.length).toBeGreaterThan(0);
+    expect(sections.Sections[0]).toHaveProperty('SectionID');
+    expect(sections.Sections[0]).toHaveProperty('RoadName');
+  });
+
+  it('traffic.freeway.liveEvents returns the event wrapper', async () => {
+    const events = await tdx.traffic.freeway.liveEvents({ top: 3 });
+    expect(Array.isArray(events.LiveEvents)).toBe(true);
+    expect(events.UpdateTime).toEqual(expect.any(String));
+  });
+});
+
 describe.skipIf(hasCredentials)('live TDX API (skipped)', () => {
   it.skip('set TDX_CLIENT_ID and TDX_CLIENT_SECRET in .env to run the live tests', () => {});
 });

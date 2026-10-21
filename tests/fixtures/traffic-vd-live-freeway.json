@@ -1,0 +1,47 @@
+{
+  "UpdateTime": "2026-10-21T14:35:59+08:00",
+  "UpdateInterval": 60,
+  "SrcUpdateTime": "2026-10-21T14:33:00+08:00",
+  "SrcUpdateInterval": 60,
+  "AuthorityCode": "NFB",
+  "LinkVersion": "25.06.1",
+  "VDLives": [
+    {
+      "VDID": "VD-N3-N-25-O-SE-1-木柵休息站",
+      "SubAuthorityCode": "NFB-NR",
+      "LinkFlows": [
+        {
+          "LinkID": "0000301180000A",
+          "Lanes": [
+            {
+              "LaneID": 0,
+              "LaneType": 1,
+              "Speed": 19,
+              "Occupancy": 10,
+              "Vehicles": [
+                {
+                  "VehicleType": "S",
+                  "Volume": 2,
+                  "Speed": 18
+                },
+                {
+                  "VehicleType": "L",
+                  "Volume": 0,
+                  "Speed": 0
+                },
+                {
+                  "VehicleType": "T",
+                  "Volume": 0,
+                  "Speed": 0
+                }
+              ],
+              "ErrorType": "diag0"
+            }
+          ]
+        }
+      ],
+      "Status": 0,
+      "DataCollectTime": "2026-10-21T14:34:00+08:00"
+    }
+  ]
+}
