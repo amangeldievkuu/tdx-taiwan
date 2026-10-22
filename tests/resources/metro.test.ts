@@ -7,16 +7,22 @@ import {
   type MetroLine,
   type MetroLineTransfer,
   type MetroLiveBoard,
+  type MetroNetwork,
   type MetroNewsList,
   type MetroODFare,
   type MetroRoute,
+  type MetroS2STravelTime,
+  type MetroShape,
   type MetroStation,
   type MetroStationExit,
   type MetroStationFacility,
   type MetroStationOfLine,
   type MetroStationOfRoute,
+  type MetroStationPlatforms,
   type MetroStationTimetable,
   type MetroStationTransfers,
+  type MetroStoppingPatterns,
+  type MetroTransferStation,
   TdxApiError,
   odata,
   query,
@@ -47,6 +53,14 @@ const stationTimetableFixture = loadFixture(
   'metro-station-timetable-trtc.json',
 ) as MetroStationTimetable[];
 const newsFixture = loadFixture('metro-news-trtc.json') as MetroNewsList;
+const networkFixture = loadFixture('metro-network-trtc.json') as MetroNetwork[];
+const travelTimeFixture = loadFixture('metro-s2s-travel-time-trtc.json') as MetroS2STravelTime[];
+const shapeFixture = loadFixture('metro-shape-trtc.json') as MetroShape[];
+const platformsFixture = loadFixture('metro-station-platform-klrt.json') as MetroStationPlatforms;
+const patternsFixture = loadFixture('metro-stopping-pattern-tymc.json') as MetroStoppingPatterns;
+const transferStationsFixture = loadFixture(
+  'metro-transfer-stations-trtc-ntmc.json',
+) as MetroTransferStation[];
 
 describe('tdx.metro paths', () => {
   it('requests each endpoint for a rail system as JSON', async () => {
@@ -352,5 +366,83 @@ describe('tdx.metro station info, routes, frequency, timetables, news and positi
     expect(news.Newses[0]).toMatchObject({ NewsID: '9726526', NewsCategory: 2 });
     expect(news.Newses[0]?.Language).toBeUndefined();
     expect(news.Newses[0]?.PublishTime).toBe('0001-01-01T00:00:00+08:06');
+  });
+});
+
+describe('tdx.metro network, travel times, shapes, platforms, stopping patterns and shared stations', () => {
+  it('requests each endpoint as JSON', async () => {
+    const lists = clientWithResponse([]);
+    const objects = clientWithResponse({});
+
+    await lists.tdx.metro.network('TRTC');
+    await lists.tdx.metro.s2sTravelTime('TRTC', { top: 1 });
+    await lists.tdx.metro.shapes('NTDLRT');
+    await lists.tdx.metro.transferStations('TRTC_NTMC');
+    await objects.tdx.metro.stationPlatforms('KLRT');
+    await objects.tdx.metro.stoppingPatterns('TYMC', { top: 2 });
+
+    expect(lists.apiUrls).toEqual([
+      `${API}/v2/Rail/Metro/Network/TRTC?$format=JSON`,
+      `${API}/v2/Rail/Metro/S2STravelTime/TRTC?$top=1&$format=JSON`,
+      `${API}/v2/Rail/Metro/Shape/NTDLRT?$format=JSON`,
+      `${API}/v2/Rail/Metro/TransferStations/TRTC_NTMC?$format=JSON`,
+    ]);
+    expect(objects.apiUrls).toEqual([
+      `${API}/v2/Rail/Metro/StationPlatform/KLRT?$format=JSON`,
+      `${API}/v2/Rail/Metro/StoppingPattern/TYMC?$top=2&$format=JSON`,
+    ]);
+    expect(() => lists.tdx.metro.network('')).toThrow(TypeError);
+    expect(() => objects.tdx.metro.stationPlatforms(' ')).toThrow(TypeError);
+    await expect(lists.tdx.metro.stoppingPatterns('TYMC')).rejects.toBeInstanceOf(TdxApiError);
+  });
+
+  it('parses the network, travel times and shapes', async () => {
+    const network = await clientWithResponse(networkFixture).tdx.metro.network('TRTC');
+    const times = await clientWithResponse(travelTimeFixture).tdx.metro.s2sTravelTime('TRTC');
+    const shapes = await clientWithResponse(shapeFixture).tdx.metro.shapes('TRTC');
+    expectTypeOf(network).toEqualTypeOf<MetroNetwork[]>();
+    expectTypeOf(times).toEqualTypeOf<MetroS2STravelTime[]>();
+    expectTypeOf(shapes).toEqualTypeOf<MetroShape[]>();
+
+    expect(network[0]?.NetworkID).toBe('TRTC-Network');
+    expect(network[0]?.Lines.map((l) => l.LineID)).toEqual(['R', 'O', 'G', 'BR', 'BL']);
+    expect(times.map((t) => [t.RouteID, t.TrainType, t.TravelTimes[0]?.RunTime])).toEqual([
+      ['BL-1', 1, 112],
+      ['BL-2', 1, 112],
+    ]);
+    expect(shapes[0]?.LineID).toBe('BL');
+    expect(shapes[0]?.Geometry).toMatch(/^MULTILINESTRING\(\(/);
+    expect(shapes[0]?.EncodedPolyline).toBe('');
+  });
+
+  it('parses platforms, stopping patterns and shared stations', async () => {
+    const platforms = await clientWithResponse(platformsFixture).tdx.metro.stationPlatforms('KLRT');
+    const patterns = await clientWithResponse(patternsFixture).tdx.metro.stoppingPatterns('TYMC');
+    const shared =
+      await clientWithResponse(transferStationsFixture).tdx.metro.transferStations('TRTC_NTMC');
+    expectTypeOf(platforms).toEqualTypeOf<MetroStationPlatforms>();
+    expectTypeOf(patterns).toEqualTypeOf<MetroStoppingPatterns>();
+    expectTypeOf(shared).toEqualTypeOf<MetroTransferStation[]>();
+
+    expect(platforms.AuthorityCode).toBeUndefined();
+    expect(platforms.StationPlatforms.map((p) => [p.PlatformID, p.Direction])).toEqual([
+      ['C1-1', 0],
+      ['C1-2', 1],
+    ]);
+    expect(patterns.UpdateInterval).toBe(-1);
+    expect(
+      patterns.StoppingPatterns.map((p) => [
+        p.StoppingPatternID,
+        p.Stations.map((s) => s.StationID),
+      ]),
+    ).toEqual([
+      ['SP1', ['A1', 'A2', 'A3']],
+      ['SP2', ['A1', 'A3', 'A8']],
+    ]);
+    expect(shared.map((s) => [s.TransferStationID, s.Stations?.map((x) => x.StationID)])).toEqual([
+      ['BL07_Y16', ['BL07', 'Y16']],
+      ['BL11_G12', ['BL11', 'G12']],
+    ]);
+    expect(shared[0]?.Stations?.[0]?.StationName).toBe('板橋');
   });
 });

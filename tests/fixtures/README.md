@@ -1,7 +1,7 @@
 # Test fixtures
 
 > 資料來源：交通部運輸資料流通服務平臺 (MOTC Transport Data eXchange, TDX). The `metro-*.json`,
-> `thsr-*.json`, `tra-*.json`, `parking-*.json`, `ev-*.json`, `air-*.json`, `traffic-*.json`, `ship-*.json`, the 0.14.0 `metro-*`, `thsr-*` and `tra-*` additions, `bus-stop-taipei.json`, `bus-position-taipei-307.json` and
+> `thsr-*.json`, `tra-*.json`, `parking-*.json`, `ev-*.json`, `air-*.json`, `traffic-*.json`, `ship-*.json`, the 0.14.0 and 0.15.0 `metro-*`, `thsr-*` and `tra-*` additions, `rail-*.json`, `afr-*.json`, `bus-stop-taipei.json`, `bus-position-taipei-307.json` and
 > `bus-intercity-*.json` files contain TDX data and are used under the
 > [TDX 資料授權利用條款](https://tdx.transportdata.tw/term), not this repository's MIT license.
 
@@ -67,6 +67,16 @@ station timetables (empty `SrcVersion`, timestamp `EffectiveDate`), a daily trai
 today's station timetable, train dates, lines, stations of a line, three train types, a station's
 exits (composite `ExitID`), a station's facilities (empty strings), a news item and the
 all-station live board.
+
+The 0.15.0 rail leftovers (2026-10-22, trimmed to one to three items or stops, not edited):
+Taipei Metro network, station-to-station travel times, the 板南線 shape (16 KB), Kaohsiung light
+rail platforms, Taoyuan airport line stopping patterns and the Taipei / New Taipei shared
+stations; THSR leg and OD seat status, free-seating cars, daily train info and stations of line
+(the 1 MB THSR shape has no fixture); TRA inclusive and special timetables, line network, line
+and station transfers, network, operator and the 成追線 shape; the cross-system operators, OD
+distances (by system and by name), a by-name fare lookup and THSR adjacent-station distances;
+and the Alishan railway's stations, lines, routes, station lists, network, shape, operator,
+train types, regular timetable, fares and news.
 
 The `traffic-*.json` files are trimmed 路況資訊 v2 and 道路事件 v1 wrappers (2026-10-21), cut to one
 to three items each and not edited. They keep the places where live data departs from the spec:

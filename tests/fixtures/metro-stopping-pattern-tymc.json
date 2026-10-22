@@ -1,0 +1,89 @@
+{
+  "UpdateTime": "2026-10-22T02:52:50+08:00",
+  "UpdateInterval": -1,
+  "SrcUpdateTime": "2025-02-12T00:00:00+08:00",
+  "SrcUpdateInterval": -1,
+  "AuthorityCode": "TYMC",
+  "StoppingPatterns": [
+    {
+      "StoppingPatternID": "SP1",
+      "StoppingPatternName": {
+        "Zh_tw": "普通車",
+        "En": "Commuter"
+      },
+      "RouteID": "A-1",
+      "Stations": [
+        {
+          "Sequence": 1,
+          "StationID": "A1",
+          "StationName": {
+            "Zh_tw": "台北車站",
+            "En": "Taipei Main Station",
+            "Ja": "台北駅",
+            "Ko": "타이베이 역"
+          }
+        },
+        {
+          "Sequence": 2,
+          "StationID": "A2",
+          "StationName": {
+            "Zh_tw": "三重站",
+            "En": "Sanchong Station",
+            "Ja": "三重駅",
+            "Ko": "싼충 역"
+          }
+        },
+        {
+          "Sequence": 3,
+          "StationID": "A3",
+          "StationName": {
+            "Zh_tw": "新北產業園區站",
+            "En": "New Taipei Industrial Park Station",
+            "Ja": "新北産業園区駅",
+            "Ko": "뉴 타이베이 산업 단지 역"
+          }
+        }
+      ]
+    },
+    {
+      "StoppingPatternID": "SP2",
+      "StoppingPatternName": {
+        "Zh_tw": "直達車",
+        "En": "Express"
+      },
+      "RouteID": "A-2",
+      "Stations": [
+        {
+          "Sequence": 1,
+          "StationID": "A1",
+          "StationName": {
+            "Zh_tw": "台北車站",
+            "En": "Taipei Main Station",
+            "Ja": "台北駅",
+            "Ko": "타이베이 역"
+          }
+        },
+        {
+          "Sequence": 2,
+          "StationID": "A3",
+          "StationName": {
+            "Zh_tw": "新北產業園區站",
+            "En": "New Taipei Industrial Park Station",
+            "Ja": "新北産業園区駅",
+            "Ko": "뉴 타이베이 산업 단지 역"
+          }
+        },
+        {
+          "Sequence": 3,
+          "StationID": "A8",
+          "StationName": {
+            "Zh_tw": "長庚醫院站",
+            "En": "Chang Gung Memorial Hospital Station",
+            "Ja": "長庚病院駅",
+            "Ko": "창컹병원 역"
+          }
+        }
+      ]
+    }
+  ]
+}

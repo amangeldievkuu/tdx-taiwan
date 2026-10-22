@@ -25,6 +25,12 @@ Metro methods take a rail system code: `TRTC` 臺北捷運, `KRTC` 高雄捷運,
 | `tdx.metro.stationTimetable(system, query?)`   | `GET /v2/Rail/Metro/StationTimeTable/{RailSystem}`   | `MetroStationTimetable[]`   |
 | `tdx.metro.news(system, query?)`               | `GET /v2/Rail/Metro/News/{RailSystem}`               | `MetroNewsList`             |
 | `tdx.metro.livePosition(system, query?)`       | `GET /v2/Rail/Metro/LivePosition/{RailSystem}`       | `MetroLivePositions`        |
+| `tdx.metro.network(system, query?)`            | `GET /v2/Rail/Metro/Network/{RailSystem}`            | `MetroNetwork[]`            |
+| `tdx.metro.s2sTravelTime(system, query?)`      | `GET /v2/Rail/Metro/S2STravelTime/{RailSystem}`      | `MetroS2STravelTime[]`      |
+| `tdx.metro.shapes(system, query?)`             | `GET /v2/Rail/Metro/Shape/{RailSystem}`              | `MetroShape[]`              |
+| `tdx.metro.stationPlatforms(system, query?)`   | `GET /v2/Rail/Metro/StationPlatform/{RailSystem}`    | `MetroStationPlatforms`     |
+| `tdx.metro.stoppingPatterns(system, query?)`   | `GET /v2/Rail/Metro/StoppingPattern/{RailSystem}`    | `MetroStoppingPatterns`     |
+| `tdx.metro.transferStations(system, query?)`   | `GET /v2/Rail/Metro/TransferStations/{RailSystem}`   | `MetroTransferStation[]`    |
 
 ## Example
 
@@ -67,8 +73,14 @@ console.log(adult?.Price); // 40
   timetable, so use `frequency` for it.
 - `news(system)` is a wrapper (`Newses`) for TRTC, KRTC, TYMC, KLRT and TMRT. Taipei sends the
   sentinel `0001-01-01T00:00:00+08:06` for every time field and omits `Language`.
-- `livePosition(system)` works only for the Kaohsiung light rail (`KLRT`); other systems answer 400. Not wrapped: network, shape, station-to-station travel times, platforms, stopping patterns
-  and the `TransferStations` list (`TRTC_NTMC`, `KRTC`); use `tdx.get` for those.
+- `livePosition(system)` works only for the Kaohsiung light rail (`KLRT`); other systems answer 400. Topology: `network(system)` is the operator's network record with its map URL and lines
+  (`TRTCMG` included), `shapes(system)` the line geometries as WKT `MULTILINESTRING` (about 16 KB
+  per line, `EncodedPolyline` is `""`), `s2sTravelTime(system)` the run and dwell seconds between
+  adjacent stations per route, `stationPlatforms('KLRT')` the platforms (Kaohsiung light rail
+  only, wrapper without `AuthorityCode`), `stoppingPatterns('TYMC')` the 普通車 / 直達車 patterns
+  of the airport line (TYMC only, `UpdateInterval: -1`) and `transferStations('TRTC_NTMC' |
+'KRTC')` the stations two lines share (`BL07_Y16`, names are plain strings). Every metro
+  endpoint in the 軌道 v2 spec is now wrapped.
 
 ## See also
 
@@ -78,4 +90,4 @@ console.log(adult?.Price); // 40
 
 ## 繁體中文
 
-捷運：`tdx.metro.liveBoard('TRTC')` 等方法以軌道系統代碼（`TRTC`、`KRTC`、`TYMC`…）查詢。注意捷運看板的 `EstimateTime` 單位為**分鐘**（公車為秒），且臺北捷運（TRTC）看板只列出即將進站（0 分鐘）的列車；`odFare` 資料量大，建議以 `OriginStationID`／`DestinationStationID` 篩選。另有 `stationExits`／`stationFacilities`（出入口與車站設施）、`lineTransfers`／`stationTransfers`（路線間與跨運具轉乘）、`routes`／`stationsOfRoute`（營運路線）、`frequency`（班距）、`stationTimetable`（站別時刻表，臺北捷運不含文湖線）、`news` 與 `livePosition`（僅高雄輕軌 KLRT）。
+捷運：`tdx.metro.liveBoard('TRTC')` 等方法以軌道系統代碼（`TRTC`、`KRTC`、`TYMC`…）查詢。注意捷運看板的 `EstimateTime` 單位為**分鐘**（公車為秒），且臺北捷運（TRTC）看板只列出即將進站（0 分鐘）的列車；`odFare` 資料量大，建議以 `OriginStationID`／`DestinationStationID` 篩選。另有 `stationExits`／`stationFacilities`（出入口與車站設施）、`lineTransfers`／`stationTransfers`（路線間與跨運具轉乘）、`routes`／`stationsOfRoute`（營運路線）、`frequency`（班距）、`stationTimetable`（站別時刻表，臺北捷運不含文湖線）、`news` 與 `livePosition`（僅高雄輕軌 KLRT）；路網與線型：`network`、`shapes`（WKT）、`s2sTravelTime`（站間行駛秒數）、`stationPlatforms('KLRT')`、`stoppingPatterns('TYMC')`、`transferStations('TRTC_NTMC')`（共站站點）。

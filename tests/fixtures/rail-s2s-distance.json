@@ -1,0 +1,59 @@
+[
+  {
+    "LineNo": "HSRL",
+    "LineID": "HSRL",
+    "LineName": {
+      "Zh_tw": "台灣高鐵線"
+    },
+    "Stations": [
+      {
+        "Sequence": 1,
+        "Distance": 9.2,
+        "From": {
+          "StationID": "990",
+          "StationName": {
+            "Zh_tw": "南港"
+          }
+        },
+        "To": {
+          "StationID": "1000",
+          "StationName": {
+            "Zh_tw": "台北"
+          }
+        }
+      },
+      {
+        "Sequence": 2,
+        "Distance": 7.22,
+        "From": {
+          "StationID": "1000",
+          "StationName": {
+            "Zh_tw": "台北"
+          }
+        },
+        "To": {
+          "StationID": "1010",
+          "StationName": {
+            "Zh_tw": "板橋"
+          }
+        }
+      },
+      {
+        "Sequence": 3,
+        "Distance": 29.16,
+        "From": {
+          "StationID": "1010",
+          "StationName": {
+            "Zh_tw": "板橋"
+          }
+        },
+        "To": {
+          "StationID": "1020",
+          "StationName": {
+            "Zh_tw": "桃園"
+          }
+        }
+      }
+    ]
+  }
+]

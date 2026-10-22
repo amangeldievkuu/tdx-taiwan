@@ -6,11 +6,23 @@ import type {
   TraGeneralTimetables,
   TraGeneralTrainTimetable,
   TraLine,
+  TraLineNetwork,
+  TraLineNetworks,
+  TraLineTransfer,
+  TraLineTransfers,
   TraLines,
+  TraNetwork,
+  TraNetworks,
   TraNews,
   TraNewsList,
   TraODFare,
   TraODFares,
+  TraOperator,
+  TraOperators,
+  TraShape,
+  TraShapes,
+  TraSpecificTimetables,
+  TraSpecificTrainTimetable,
   TraStation,
   TraStationExit,
   TraStationExits,
@@ -23,6 +35,8 @@ import type {
   TraStationOfLines,
   TraStationTimetable,
   TraStationTimetables,
+  TraStationTransfer,
+  TraStationTransfers,
   TraStations,
   TraTimetable,
   TraTrainDates,
@@ -261,5 +275,86 @@ export class TraApi {
   /** TRA news (`Description` may contain HTML). Cached with the real-time TTL. `GET /v3/Rail/TRA/News` */
   news(query?: QueryInput<TraNews>): Promise<TraNewsList> {
     return this.object('/v3/Rail/TRA/News', query, 'realtime');
+  }
+  /**
+   * Trains between two stations on a day (default: today in Taiwan) with **every** stop between
+   * them, where `timetable` lists only the two queried stops. Cached with the static TTL.
+   * `GET /v3/Rail/TRA/DailyTrainTimetable/OD/Inclusive/{O}/to/{D}/{TrainDate}`
+   */
+  timetableInclusive(
+    from: TraStationId,
+    to: TraStationId,
+    date?: Date | string,
+    query?: QueryInput<TraTrainTimetable>,
+  ): Promise<TraTimetable> {
+    const od = `${segment(from, 'from')}/to/${segment(to, 'to')}`;
+    const path = `/v3/Rail/TRA/DailyTrainTimetable/OD/Inclusive/${od}/${trainDate(date)}`;
+    return this.object(path, query, 'static');
+  }
+
+  /**
+   * Special trains (holiday and event extras) with the dates they run, for all trains or one
+   * train number. Cached with the static TTL.
+   * `GET /v3/Rail/TRA/SpecificTrainTimetable[/TrainNo/{TrainNo}]`
+   */
+  specificTimetable(query?: QueryInput<TraSpecificTrainTimetable>): Promise<TraSpecificTimetables>;
+  specificTimetable(
+    trainNo: string,
+    query?: QueryInput<TraSpecificTrainTimetable>,
+  ): Promise<TraSpecificTimetables>;
+  specificTimetable(
+    trainNoOrQuery?: string | QueryInput<TraSpecificTrainTimetable>,
+    query?: QueryInput<TraSpecificTrainTimetable>,
+  ): Promise<TraSpecificTimetables> {
+    const base = '/v3/Rail/TRA/SpecificTrainTimetable';
+    if (typeof trainNoOrQuery === 'string') {
+      return this.object(`${base}/TrainNo/${segment(trainNoOrQuery, 'trainNo')}`, query, 'static');
+    }
+    return this.object(base, trainNoOrQuery ?? query, 'static');
+  }
+
+  /**
+   * Line topology: the segments between adjacent stations with distances. Cached with the
+   * static TTL. `GET /v3/Rail/TRA/LineNetwork`
+   */
+  lineNetwork(query?: QueryInput<TraLineNetwork>): Promise<TraLineNetworks> {
+    return this.object('/v3/Rail/TRA/LineNetwork', query, 'static');
+  }
+
+  /**
+   * Transfers between lines at junction stations with the minutes they take. Cached with the
+   * static TTL. `GET /v3/Rail/TRA/LineTransfer`
+   */
+  lineTransfers(query?: QueryInput<TraLineTransfer>): Promise<TraLineTransfers> {
+    return this.object('/v3/Rail/TRA/LineTransfer', query, 'static');
+  }
+
+  /**
+   * Transfers to buses, bikes, car parks, taxis and ferries at each station, with map links.
+   * Cached with the static TTL. `GET /v3/Rail/TRA/StationTransfer`
+   */
+  stationTransfers(query?: QueryInput<TraStationTransfer>): Promise<TraStationTransfers> {
+    return this.object('/v3/Rail/TRA/StationTransfer', query, 'static');
+  }
+
+  /**
+   * The network record with its map link and lines. Cached with the static TTL.
+   * `GET /v3/Rail/TRA/Network`
+   */
+  network(query?: QueryInput<TraNetwork>): Promise<TraNetworks> {
+    return this.object('/v3/Rail/TRA/Network', query, 'static');
+  }
+
+  /**
+   * The operator with contact, fare and booking URLs. Cached with the static TTL.
+   * `GET /v3/Rail/TRA/Operator`
+   */
+  operators(query?: QueryInput<TraOperator>): Promise<TraOperators> {
+    return this.object('/v3/Rail/TRA/Operator', query, 'static');
+  }
+
+  /** Line geometries as WKT. Cached with the static TTL. `GET /v3/Rail/TRA/Shape` */
+  shapes(query?: QueryInput<TraShape>): Promise<TraShapes> {
+    return this.object('/v3/Rail/TRA/Shape', query, 'static');
   }
 }

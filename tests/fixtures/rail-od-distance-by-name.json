@@ -1,0 +1,13 @@
+[
+  {
+    "Origin": {
+      "StationID": "BL07_Y16",
+      "StationName": "板橋"
+    },
+    "Destination": {
+      "StationID": "BL11_G12",
+      "StationName": "西門"
+    },
+    "Distance": 6.54
+  }
+]

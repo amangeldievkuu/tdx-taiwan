@@ -1,0 +1,44 @@
+{
+  "UpdateTime": "2026-10-22T07:22:48+08:00",
+  "UpdateInterval": 14400,
+  "SrcUpdateTime": "2026-10-22T07:22:48+08:00",
+  "SrcUpdateInterval": 86400,
+  "AuthorityCode": "AFR",
+  "Networks": [
+    {
+      "NetworkID": "AFR-Network",
+      "NetworkName": {
+        "Zh_tw": "阿里山林業鐵路營運路網",
+        "En": "Alishan Forest Railway Operation Network"
+      },
+      "OperatorCode": "AFR",
+      "OperatorName": {
+        "Zh_tw": "阿里山林業鐵路及文化資產管理處",
+        "En": "Alishan Forest Railway and Cultural Heritage Office"
+      },
+      "NetworkMapURL": {
+        "MapName": "阿里山林業鐵路導覽路線圖",
+        "Zh_tw": "https://afrch.forest.gov.tw/0000275",
+        "En": "https://afrch.forest.gov.tw/En"
+      },
+      "Lines": [
+        {
+          "LineNo": "M-1",
+          "LineID": "1"
+        },
+        {
+          "LineNo": "B-2",
+          "LineID": "2"
+        },
+        {
+          "LineNo": "B-3",
+          "LineID": "3"
+        },
+        {
+          "LineNo": "B-4",
+          "LineID": "4"
+        }
+      ]
+    }
+  ]
+}

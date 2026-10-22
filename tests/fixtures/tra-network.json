@@ -1,0 +1,64 @@
+{
+  "UpdateTime": "2026-10-22T07:22:49+08:00",
+  "UpdateInterval": 14400,
+  "SrcUpdateTime": "2026-10-22T04:00:00+08:00",
+  "SrcUpdateInterval": -1,
+  "AuthorityCode": "TRA",
+  "Networks": [
+    {
+      "NetworkID": "TRA-Network",
+      "NetworkName": {
+        "Zh_tw": "臺灣鐵路營運路網",
+        "En": "Taiwan Railway Operation Network"
+      },
+      "OperatorCode": "TRA",
+      "OperatorName": {
+        "Zh_tw": "國營臺灣鐵路股份有限公司",
+        "En": "Taiwan Railway Corporation,Ltd."
+      },
+      "NetworkMapURL": {
+        "MapName": "臺灣鐵路營運路網",
+        "Zh_tw": "https://www.trc.com.tw/tra-tip-web/static/pdf/tr_line.pdf?V=113",
+        "En": "https://www.trc.com.tw/tra-tip-web/static/pdf/tr_line.pdf?V=113"
+      },
+      "Lines": [
+        {
+          "LineID": "CZ"
+        },
+        {
+          "LineID": "EL"
+        },
+        {
+          "LineID": "JJ"
+        },
+        {
+          "LineID": "LJ"
+        },
+        {
+          "LineID": "NW"
+        },
+        {
+          "LineID": "PX"
+        },
+        {
+          "LineID": "SA"
+        },
+        {
+          "LineID": "SH"
+        },
+        {
+          "LineID": "SL"
+        },
+        {
+          "LineID": "SU"
+        },
+        {
+          "LineID": "WL"
+        },
+        {
+          "LineID": "WL-C"
+        }
+      ]
+    }
+  ]
+}

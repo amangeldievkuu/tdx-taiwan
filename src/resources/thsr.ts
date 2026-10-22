@@ -3,15 +3,24 @@ import type {
   ThsrAvailableSeat,
   ThsrAvailableSeats,
   ThsrDailyTimetable,
+  ThsrFreeSeatingCar,
+  ThsrFreeSeatingCars,
   ThsrGeneralTimetable,
+  ThsrLegSeat,
+  ThsrLegSeatStatus,
   ThsrNews,
   ThsrODFare,
+  ThsrODSeat,
+  ThsrODSeatStatus,
   ThsrODTimetable,
+  ThsrShape,
   ThsrStation,
   ThsrStationExit,
   ThsrStationId,
+  ThsrStationOfLine,
   ThsrStationTimetable,
   ThsrTrainDates,
+  ThsrTrainInfo,
 } from '../types/thsr.js';
 import {
   type ListRequester,
@@ -174,5 +183,121 @@ export class ThsrApi {
    */
   stationExits(query?: QueryInput<ThsrStationExit>): Promise<ThsrStationExit[]> {
     return this.list('/v2/Rail/THSR/StationExit', query, 'static');
+  }
+  /**
+   * Seat status of every train leg by leg (each stop to the next) on a day (default: today in
+   * Taiwan). Returns an object; the query applies to its `AvailableSeats`. Cached with the
+   * real-time TTL. `GET /v2/Rail/THSR/AvailableSeatStatus/Train/Leg/TrainDate/{TrainDate}`
+   */
+  legSeatStatus(date?: Date | string, query?: QueryInput<ThsrLegSeat>): Promise<ThsrLegSeatStatus> {
+    const path = `/v2/Rail/THSR/AvailableSeatStatus/Train/Leg/TrainDate/${trainDate(date)}`;
+    return this.object(path, query, 'realtime');
+  }
+
+  /**
+   * Seat status between an origin and a destination: every pair on a day, one pair, or one
+   * pair and train. Dates default to today in Taiwan. Returns an object; the query applies to
+   * its `AvailableSeats`. Cached with the real-time TTL.
+   * `GET /v2/Rail/THSR/AvailableSeatStatus/Train/OD[/{O}/to/{D}]/TrainDate/{d}[/TrainNo/{n}]`
+   */
+  odSeatStatus(date?: Date | string, query?: QueryInput<ThsrODSeat>): Promise<ThsrODSeatStatus>;
+  odSeatStatus(
+    from: ThsrStationId,
+    to: ThsrStationId,
+    date?: Date | string,
+    query?: QueryInput<ThsrODSeat>,
+  ): Promise<ThsrODSeatStatus>;
+  odSeatStatus(
+    from: ThsrStationId,
+    to: ThsrStationId,
+    date: Date | string | undefined,
+    trainNo: string,
+    query?: QueryInput<ThsrODSeat>,
+  ): Promise<ThsrODSeatStatus>;
+  odSeatStatus(
+    ...args:
+      | [date?: Date | string, query?: QueryInput<ThsrODSeat>]
+      | [from: string, to: string, date?: Date | string, query?: QueryInput<ThsrODSeat>]
+      | [
+          from: string,
+          to: string,
+          date: Date | string | undefined,
+          trainNo: string,
+          query?: QueryInput<ThsrODSeat>,
+        ]
+  ): Promise<ThsrODSeatStatus> {
+    const base = '/v2/Rail/THSR/AvailableSeatStatus/Train/OD';
+    if (typeof args[1] !== 'string') {
+      const [date, query] = args as [Date | string | undefined, QueryInput<ThsrODSeat>?];
+      return this.object(`${base}/TrainDate/${trainDate(date)}`, query, 'realtime');
+    }
+    const [from, to, date, trainNoOrQuery, query] = args as [
+      string,
+      string,
+      Date | string | undefined,
+      string | QueryInput<ThsrODSeat> | undefined,
+      QueryInput<ThsrODSeat>?,
+    ];
+    let path = `${base}/${segment(from, 'from')}/to/${segment(to, 'to')}/TrainDate/${trainDate(date)}`;
+    if (typeof trainNoOrQuery === 'string') {
+      path += `/TrainNo/${segment(trainNoOrQuery, 'trainNo')}`;
+      return this.object(path, query, 'realtime');
+    }
+    return this.object(path, trainNoOrQuery, 'realtime');
+  }
+
+  /**
+   * Which cars are non-reserved (自由座) on each train of a day (default: today in Taiwan).
+   * Returns an object; the query applies to its `FreeSeatingCars`. Cached with the static TTL.
+   * `GET /v2/Rail/THSR/DailyFreeSeatingCar/TrainDate/{TrainDate}`
+   */
+  freeSeatingCars(
+    date?: Date | string,
+    query?: QueryInput<ThsrFreeSeatingCar>,
+  ): Promise<ThsrFreeSeatingCars> {
+    const path = `/v2/Rail/THSR/DailyFreeSeatingCar/TrainDate/${trainDate(date)}`;
+    return this.object(path, query, 'static');
+  }
+
+  /**
+   * The trains of a day without their stops: number, direction, ends. Pass a train number
+   * first to get one train. Dates default to today in Taiwan. Cached with the static TTL.
+   * `GET /v2/Rail/THSR/DailyTrainInfo[/TrainNo/{TrainNo}]/TrainDate/{TrainDate}`
+   */
+  dailyTrainInfo(date?: Date | string, query?: QueryInput<ThsrTrainInfo>): Promise<ThsrTrainInfo[]>;
+  dailyTrainInfo(
+    trainNo: string,
+    date?: Date | string,
+    query?: QueryInput<ThsrTrainInfo>,
+  ): Promise<ThsrTrainInfo[]>;
+  dailyTrainInfo(
+    first?: Date | string,
+    second?: Date | string | QueryInput<ThsrTrainInfo>,
+    query?: QueryInput<ThsrTrainInfo>,
+  ): Promise<ThsrTrainInfo[]> {
+    const base = '/v2/Rail/THSR/DailyTrainInfo';
+    if (typeof first === 'string' && !/^\d{4}-\d{2}-\d{2}$/.test(first)) {
+      const date = second as Date | string | undefined;
+      const path = `${base}/TrainNo/${segment(first, 'trainNo')}/TrainDate/${trainDate(date)}`;
+      return this.list(path, query, 'static');
+    }
+    const q = second as QueryInput<ThsrTrainInfo> | undefined;
+    return this.list(`${base}/TrainDate/${trainDate(first)}`, q ?? query, 'static');
+  }
+
+  /**
+   * The line geometry as WKT: one item of about 1 MB. Cached with the static TTL.
+   * `GET /v2/Rail/THSR/Shape`
+   */
+  shapes(query?: QueryInput<ThsrShape>): Promise<ThsrShape[]> {
+    return this.list('/v2/Rail/THSR/Shape', query, 'static');
+  }
+
+  /**
+   * The 12 stations in line order with cumulative distance. Cached with the static TTL.
+   * `GET /v2/Rail/THSR/StationOfLine`
+   */
+  stationsOfLine(query?: QueryInput<ThsrStationOfLine>): Promise<ThsrStationOfLine[]> {
+    return this.list('/v2/Rail/THSR/StationOfLine', query, 'static');
   }
 }

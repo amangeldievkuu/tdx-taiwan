@@ -1,0 +1,23 @@
+{
+  "UpdateTime": "2026-10-22T07:22:49+08:00",
+  "UpdateInterval": 14400,
+  "SrcUpdateTime": "2026-10-22T04:00:00+08:00",
+  "SrcUpdateInterval": 86400,
+  "AuthorityCode": "TRA",
+  "Operators": [
+    {
+      "OperatorCode": "TRA",
+      "OperatorName": {
+        "Zh_tw": "國營臺灣鐵路股份有限公司",
+        "En": "Taiwan Railway Corporation,Ltd."
+      },
+      "OperatorPhone": "02-23815226",
+      "OperatorEmail": "0008256@railway.gov.tw",
+      "OperatorURL": "https://www.trc.com.tw/tra-tip-web/tip",
+      "FareURL": "https://www.trc.com.tw/tra-tip-web/tip/tip001/tip114/query",
+      "ReservationURL": "https://www.trc.com.tw/tra-tip-web/tip",
+      "ReservationPhone": "02-21910096",
+      "OperatorLogoURL": "https://www.trc.com.tw/tra-tip-web/static/images/logo-trc.png"
+    }
+  ]
+}

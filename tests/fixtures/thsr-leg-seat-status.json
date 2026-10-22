@@ -1,0 +1,71 @@
+{
+  "UpdateTime": "2026-10-22T10:02:04+08:00",
+  "SrcUpdateTime": "2026-10-22T10:00:02+08:00",
+  "TrainDate": "2026-10-22",
+  "AvailableSeats": [
+    {
+      "TrainNo": "0112",
+      "Direction": 1,
+      "StartingStationID": "1070",
+      "StartingStationCode": "ZUY",
+      "StartingStationName": {
+        "Zh_tw": "左營",
+        "En": "Zuoying",
+        "Ja": null,
+        "Ko": null
+      },
+      "EndingStationID": "0990",
+      "EndingStationCode": "NAK",
+      "EndingStationName": {
+        "Zh_tw": "南港",
+        "En": "Nangang",
+        "Ja": null,
+        "Ko": null
+      },
+      "StopStations": [
+        {
+          "StopSequence": 1,
+          "StationID": "1070",
+          "StationCode": "ZUY",
+          "StationName": {
+            "Zh_tw": "左營",
+            "En": "Zuoying",
+            "Ja": "左營",
+            "Ko": "쭤잉"
+          },
+          "NextStationID": "1040",
+          "NextStationCode": "TAC",
+          "NextStationName": {
+            "Zh_tw": "台中",
+            "En": "Taichung",
+            "Ja": "台中",
+            "Ko": "타이중"
+          },
+          "StandardSeatStatus": "O",
+          "BusinessSeatStatus": "O"
+        },
+        {
+          "StopSequence": 2,
+          "StationID": "1040",
+          "StationCode": "TAC",
+          "StationName": {
+            "Zh_tw": "台中",
+            "En": "Taichung",
+            "Ja": "台中",
+            "Ko": "타이중"
+          },
+          "NextStationID": "1010",
+          "NextStationCode": "BAC",
+          "NextStationName": {
+            "Zh_tw": "板橋",
+            "En": "Banqiao",
+            "Ja": "板橋",
+            "Ko": "반차오"
+          },
+          "StandardSeatStatus": "X",
+          "BusinessSeatStatus": "X"
+        }
+      ]
+    }
+  ]
+}

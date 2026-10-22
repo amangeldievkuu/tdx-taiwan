@@ -11,21 +11,34 @@ import type {
   MetroLivePosition,
   MetroLivePositionSystem,
   MetroLivePositions,
+  MetroNetwork,
+  MetroNetworkSystem,
   MetroNews,
   MetroNewsList,
   MetroNewsSystem,
   MetroODFare,
+  MetroPlatformSystem,
   MetroRoute,
+  MetroS2STravelTime,
+  MetroShape,
+  MetroShapeSystem,
   MetroStation,
   MetroStationExit,
   MetroStationFacility,
   MetroStationOfLine,
   MetroStationOfRoute,
+  MetroStationPlatform,
+  MetroStationPlatforms,
   MetroStationTimetable,
   MetroStationTransfer,
   MetroStationTransfers,
+  MetroStoppingPattern,
+  MetroStoppingPatternSystem,
+  MetroStoppingPatterns,
   MetroSystem,
   MetroTimetableSystem,
+  MetroTransferStation,
+  MetroTransferStationSystem,
 } from '../types/metro.js';
 import { type ListRequester, type ObjectRequester, type QueryInput, segment } from './requester.js';
 
@@ -225,6 +238,80 @@ export class MetroApi {
       `/v2/Rail/Metro/LivePosition/${segment(system, 'system')}`,
       query,
       'realtime',
+    );
+  }
+  /**
+   * The operator's network record: name, map URL and line list. Cached with the static TTL.
+   * `GET /v2/Rail/Metro/Network/{RailSystem}`
+   */
+  network(system: MetroNetworkSystem, query?: QueryInput<MetroNetwork>): Promise<MetroNetwork[]> {
+    return this.list(`/v2/Rail/Metro/Network/${segment(system, 'system')}`, query, 'static');
+  }
+
+  /**
+   * Run and dwell times between adjacent stations, per route. Cached with the static TTL.
+   * `GET /v2/Rail/Metro/S2STravelTime/{RailSystem}`
+   */
+  s2sTravelTime(
+    system: MetroSystem,
+    query?: QueryInput<MetroS2STravelTime>,
+  ): Promise<MetroS2STravelTime[]> {
+    return this.list(`/v2/Rail/Metro/S2STravelTime/${segment(system, 'system')}`, query, 'static');
+  }
+
+  /**
+   * Line geometries as WKT (about 16 KB per line). Cached with the static TTL.
+   * `GET /v2/Rail/Metro/Shape/{RailSystem}`
+   */
+  shapes(system: MetroShapeSystem, query?: QueryInput<MetroShape>): Promise<MetroShape[]> {
+    return this.list(`/v2/Rail/Metro/Shape/${segment(system, 'system')}`, query, 'static');
+  }
+
+  /**
+   * Platforms with direction and position. Only the Kaohsiung light rail (`KLRT`) publishes
+   * them. Returns an object; the query applies to its `StationPlatforms`. Cached with the
+   * static TTL. `GET /v2/Rail/Metro/StationPlatform/{RailSystem}`
+   */
+  stationPlatforms(
+    system: MetroPlatformSystem,
+    query?: QueryInput<MetroStationPlatform>,
+  ): Promise<MetroStationPlatforms> {
+    return this.object(
+      `/v2/Rail/Metro/StationPlatform/${segment(system, 'system')}`,
+      query,
+      'static',
+    );
+  }
+
+  /**
+   * Stopping patterns (普通車 / 直達車) with their stations. Only the Taoyuan airport line
+   * (`TYMC`) publishes them. Returns an object; the query applies to its `StoppingPatterns`.
+   * Cached with the static TTL. `GET /v2/Rail/Metro/StoppingPattern/{RailSystem}`
+   */
+  stoppingPatterns(
+    system: MetroStoppingPatternSystem,
+    query?: QueryInput<MetroStoppingPattern>,
+  ): Promise<MetroStoppingPatterns> {
+    return this.object(
+      `/v2/Rail/Metro/StoppingPattern/${segment(system, 'system')}`,
+      query,
+      'static',
+    );
+  }
+
+  /**
+   * Stations shared by two lines or systems (`BL07_Y16` = 板橋 on the 板南線 and the 環狀線).
+   * `system` is `TRTC_NTMC` or `KRTC`. Cached with the static TTL.
+   * `GET /v2/Rail/Metro/TransferStations/{RailSystem}`
+   */
+  transferStations(
+    system: MetroTransferStationSystem,
+    query?: QueryInput<MetroTransferStation>,
+  ): Promise<MetroTransferStation[]> {
+    return this.list(
+      `/v2/Rail/Metro/TransferStations/${segment(system, 'system')}`,
+      query,
+      'static',
     );
   }
 }

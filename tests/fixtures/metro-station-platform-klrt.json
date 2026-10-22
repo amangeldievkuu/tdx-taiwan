@@ -1,0 +1,34 @@
+{
+  "UpdateTime": "2024-07-17T00:00:00+08:00",
+  "UpdateInterval": 0,
+  "SrcUpdateTime": "2024-07-17T00:00:00+08:00",
+  "SrcUpdateInterval": 0,
+  "StationPlatforms": [
+    {
+      "StationID": "C1",
+      "PlatformID": "C1-1",
+      "PlatformName": {
+        "Zh_tw": "順行月台",
+        "En": "Clockwise Direction Platform"
+      },
+      "Direction": 0,
+      "PlatformPosition": {
+        "PositionLon": 120.324651,
+        "PositionLat": 22.604625
+      }
+    },
+    {
+      "StationID": "C1",
+      "PlatformID": "C1-2",
+      "PlatformName": {
+        "Zh_tw": "逆行月台",
+        "En": "Counterclockwise Direction Platform"
+      },
+      "Direction": 1,
+      "PlatformPosition": {
+        "PositionLon": 120.324651,
+        "PositionLat": 22.604625
+      }
+    }
+  ]
+}

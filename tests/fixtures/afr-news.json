@@ -1,0 +1,20 @@
+{
+  "UpdateTime": "2026-10-05T13:43:04+08:00",
+  "UpdateInterval": 120,
+  "SrcUpdateTime": "2026-10-05T13:43:04+08:00",
+  "SrcUpdateInterval": 86400,
+  "AuthorityCode": "AFR",
+  "Newses": [
+    {
+      "NewsID": "1",
+      "Language": 1,
+      "Title": "栩悅號/福森號主題遊程",
+      "NewsCategory": 1,
+      "Description": "<p>活動詳情，請參閱 <a href=\"https://event.liontravel.com/zh-tw/railtour/forest-railway/vivid\">栩悅號主題遊程</a>、<a href=\"https://event.liontravel.com/zh-tw/railtour/forest-railway/formosensis\">福森號主題遊程</a>。</p><p>&nbsp;</p>",
+      "StartTime": "2024-04-23T00:00:00+08:00",
+      "EndTime": "2034-04-23T00:00:00+08:00",
+      "PublishTime": "2024-04-24T12:17:54+08:00",
+      "UpdateTime": "2024-04-24T12:17:54+08:00"
+    }
+  ]
+}

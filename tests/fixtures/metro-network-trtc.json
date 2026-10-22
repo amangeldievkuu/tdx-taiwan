@@ -1,0 +1,40 @@
+[
+  {
+    "NetworkID": "TRTC-Network",
+    "NetworkName": {
+      "Zh_tw": "臺北捷運系統路網",
+      "En": "Taipei Metro Network"
+    },
+    "OperatorCode": "TRTC",
+    "OperatorName": {
+      "Zh_tw": "臺北大眾捷運股份有限公司",
+      "En": "Taipei Rapid Transit Corporation"
+    },
+    "NetworkMapURL": "https://web.metro.taipei/img/all/metrotaipeimap.jpg",
+    "Lines": [
+      {
+        "LineNo": "R",
+        "LineID": "R"
+      },
+      {
+        "LineNo": "O",
+        "LineID": "O"
+      },
+      {
+        "LineNo": "G",
+        "LineID": "G"
+      },
+      {
+        "LineNo": "BR",
+        "LineID": "BR"
+      },
+      {
+        "LineNo": "BL",
+        "LineID": "BL"
+      }
+    ],
+    "SrcUpdateTime": "2018-01-10T13:00:00+08:00",
+    "UpdateTime": "2018-07-25T10:00:00+08:00",
+    "VersionID": 1
+  }
+]

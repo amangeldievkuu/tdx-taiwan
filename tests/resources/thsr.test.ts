@@ -4,14 +4,19 @@ import {
   type ThsrAvailableSeat,
   type ThsrAvailableSeats,
   type ThsrDailyTimetable,
+  type ThsrFreeSeatingCars,
   type ThsrGeneralTimetable,
+  type ThsrLegSeatStatus,
   type ThsrNews,
+  type ThsrODSeatStatus,
   type ThsrODFare,
   type ThsrODTimetable,
   type ThsrStation,
   type ThsrStationExit,
+  type ThsrStationOfLine,
   type ThsrStationTimetable,
   type ThsrTrainDates,
+  type ThsrTrainInfo,
   TdxApiError,
   query,
   trainDate,
@@ -31,6 +36,11 @@ const stationTimetableFixture = loadFixture(
 const trainDatesFixture = loadFixture('thsr-train-dates.json') as ThsrTrainDates;
 const newsFixture = loadFixture('thsr-news.json') as ThsrNews[];
 const exitsFixture = loadFixture('thsr-station-exit.json') as ThsrStationExit[];
+const legSeatsFixture = loadFixture('thsr-leg-seat-status.json') as ThsrLegSeatStatus;
+const odSeatsFixture = loadFixture('thsr-od-seat-status.json') as ThsrODSeatStatus;
+const freeSeatingFixture = loadFixture('thsr-free-seating-car.json') as ThsrFreeSeatingCars;
+const trainInfoFixture = loadFixture('thsr-daily-train-info.json') as ThsrTrainInfo[];
+const stationsOfLineFixture = loadFixture('thsr-station-of-line.json') as ThsrStationOfLine[];
 
 describe('trainDate', () => {
   afterEach(() => {
@@ -322,5 +332,110 @@ describe('tdx.thsr timetables, train dates, news and exits', () => {
     expect(news[0]?.NewsCategory).toBe('營運資訊');
     expect(news[0]?.Description).toMatch(/^<style/);
     expect(exits[0]).toMatchObject({ StationID: '0990', ExitID: 'North Exit', Stair: true });
+  });
+});
+
+describe('tdx.thsr seat status, free seating, train info, shapes and stations of line', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('requests each endpoint as JSON, defaulting dates to today in Taiwan', async () => {
+    vi.useFakeTimers({ now: Date.parse('2026-10-21T16:30:00Z') }); // 2026-10-22 in Taipei
+    const objects = clientWithResponse({});
+    const lists = clientWithResponse([]);
+
+    await objects.tdx.thsr.legSeatStatus();
+    await objects.tdx.thsr.legSeatStatus('2026-10-25', { top: 1 });
+    await objects.tdx.thsr.odSeatStatus();
+    await objects.tdx.thsr.odSeatStatus(new Date('2026-10-24T03:00:00Z'));
+    await objects.tdx.thsr.odSeatStatus('1000', '1070');
+    await objects.tdx.thsr.odSeatStatus('1000', '1070', '2026-10-25', { top: 1 });
+    await objects.tdx.thsr.odSeatStatus('1000', '1070', undefined, '0803');
+    await objects.tdx.thsr.odSeatStatus('1000', '1070', '2026-10-25', '0803', { top: 1 });
+    await objects.tdx.thsr.freeSeatingCars();
+    await objects.tdx.thsr.freeSeatingCars('2026-10-25');
+    await lists.tdx.thsr.dailyTrainInfo();
+    await lists.tdx.thsr.dailyTrainInfo('2026-10-25', { top: 1 });
+    await lists.tdx.thsr.dailyTrainInfo('0803');
+    await lists.tdx.thsr.dailyTrainInfo('0803', '2026-10-25', { top: 1 });
+    await lists.tdx.thsr.shapes();
+    await lists.tdx.thsr.stationsOfLine();
+
+    const seats = '/AvailableSeatStatus/Train';
+    expect(objects.apiUrls).toEqual(
+      [
+        `${seats}/Leg/TrainDate/2026-10-22`,
+        `${seats}/Leg/TrainDate/2026-10-25?$top=1`,
+        `${seats}/OD/TrainDate/2026-10-22`,
+        `${seats}/OD/TrainDate/2026-10-24`,
+        `${seats}/OD/1000/to/1070/TrainDate/2026-10-22`,
+        `${seats}/OD/1000/to/1070/TrainDate/2026-10-25?$top=1`,
+        `${seats}/OD/1000/to/1070/TrainDate/2026-10-22/TrainNo/0803`,
+        `${seats}/OD/1000/to/1070/TrainDate/2026-10-25/TrainNo/0803?$top=1`,
+        '/DailyFreeSeatingCar/TrainDate/2026-10-22',
+        '/DailyFreeSeatingCar/TrainDate/2026-10-25',
+      ].map((p) => `${API}/v2/Rail/THSR${p}${p.includes('?') ? '&' : '?'}$format=JSON`),
+    );
+    expect(lists.apiUrls).toEqual(
+      [
+        '/DailyTrainInfo/TrainDate/2026-10-22',
+        '/DailyTrainInfo/TrainDate/2026-10-25?$top=1',
+        '/DailyTrainInfo/TrainNo/0803/TrainDate/2026-10-22',
+        '/DailyTrainInfo/TrainNo/0803/TrainDate/2026-10-25?$top=1',
+        '/Shape',
+        '/StationOfLine',
+      ].map((p) => `${API}/v2/Rail/THSR${p}${p.includes('?') ? '&' : '?'}$format=JSON`),
+    );
+    expect(() => objects.tdx.thsr.odSeatStatus('', '1070')).toThrow(TypeError);
+    expect(() => objects.tdx.thsr.odSeatStatus('1000', '1070', '2026/10/25')).toThrow(TypeError);
+    expect(() => lists.tdx.thsr.dailyTrainInfo(' ')).toThrow(TypeError);
+    await expect(lists.tdx.thsr.legSeatStatus()).rejects.toBeInstanceOf(TdxApiError);
+  });
+
+  it('parses the leg and OD seat boards and the free-seating cars', async () => {
+    const leg = await clientWithResponse(legSeatsFixture).tdx.thsr.legSeatStatus();
+    const od = await clientWithResponse(odSeatsFixture).tdx.thsr.odSeatStatus('1000', '0990');
+    const free = await clientWithResponse(freeSeatingFixture).tdx.thsr.freeSeatingCars();
+    expectTypeOf(leg).toEqualTypeOf<ThsrLegSeatStatus>();
+    expectTypeOf(od).toEqualTypeOf<ThsrODSeatStatus>();
+    expectTypeOf(free).toEqualTypeOf<ThsrFreeSeatingCars>();
+
+    expect(leg.TrainDate).toBe('2026-10-22');
+    const train = leg.AvailableSeats[0];
+    expect([train?.TrainNo, train?.StartingStationCode]).toEqual(['0112', 'ZUY']);
+    expect(
+      train?.StopStations.map((s) => [s.StationID, s.NextStationID, s.StandardSeatStatus]),
+    ).toEqual([
+      ['1070', '1040', 'O'],
+      ['1040', '1010', 'X'],
+    ]);
+    expect(od.UpdateInterval).toBe(600);
+    expect(od.AvailableSeats[0]).toMatchObject({
+      TrainNo: '0112',
+      OriginStationID: '1000',
+      DestinationStationID: '0990',
+      BusinessSeatStatus: 'O',
+    });
+    expect(free.FreeSeatingCars.map((c) => [c.TrainNo, c.CarConfig, c.Cars])).toEqual([
+      ['108', '3: 10-12', [10, 11, 12]],
+      ['109', '3: 10-12', [10, 11, 12]],
+    ]);
+  });
+
+  it('parses the daily train info and stations of line', async () => {
+    const trains = await clientWithResponse(trainInfoFixture).tdx.thsr.dailyTrainInfo();
+    const line = await clientWithResponse(stationsOfLineFixture).tdx.thsr.stationsOfLine();
+    expectTypeOf(trains).toEqualTypeOf<ThsrTrainInfo[]>();
+    expectTypeOf(line).toEqualTypeOf<ThsrStationOfLine[]>();
+
+    expect(trains.map((t) => [t.TrainNo, t.Direction, t.Overnight, t.VersionID])).toEqual([
+      ['0108', 1, false, 1],
+      ['0109', 0, false, 1],
+    ]);
+    expect(trains[0]?.Note).toEqual({});
+    expect(line[0]?.LineID).toBe('THSR');
+    expect(line[0]?.Stations).toHaveLength(12);
+    expect(line[0]?.Stations[1]).toMatchObject({ StationID: '1000', CumulativeDistance: 9.2 });
   });
 });

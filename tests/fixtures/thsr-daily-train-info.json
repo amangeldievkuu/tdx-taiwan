@@ -1,0 +1,46 @@
+[
+  {
+    "TrainNo": "0108",
+    "Direction": 1,
+    "StartingStationID": "1070",
+    "StartingStationName": {
+      "Zh_tw": "左營",
+      "En": "Zuoying",
+      "Ja": null,
+      "Ko": null
+    },
+    "EndingStationID": "0990",
+    "EndingStationName": {
+      "Zh_tw": "南港",
+      "En": "Nangang",
+      "Ja": null,
+      "Ko": null
+    },
+    "Note": {},
+    "Overnight": false,
+    "UpdateTime": "2026-09-24T02:37:15+08:00",
+    "VersionID": 1
+  },
+  {
+    "TrainNo": "0109",
+    "Direction": 0,
+    "StartingStationID": "0990",
+    "StartingStationName": {
+      "Zh_tw": "南港",
+      "En": "Nangang",
+      "Ja": null,
+      "Ko": null
+    },
+    "EndingStationID": "1070",
+    "EndingStationName": {
+      "Zh_tw": "左營",
+      "En": "Zuoying",
+      "Ja": null,
+      "Ko": null
+    },
+    "Note": {},
+    "Overnight": false,
+    "UpdateTime": "2026-09-24T02:37:15+08:00",
+    "VersionID": 1
+  }
+]

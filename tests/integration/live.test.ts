@@ -421,6 +421,42 @@ describe.skipIf(!hasCredentials)('live TDX API: ferries', () => {
   });
 });
 
+describe.skipIf(!hasCredentials)('live TDX API: rail leftovers', () => {
+  let tdx: TdxClient;
+
+  beforeAll(() => {
+    tdx = new TdxClient({
+      clientId: clientId ?? '',
+      clientSecret: clientSecret ?? '',
+      requestsPerSecond: 2,
+    });
+  });
+
+  it('metro.transferStations lists the Taipei / New Taipei shared stations', async () => {
+    const shared = await tdx.metro.transferStations('TRTC_NTMC', { top: 2 });
+    expect(shared.length).toBeGreaterThan(0);
+    expect(shared[0]?.TransferStationID).toMatch(/_/);
+  });
+
+  it('thsr.stationsOfLine returns the 12 stations in order', async () => {
+    const [line] = await tdx.thsr.stationsOfLine();
+    expect(line?.Stations.map((s) => s.Sequence)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+  });
+
+  it('tra.operators and rail.operators both know TRA', async () => {
+    const [tra, all] = await Promise.all([tdx.tra.operators(), tdx.rail.operators()]);
+    expect(tra.Operators[0]?.OperatorCode).toBe('TRA');
+    expect(all.some((o) => o.OperatorCode === 'TRA')).toBe(true);
+  });
+
+  it('afr.stations includes 嘉義 and 阿里山', async () => {
+    const stations = await tdx.afr.stations();
+    const ids = stations.Stations.map((s) => s.StationID);
+    expect(stations.AuthorityCode).toBe('AFR');
+    expect(ids).toEqual(expect.arrayContaining(['360', '378']));
+  });
+});
+
 describe.skipIf(hasCredentials)('live TDX API (skipped)', () => {
   it.skip('set TDX_CLIENT_ID and TDX_CLIENT_SECRET in .env to run the live tests', () => {});
 });

@@ -6,27 +6,35 @@ TRA methods use the TDX **v3** API. Stations have 4-digit IDs, e.g. `0900` 基�
 
 ## Methods
 
-| Method                                              | TDX endpoint                                                       | Returns                       |
-| --------------------------------------------------- | ------------------------------------------------------------------ | ----------------------------- |
-| `tdx.tra.stations(query?)`                          | `GET /v3/Rail/TRA/Station`                                         | `TraStations`                 |
-| `tdx.tra.timetable(from, to, date?, query?)`        | `GET /v3/Rail/TRA/DailyTrainTimetable/OD/{O}/to/{D}/{TrainDate}`   | `TraTimetable`                |
-| `tdx.tra.odFare(from, to, query?)`                  | `GET /v3/Rail/TRA/ODFare/{O}/to/{D}`                               | `TraODFares`                  |
-| `tdx.tra.liveBoard(station?, query?)`               | `GET /v3/Rail/TRA/StationLiveBoard[/Station/{StationID}]`          | `TraStationLiveBoards`        |
-| `tdx.tra.trainLiveBoard(trainNo?, query?)`          | `GET /v3/Rail/TRA/TrainLiveBoard[/TrainNo/{TrainNo}]`              | `TraTrainLiveBoards`          |
-| `tdx.tra.alerts(query?)`                            | `GET /v3/Rail/TRA/Alert`                                           | `TraAlerts`                   |
-| `tdx.tra.generalTimetable(trainNo?, query?)`        | `GET /v3/Rail/TRA/GeneralTrainTimetable[/TrainNo/{TrainNo}]`       | `TraGeneralTimetables`        |
-| `tdx.tra.generalStationTimetable(station?, query?)` | `GET /v3/Rail/TRA/GeneralStationTimetable[/Station/{StationID}]`   | `TraGeneralStationTimetables` |
-| `tdx.tra.dailyTimetable(date?, query?)`             | `GET /v3/Rail/TRA/DailyTrainTimetable/TrainDate/{TrainDate}`       | `TraTimetable`                |
-| `tdx.tra.trainTimetable(trainNo, query?)`           | `GET /v3/Rail/TRA/DailyTrainTimetable/Today/TrainNo/{TrainNo}`     | `TraTimetable`                |
-| `tdx.tra.stationTimetable(station, query?)`         | `GET /v3/Rail/TRA/DailyStationTimetable/Today/Station/{StationID}` | `TraStationTimetables`        |
-| `tdx.tra.dailyStationTimetable(date?, query?)`      | `GET /v3/Rail/TRA/DailyStationTimetable/TrainDate/{TrainDate}`     | `TraStationTimetables`        |
-| `tdx.tra.trainDates(query?)`                        | `GET /v3/Rail/TRA/DailyTrainTimetable/TrainDates`                  | `TraTrainDates`               |
-| `tdx.tra.lines(query?)`                             | `GET /v3/Rail/TRA/Line`                                            | `TraLines`                    |
-| `tdx.tra.stationsOfLine(query?)`                    | `GET /v3/Rail/TRA/StationOfLine`                                   | `TraStationOfLines`           |
-| `tdx.tra.trainTypes(query?)`                        | `GET /v3/Rail/TRA/TrainType`                                       | `TraTrainTypes`               |
-| `tdx.tra.stationExits(query?)`                      | `GET /v3/Rail/TRA/StationExit`                                     | `TraStationExits`             |
-| `tdx.tra.stationFacilities(query?)`                 | `GET /v3/Rail/TRA/StationFacility`                                 | `TraStationFacilities`        |
-| `tdx.tra.news(query?)`                              | `GET /v3/Rail/TRA/News`                                            | `TraNewsList`                 |
+| Method                                                | TDX endpoint                                                               | Returns                       |
+| ----------------------------------------------------- | -------------------------------------------------------------------------- | ----------------------------- |
+| `tdx.tra.stations(query?)`                            | `GET /v3/Rail/TRA/Station`                                                 | `TraStations`                 |
+| `tdx.tra.timetable(from, to, date?, query?)`          | `GET /v3/Rail/TRA/DailyTrainTimetable/OD/{O}/to/{D}/{TrainDate}`           | `TraTimetable`                |
+| `tdx.tra.odFare(from, to, query?)`                    | `GET /v3/Rail/TRA/ODFare/{O}/to/{D}`                                       | `TraODFares`                  |
+| `tdx.tra.liveBoard(station?, query?)`                 | `GET /v3/Rail/TRA/StationLiveBoard[/Station/{StationID}]`                  | `TraStationLiveBoards`        |
+| `tdx.tra.trainLiveBoard(trainNo?, query?)`            | `GET /v3/Rail/TRA/TrainLiveBoard[/TrainNo/{TrainNo}]`                      | `TraTrainLiveBoards`          |
+| `tdx.tra.alerts(query?)`                              | `GET /v3/Rail/TRA/Alert`                                                   | `TraAlerts`                   |
+| `tdx.tra.generalTimetable(trainNo?, query?)`          | `GET /v3/Rail/TRA/GeneralTrainTimetable[/TrainNo/{TrainNo}]`               | `TraGeneralTimetables`        |
+| `tdx.tra.generalStationTimetable(station?, query?)`   | `GET /v3/Rail/TRA/GeneralStationTimetable[/Station/{StationID}]`           | `TraGeneralStationTimetables` |
+| `tdx.tra.dailyTimetable(date?, query?)`               | `GET /v3/Rail/TRA/DailyTrainTimetable/TrainDate/{TrainDate}`               | `TraTimetable`                |
+| `tdx.tra.trainTimetable(trainNo, query?)`             | `GET /v3/Rail/TRA/DailyTrainTimetable/Today/TrainNo/{TrainNo}`             | `TraTimetable`                |
+| `tdx.tra.stationTimetable(station, query?)`           | `GET /v3/Rail/TRA/DailyStationTimetable/Today/Station/{StationID}`         | `TraStationTimetables`        |
+| `tdx.tra.dailyStationTimetable(date?, query?)`        | `GET /v3/Rail/TRA/DailyStationTimetable/TrainDate/{TrainDate}`             | `TraStationTimetables`        |
+| `tdx.tra.trainDates(query?)`                          | `GET /v3/Rail/TRA/DailyTrainTimetable/TrainDates`                          | `TraTrainDates`               |
+| `tdx.tra.lines(query?)`                               | `GET /v3/Rail/TRA/Line`                                                    | `TraLines`                    |
+| `tdx.tra.stationsOfLine(query?)`                      | `GET /v3/Rail/TRA/StationOfLine`                                           | `TraStationOfLines`           |
+| `tdx.tra.trainTypes(query?)`                          | `GET /v3/Rail/TRA/TrainType`                                               | `TraTrainTypes`               |
+| `tdx.tra.stationExits(query?)`                        | `GET /v3/Rail/TRA/StationExit`                                             | `TraStationExits`             |
+| `tdx.tra.stationFacilities(query?)`                   | `GET /v3/Rail/TRA/StationFacility`                                         | `TraStationFacilities`        |
+| `tdx.tra.news(query?)`                                | `GET /v3/Rail/TRA/News`                                                    | `TraNewsList`                 |
+| `tdx.tra.timetableInclusive(from, to, date?, query?)` | `GET /v3/Rail/TRA/DailyTrainTimetable/OD/Inclusive/{O}/to/{D}/{TrainDate}` | `TraTimetable`                |
+| `tdx.tra.specificTimetable(trainNo?, query?)`         | `GET /v3/Rail/TRA/SpecificTrainTimetable[/TrainNo/{TrainNo}]`              | `TraSpecificTimetables`       |
+| `tdx.tra.lineNetwork(query?)`                         | `GET /v3/Rail/TRA/LineNetwork`                                             | `TraLineNetworks`             |
+| `tdx.tra.lineTransfers(query?)`                       | `GET /v3/Rail/TRA/LineTransfer`                                            | `TraLineTransfers`            |
+| `tdx.tra.stationTransfers(query?)`                    | `GET /v3/Rail/TRA/StationTransfer`                                         | `TraStationTransfers`         |
+| `tdx.tra.network(query?)`                             | `GET /v3/Rail/TRA/Network`                                                 | `TraNetworks`                 |
+| `tdx.tra.operators(query?)`                           | `GET /v3/Rail/TRA/Operator`                                                | `TraOperators`                |
+| `tdx.tra.shapes(query?)`                              | `GET /v3/Rail/TRA/Shape`                                                   | `TraShapes`                   |
 
 ## Example
 
@@ -95,8 +103,15 @@ console.log(now?.StationName.Zh_tw, `${now?.DelayTime} min late`);
   empty `Description` and `MapName` strings.
 - `liveBoard()` and `trainLiveBoard()` without an argument return every station's board and every
   running train. `news()` is a wrapper (`Newses`) with `Language` as an integer and HTML in
-  `Description`. Not wrapped: specific (event) timetables, line and station transfers, network,
-  shape, operators, the `/v2/Rail/TRA/*` duplicates and the Alishan Forest Railway (`/v3/Rail/AFR/*`).
+  `Description`. `timetableInclusive(from, to, date)` is `timetable` with every intermediate stop included
+  (`StopSequence` keeps the train's own numbering); `specificTimetable(trainNo?)` lists holiday
+  and event extras with a `SpecialDay` (`StartDate` / `EndDate` as timestamps, `Dates: ""`).
+  Topology and transfers: `lineNetwork()` (segments with `M` main / `B` branch and kilometres),
+  `lineTransfers()` (junction stations, `TransferDescription` is often `""`), `stationTransfers()`
+  (buses, bikes, car parks, taxis and ferries per station, `ExitID: ""`), `network()` (whose
+  `NetworkMapURL` is an object with a URL per language), `operators()` and `shapes()` (WKT).
+  The `/v2/Rail/TRA/*` duplicates of these v3 feeds stay unwrapped; the Alishan Forest Railway
+  is [`tdx.afr`](./afr.md).
 
 ## See also
 
@@ -106,4 +121,4 @@ console.log(now?.StationName.Zh_tw, `${now?.DelayTime} min late`);
 
 ## 繁體中文
 
-臺鐵（TDX v3）：`tdx.tra.timetable('1000', '4400', '2026-10-22')` 查詢起迄站時刻表，另有 `stations`、`odFare`（票價，依車種**及行駛方向**區分：臺北→高雄自強號順向 371 公里 994 元，經東部環島方向 1286 元）、`liveBoard`（車站即時到離站，含月台與延誤分鐘）、`trainLiveBoard`（列車即時位置）與 `alerts`。回應皆為包裝物件，名稱欄位使用 `TraNameType`（韓文為 `Kr`）。時刻表另有 `dailyTimetable(date?)`（當日全部車次）、`trainTimetable(trainNo)`（僅當日）、`stationTimetable(station)`／`dailyStationTimetable(date?)`（站別時刻表）、`generalTimetable(trainNo?)`／`generalStationTimetable(station?)`（定期時刻表）與 `trainDates()`；參考資料 `lines`、`stationsOfLine`、`trainTypes`、`stationExits`、`stationFacilities`；`liveBoard()`／`trainLiveBoard()` 不帶參數可取得全部車站／列車；另有 `news()`。
+臺鐵（TDX v3）：`tdx.tra.timetable('1000', '4400', '2026-10-22')` 查詢起迄站時刻表，另有 `stations`、`odFare`（票價，依車種**及行駛方向**區分：臺北→高雄自強號順向 371 公里 994 元，經東部環島方向 1286 元）、`liveBoard`（車站即時到離站，含月台與延誤分鐘）、`trainLiveBoard`（列車即時位置）與 `alerts`。回應皆為包裝物件，名稱欄位使用 `TraNameType`（韓文為 `Kr`）。時刻表另有 `dailyTimetable(date?)`（當日全部車次）、`trainTimetable(trainNo)`（僅當日）、`stationTimetable(station)`／`dailyStationTimetable(date?)`（站別時刻表）、`generalTimetable(trainNo?)`／`generalStationTimetable(station?)`（定期時刻表）與 `trainDates()`；參考資料 `lines`、`stationsOfLine`、`trainTypes`、`stationExits`、`stationFacilities`；`liveBoard()`／`trainLiveBoard()` 不帶參數可取得全部車站／列車；另有 `news()`。其他：`timetableInclusive`（含中途停靠站）、`specificTimetable(trainNo?)`（特殊車次）、`lineNetwork`、`lineTransfers`、`stationTransfers`（跨運具轉乘）、`network`、`operators`、`shapes`（WKT）。阿里山林業鐵路見 `tdx.afr`。

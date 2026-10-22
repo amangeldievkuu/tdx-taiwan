@@ -1,0 +1,80 @@
+{
+  "UpdateTime": "2026-10-22T07:25:05+08:00",
+  "UpdateInterval": 14400,
+  "SrcUpdateTime": "2026-10-21T22:59:03+08:00",
+  "SrcUpdateInterval": -1,
+  "TrainDate": "2026-10-22",
+  "TrainTimetables": [
+    {
+      "TrainInfo": {
+        "TrainNo": "1007",
+        "RouteID": "",
+        "Direction": 1,
+        "TrainTypeID": "1132",
+        "TrainTypeCode": "10",
+        "TrainTypeName": {
+          "Zh_tw": "區間快",
+          "En": "Fast Local Train",
+          "Ja": "区間快",
+          "Kr": "구간콰이"
+        },
+        "TripHeadSign": "往鶯歌",
+        "StartingStationID": "0900",
+        "StartingStationName": {
+          "Zh_tw": "基隆",
+          "En": "Keelung",
+          "Ja": "基隆",
+          "Kr": "지롱"
+        },
+        "EndingStationID": "1070",
+        "EndingStationName": {
+          "Zh_tw": "鶯歌",
+          "En": "Yingge",
+          "Ja": "鶯歌",
+          "Kr": "잉거"
+        },
+        "OverNightStationID": "",
+        "TripLine": 0,
+        "WheelChairFlag": 0,
+        "PackageServiceFlag": 0,
+        "DiningFlag": 0,
+        "BreastFeedFlag": 0,
+        "BikeFlag": 0,
+        "CarFlag": 0,
+        "DailyFlag": 1,
+        "ExtraTrainFlag": 0,
+        "SuspendedFlag": 0,
+        "ServiceType": 1,
+        "Note": "每日行駛。"
+      },
+      "StopTimes": [
+        {
+          "StopSequence": 8,
+          "StationID": "1000",
+          "StationName": {
+            "Zh_tw": "臺北",
+            "En": "Taipei",
+            "Ja": "台北",
+            "Kr": "타이베이"
+          },
+          "ArrivalTime": "07:07",
+          "DepartureTime": "07:10",
+          "SuspendedFlag": 0
+        },
+        {
+          "StopSequence": 9,
+          "StationID": "1020",
+          "StationName": {
+            "Zh_tw": "板橋",
+            "En": "Banqiao",
+            "Ja": "板橋",
+            "Kr": "반차오"
+          },
+          "ArrivalTime": "07:17",
+          "DepartureTime": "07:18",
+          "SuspendedFlag": 0
+        }
+      ]
+    }
+  ]
+}

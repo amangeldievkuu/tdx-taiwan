@@ -126,6 +126,42 @@ describe('TdxClient response cache', () => {
     expect(apiUrls).toHaveLength(9); // only the three real-time requests repeat
   });
 
+  it('caches the rail leftovers and the rail and AFR resources as static, seat status and AFR news as real-time', async () => {
+    const lists = clientWithResponse([], { cache: true });
+    const objects = clientWithResponse({}, { cache: true });
+    const fetchAll = async () => {
+      await lists.tdx.metro.network('TRTC');
+      await lists.tdx.metro.shapes('TRTC');
+      await lists.tdx.metro.transferStations('TRTC_NTMC');
+      await lists.tdx.thsr.dailyTrainInfo('2026-10-22');
+      await lists.tdx.thsr.stationsOfLine();
+      await lists.tdx.rail.operators();
+      await lists.tdx.rail.odDistance('TRTC_NTMC');
+      await lists.tdx.rail.s2sDistance('THSR');
+      await objects.tdx.metro.stationPlatforms('KLRT');
+      await objects.tdx.metro.stoppingPatterns('TYMC');
+      await objects.tdx.thsr.legSeatStatus('2026-10-22');
+      await objects.tdx.thsr.odSeatStatus('2026-10-22');
+      await objects.tdx.thsr.freeSeatingCars('2026-10-22');
+      await objects.tdx.tra.timetableInclusive('1000', '1020', '2026-10-22');
+      await objects.tdx.tra.specificTimetable();
+      await objects.tdx.tra.lineNetwork();
+      await objects.tdx.tra.stationTransfers();
+      await objects.tdx.tra.operators();
+      await objects.tdx.rail.odFare('TRA', '臺北', '板橋');
+      await objects.tdx.afr.stations();
+      await objects.tdx.afr.generalTimetable();
+      await objects.tdx.afr.odFare('360', '378');
+      await objects.tdx.afr.news();
+    };
+    await fetchAll();
+    vi.advanceTimersByTime(15_000);
+    await fetchAll();
+
+    expect(lists.apiUrls).toHaveLength(8); // all static
+    expect(objects.apiUrls).toHaveLength(18); // 15 calls + the 3 real-time ones repeated
+  });
+
   it('caches the rail extras: timetables, station info and reference lists as static, news, positions and all-station boards as real-time', async () => {
     const lists = clientWithResponse([], { cache: true });
     const objects = clientWithResponse({}, { cache: true });

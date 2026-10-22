@@ -1,0 +1,47 @@
+{
+  "UpdateTime": "2026-10-22T07:22:48+08:00",
+  "UpdateInterval": 14400,
+  "SrcUpdateTime": "2026-10-22T07:22:48+08:00",
+  "SrcUpdateInterval": 86400,
+  "AuthorityCode": "AFR",
+  "StationOfRoutes": [
+    {
+      "LineNo": "M-1",
+      "LineID": "1",
+      "RouteID": "1",
+      "RouteName": {
+        "Zh_tw": "本線(嘉義-阿里山)"
+      },
+      "Direction": 0,
+      "Stations": [
+        {
+          "Sequence": 1,
+          "StationID": "360",
+          "StationName": {
+            "Zh_tw": "嘉義",
+            "En": "Chiayi"
+          },
+          "CumulativeDistance": 0
+        },
+        {
+          "Sequence": 2,
+          "StationID": "361",
+          "StationName": {
+            "Zh_tw": "北門",
+            "En": "Beimen"
+          },
+          "CumulativeDistance": 1.6
+        },
+        {
+          "Sequence": 3,
+          "StationID": "362",
+          "StationName": {
+            "Zh_tw": "鹿麻產",
+            "En": "Lumachan"
+          },
+          "CumulativeDistance": 10.8
+        }
+      ]
+    }
+  ]
+}

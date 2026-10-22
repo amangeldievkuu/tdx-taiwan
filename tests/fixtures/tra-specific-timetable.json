@@ -1,0 +1,98 @@
+{
+  "UpdateTime": "2026-10-20T09:32:53+08:00",
+  "UpdateInterval": 14400,
+  "SrcUpdateTime": "2026-10-19T20:36:26+08:00",
+  "SrcUpdateInterval": -1,
+  "EffectiveDate": "2026-07-01T00:00:00+08:00",
+  "ExpireDate": "2026-11-07T00:00:00+08:00",
+  "SrcVersion": "",
+  "TimetableName": "",
+  "ValidityDesciption": "",
+  "TrainTimetables": [
+    {
+      "TrainInfo": {
+        "TrainNo": "5148",
+        "RouteID": "",
+        "Direction": 0,
+        "TrainTypeID": "1107",
+        "TrainTypeCode": "2",
+        "TrainTypeName": {
+          "Zh_tw": "普悠瑪(普悠瑪)",
+          "En": "Puyuma Express",
+          "Ja": "普悠瑪",
+          "Kr": "푸여우마"
+        },
+        "TripHeadSign": "往南港",
+        "StartingStationID": "3360",
+        "StartingStationName": {
+          "Zh_tw": "彰化",
+          "En": "Changhua",
+          "Ja": "彰化",
+          "Kr": "짱화"
+        },
+        "EndingStationID": "0980",
+        "EndingStationName": {
+          "Zh_tw": "南港",
+          "En": "Nangang",
+          "Ja": "南港",
+          "Kr": "난강"
+        },
+        "OverNightStationID": "",
+        "TripLine": 1,
+        "WheelChairFlag": 1,
+        "PackageServiceFlag": 0,
+        "DiningFlag": 0,
+        "BreastFeedFlag": 1,
+        "BikeFlag": 0,
+        "CarFlag": 0,
+        "DailyFlag": 0,
+        "ExtraTrainFlag": 1,
+        "Note": "民國115年10月26日行駛。本班次不發售無座票，非持本班次車票旅客，請勿搭乘。"
+      },
+      "StopTimes": [
+        {
+          "StopSequence": 1,
+          "StationID": "3360",
+          "StationName": {
+            "Zh_tw": "彰化",
+            "En": "Changhua",
+            "Ja": "彰化",
+            "Kr": "짱화"
+          },
+          "ArrivalTime": "14:05",
+          "DepartureTime": "14:05"
+        },
+        {
+          "StopSequence": 2,
+          "StationID": "3300",
+          "StationName": {
+            "Zh_tw": "臺中",
+            "En": "Taichung",
+            "Ja": "台中",
+            "Kr": "타이종"
+          },
+          "ArrivalTime": "14:18",
+          "DepartureTime": "14:26"
+        },
+        {
+          "StopSequence": 3,
+          "StationID": "3230",
+          "StationName": {
+            "Zh_tw": "豐原",
+            "En": "Fengyuan",
+            "Ja": "豊原",
+            "Kr": "펑위엔"
+          },
+          "ArrivalTime": "14:34",
+          "DepartureTime": "14:36"
+        }
+      ],
+      "SpecialDay": {
+        "Dates": "",
+        "StartDate": "2026-10-26T00:00:00+08:00",
+        "EndDate": "2026-10-26T00:00:00+08:00",
+        "ServiceStatus": 1
+      }
+    }
+  ]
+}

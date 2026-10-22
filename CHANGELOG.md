@@ -6,6 +6,26 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-10-22
+
+### Added
+
+- `tdx.afr`: the Alishan Forest Railway (`/v3/Rail/AFR/*`) — `stations`, `lines`,
+  `stationsOfLine`, `routes`, `stationsOfRoute`, `network`, `shapes`, `operators`, `trainTypes`,
+  `generalTimetable(trainNo?)`, `odFare(from?, to?)` and `news`, with
+  `examples/alishan-timetable.ts`.
+- `tdx.rail`: the cross-system `/v2/Rail/*` feeds — `operators`, `odDistance(system, from?,
+to?)`, `odFare(system, from, to)` (by station name, Chinese labels) and `s2sDistance(system)`.
+- The remaining rail endpoints. Metro: `network`, `s2sTravelTime`, `shapes`,
+  `stationPlatforms` (KLRT), `stoppingPatterns` (TYMC) and `transferStations` (`TRTC_NTMC`,
+  `KRTC`). THSR: `legSeatStatus`, `odSeatStatus` (all pairs, one pair, one train),
+  `freeSeatingCars`, `dailyTrainInfo(trainNo?, date?)`, `shapes` and `stationsOfLine`. TRA:
+  `timetableInclusive`, `specificTimetable(trainNo?)`, `lineNetwork`, `lineTransfers`,
+  `stationTransfers`, `network`, `operators` and `shapes`. Every endpoint of the 軌道 v2 and v3
+  specs is now wrapped except the `/v2/Rail/TRA/*` duplicates of the v3 feeds. Types follow
+  live data (object `NetworkMapURL`, AFR's swapped route names and missing `TyphoonDay`,
+  plain-string names in the cross-system feeds).
+
 ## [0.14.0] - 2026-10-21
 
 ### Added
@@ -292,7 +312,8 @@ All notable changes to this project are documented here. The format is based on
   - CI runs the dist tests against each NestJS major and smoke-tests the packed tarball on
     Node 20, 22 and 24.
 
-[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.14.0...HEAD
+[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.15.0...HEAD
+[0.15.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.11.0...v0.12.0

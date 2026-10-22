@@ -666,3 +666,242 @@ export interface TraNewsList extends TraWrapperHeader {
   AuthorityCode: string;
   Newses: TraNews[];
 }
+
+/** Dates a special train runs (TRA.Common.SpecialDay). Live data sends timestamps and `Dates: ""`. */
+export interface TraSpecialDay {
+  /** Comma-separated non-consecutive dates, or `""`. */
+  Dates?: string | null;
+  StartDate?: string | null;
+  EndDate?: string | null;
+  /** 0 停止營運, 1 正常營運, 2 加班營運. */
+  ServiceStatus?: 0 | 1 | 2 | null;
+  Description?: string | null;
+}
+
+/** One special (event or holiday) train (SpecificTrainTimetable). */
+export interface TraSpecificTrainTimetable {
+  TrainInfo: TraGeneralTrainInfo;
+  StopTimes: TraGeneralStopTime[];
+  SpecialDay: TraSpecialDay;
+}
+
+/** Special train timetables — `GET /v3/Rail/TRA/SpecificTrainTimetable[/TrainNo/{TrainNo}]`. */
+export interface TraSpecificTimetables extends TraTimetableWrapperHeader {
+  TrainTimetables: TraSpecificTrainTimetable[];
+}
+
+/** Segment between two stations of a line (LineNetwork.LineSegment). */
+export interface TraLineSegment {
+  /** e.g. `2260-3350`. */
+  LineSegmentID: string;
+  LineSegmentName: TraNameType;
+  FromStationID: string;
+  ToStationID: string;
+  /** `M` main line, `B` branch. */
+  SegmentType: OpenString<'M' | 'B'>;
+  /** Kilometres. */
+  Distance: number;
+}
+
+/** Topology of a line (LineNetwork). */
+export interface TraLineNetwork {
+  LineID: string;
+  LineName: TraNameType;
+  LineSegments?: TraLineSegment[] | null;
+}
+
+/** Line topology — `GET /v3/Rail/TRA/LineNetwork`. */
+export interface TraLineNetworks extends TraWrapperHeader {
+  AuthorityCode: string;
+  LineNetworks: TraLineNetwork[];
+}
+
+/** Transfer between two lines at a station (TRA.LineTransfer). */
+export interface TraLineTransfer {
+  FromLineID: string;
+  FromLineName: TraNameType;
+  FromStationID: string;
+  FromStationName: TraNameType;
+  ToLineID: string;
+  ToLineName: TraNameType;
+  ToStationID: string;
+  ToStationName: TraNameType;
+  /** Minutes. */
+  MinTransferTime: number;
+  /** Often `""`. */
+  TransferDescription: string;
+}
+
+/** Line transfers — `GET /v3/Rail/TRA/LineTransfer`. */
+export interface TraLineTransfers extends TraWrapperHeader {
+  AuthorityCode: string;
+  LineTransfers: TraLineTransfer[];
+}
+
+/** Fields shared by the transfer kinds of a station (StationTransfer.*Transfer). */
+export interface TraTransferBase {
+  /** Transport mode code, e.g. `Car`, `Taxi`. */
+  Mode: string;
+  /** Minutes. */
+  MinTransferTime?: number | null;
+  FloorLevel?: string | null;
+  Description?: string | null;
+  IsOnSiteTransfer?: boolean | null;
+}
+
+/** Transfer to another rail system (StationTransfer.RailTransfer). */
+export interface TraRailTransfer extends TraTransferBase {
+  OperatorCode: string;
+  OperatorName: TraNameType;
+  StationID: string;
+  StationName: TraNameType;
+}
+
+/** Transfer to a bus route (StationTransfer.BusTransfer). */
+export interface TraBusTransfer extends TraTransferBase {
+  OperatorCode: string;
+  OperatorName: TraNameType;
+  RouteID: string;
+  RouteName: TraNameType;
+  StopID: string;
+  StopName: TraNameType;
+  Destination: string;
+  Platform?: string | null;
+}
+
+/** Transfer to an airport (StationTransfer.AirportTransfer). */
+export interface TraAirportTransfer extends TraTransferBase {
+  OperatorCode: string;
+  OperatorName: TraNameType;
+  AirportID: string;
+  AirportName: TraNameType;
+}
+
+/** Transfer to a public bike station (StationTransfer.BikeTransfer). */
+export interface TraBikeTransfer extends TraTransferBase {
+  OperatorCode: string;
+  OperatorName: TraNameType;
+  StationID: string;
+  StationName: TraNameType;
+}
+
+/** Transfer to a car park (StationTransfer.ParkingTransfer). */
+export interface TraParkingTransfer extends TraTransferBase {
+  CarParkID: string;
+  CarParkName: TraNameType;
+}
+
+/** Transfer to a taxi stand (StationTransfer.TaxiTransfer). */
+export interface TraTaxiTransfer extends TraTransferBase {
+  TaxiStopID?: string | null;
+  TaxiStopName: TraNameType;
+}
+
+/** Transfer to a ferry pier (StationTransfer.FerryTransfer). */
+export interface TraFerryTransfer extends TraTransferBase {
+  OperatorCode: string;
+  OperatorName: TraNameType;
+  FerryStationID?: string | null;
+  FerryStationName: TraNameType;
+}
+
+/** Transfers from one exit (StationTransfer.Transfer). Live data sends `ExitID: ""`. */
+export interface TraExitTransfer {
+  ExitID: string;
+  ExitName: string;
+  RailTransfers: TraRailTransfer[];
+  BusTransfers: TraBusTransfer[];
+  AirportTransfers: TraAirportTransfer[];
+  BikeTransfers: TraBikeTransfer[];
+  ParkingTransfers: TraParkingTransfer[];
+  TaxiTransfers: TraTaxiTransfer[];
+  FerryTransfers: TraFerryTransfer[];
+}
+
+/** Map link in a station transfer record (StationTransfer.MapURL). */
+export interface TraTransferMapURL {
+  MapName: string;
+  MapURL: string;
+  FloorLevel?: string | null;
+}
+
+/** Transfers to other modes at a station (StationTransfer). */
+export interface TraStationTransfer {
+  StationID: string;
+  StationName: TraNameType;
+  TransferDescription?: string | null;
+  InteriorMapURLs: TraTransferMapURL[];
+  ExteriorMapURLs: TraTransferMapURL[];
+  Transfers: TraExitTransfer[];
+}
+
+/** Station transfers — `GET /v3/Rail/TRA/StationTransfer`. */
+export interface TraStationTransfers extends TraWrapperHeader {
+  AuthorityCode: string;
+  StationTransfers: TraStationTransfer[];
+}
+
+/** Network map link (Network.NetworkMapURL): an object with a URL per language, not a string. */
+export interface TraNetworkMapURL {
+  MapName: string;
+  Zh_tw: string;
+  En?: string | null;
+}
+
+/** Line of a network (Network.Line). Live data sends only `LineID`. */
+export interface TraNetworkLine {
+  LineNo?: string | null;
+  LineID: string;
+}
+
+/** The operator's network (Network). */
+export interface TraNetwork {
+  /** e.g. `TRA-Network`. */
+  NetworkID: string;
+  NetworkName: TraNameType;
+  OperatorCode: string;
+  OperatorName: TraNameType;
+  NetworkMapURL: TraNetworkMapURL;
+  Lines: TraNetworkLine[];
+}
+
+/** Networks — `GET /v3/Rail/TRA/Network`. */
+export interface TraNetworks extends TraWrapperHeader {
+  AuthorityCode: string;
+  Networks: TraNetwork[];
+}
+
+/** Operator (TRA.Operator). */
+export interface TraOperator {
+  OperatorCode: string;
+  OperatorName: TraNameType;
+  OperatorPhone?: string | null;
+  OperatorEmail?: string | null;
+  OperatorURL?: string | null;
+  FareURL?: string | null;
+  ReservationURL?: string | null;
+  ReservationPhone?: string | null;
+  OperatorLogoURL?: string | null;
+}
+
+/** Operators — `GET /v3/Rail/TRA/Operator`. */
+export interface TraOperators extends TraWrapperHeader {
+  AuthorityCode: string;
+  Operators: TraOperator[];
+}
+
+/** Line geometry (TRA.Shape); `Geometry` is WKT (`LINESTRING` / `MULTILINESTRING`). */
+export interface TraShape {
+  /** e.g. `B-CZ`. */
+  LineNo: string;
+  LineID: string;
+  LineName: TraNameType;
+  Geometry: string;
+  UpdateTime: DateTimeString;
+}
+
+/** Shapes — `GET /v3/Rail/TRA/Shape`. Live data sends `UpdateInterval: -1`. */
+export interface TraShapes extends TraWrapperHeader {
+  AuthorityCode: string;
+  Shapes: TraShape[];
+}

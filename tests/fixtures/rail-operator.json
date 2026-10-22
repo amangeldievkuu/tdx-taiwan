@@ -1,0 +1,44 @@
+[
+  {
+    "ProviderID": "028",
+    "OperatorID": "KRTC",
+    "OperatorName": {
+      "Zh_tw": "高雄捷運股份有限公司",
+      "En": "Kaohsiung Rapid Transit Corporation"
+    },
+    "OperatorPhone": "(07)793-8888",
+    "OperatorUrl": "https://www.krtco.com.tw/",
+    "OperatorCode": "KRTC",
+    "AuthorityCode": "KRTC",
+    "OperatorNo": "5103",
+    "UpdateTime": "2020-07-28T00:00:00+08:00"
+  },
+  {
+    "ProviderID": "049",
+    "OperatorID": "NTMC",
+    "OperatorName": {
+      "Zh_tw": "新北大眾捷運股份有限公司",
+      "En": "New Taipei Metro Corporation"
+    },
+    "OperatorPhone": "(02)2805-9877",
+    "OperatorUrl": "https://www.ntmetro.com.tw/",
+    "OperatorCode": "NTMC",
+    "AuthorityCode": "NTMC",
+    "OperatorNo": "5104",
+    "UpdateTime": "2020-07-28T00:00:00+08:00"
+  },
+  {
+    "ProviderID": "050",
+    "OperatorID": "NTMC",
+    "OperatorName": {
+      "Zh_tw": "新北大眾捷運股份有限公司",
+      "En": "New Taipei Metro Corporation"
+    },
+    "OperatorPhone": "(02)2805-9877",
+    "OperatorUrl": "https://www.ntmetro.com.tw/",
+    "OperatorCode": "NTMC",
+    "AuthorityCode": "NTMC",
+    "OperatorNo": "5104",
+    "UpdateTime": "2020-07-28T00:00:00+08:00"
+  }
+]

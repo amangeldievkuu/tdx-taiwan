@@ -1,0 +1,24 @@
+[
+  {
+    "Origin": {
+      "StationID": "BL01",
+      "StationName": "頂埔"
+    },
+    "Destination": {
+      "StationID": "BL02",
+      "StationName": "永寧"
+    },
+    "Distance": 1.95
+  },
+  {
+    "Origin": {
+      "StationID": "BL01",
+      "StationName": "頂埔"
+    },
+    "Destination": {
+      "StationID": "BL03",
+      "StationName": "土城"
+    },
+    "Distance": 3.06
+  }
+]

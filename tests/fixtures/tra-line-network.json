@@ -1,0 +1,60 @@
+{
+  "UpdateTime": "2026-10-22T07:22:49+08:00",
+  "UpdateInterval": 14400,
+  "SrcUpdateTime": "2026-10-22T04:00:00+08:00",
+  "SrcUpdateInterval": 86400,
+  "AuthorityCode": "TRA",
+  "LineNetworks": [
+    {
+      "LineID": "CZ",
+      "LineName": {
+        "Zh_tw": "成追線",
+        "En": "Chengzhui Line"
+      },
+      "LineSegments": [
+        {
+          "LineSegmentID": "2260-3350",
+          "LineSegmentName": {
+            "Zh_tw": "追分-成功",
+            "En": "Zhuifen - Chenggong"
+          },
+          "FromStationID": "2260",
+          "ToStationID": "3350",
+          "SegmentType": "B",
+          "Distance": 2.2
+        }
+      ]
+    },
+    {
+      "LineID": "EL",
+      "LineName": {
+        "Zh_tw": "東部幹線",
+        "En": "Eastern Main Line"
+      },
+      "LineSegments": [
+        {
+          "LineSegmentID": "6000-6010",
+          "LineSegmentName": {
+            "Zh_tw": "臺東-山里",
+            "En": "Taitung - Shanli"
+          },
+          "FromStationID": "6000",
+          "ToStationID": "6010",
+          "SegmentType": "M",
+          "Distance": 8.2
+        },
+        {
+          "LineSegmentID": "6010-6020",
+          "LineSegmentName": {
+            "Zh_tw": "山里-鹿野",
+            "En": "Shanli - Luye"
+          },
+          "FromStationID": "6010",
+          "ToStationID": "6020",
+          "SegmentType": "M",
+          "Distance": 6.1
+        }
+      ]
+    }
+  ]
+}

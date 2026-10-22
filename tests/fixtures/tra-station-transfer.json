@@ -1,0 +1,93 @@
+{
+  "UpdateTime": "2026-10-22T07:22:49+08:00",
+  "UpdateInterval": 14400,
+  "SrcUpdateTime": "2026-10-22T04:00:00+08:00",
+  "SrcUpdateInterval": -1,
+  "AuthorityCode": "TRA",
+  "StationTransfers": [
+    {
+      "StationID": "3390",
+      "StationName": {
+        "Zh_tw": "員林",
+        "En": "Yuanlin",
+        "Ja": "員林",
+        "Kr": "위엔린"
+      },
+      "InteriorMapURLs": [
+        {
+          "MapName": "無障礙通道 ",
+          "MapURL": "https://www.trc.com.tw/tra-tip-web/tip/img/15370298-dc46-4dfb-8ec3-d56f33b0180b",
+          "FloorLevel": ""
+        },
+        {
+          "MapName": "一樓大廳",
+          "MapURL": "https://www.trc.com.tw/tra-tip-web/tip/img/a29363eb-7bbb-45db-b238-dc55a515c417",
+          "FloorLevel": ""
+        },
+        {
+          "MapName": "二樓候車區",
+          "MapURL": "https://www.trc.com.tw/tra-tip-web/tip/img/eb33e393-b1df-4b0e-b207-8e49ea394154",
+          "FloorLevel": ""
+        },
+        {
+          "MapName": "三樓月台",
+          "MapURL": "https://www.trc.com.tw/tra-tip-web/tip/img/b43fb47f-c6d0-4d4e-9acf-d95adac21d9e",
+          "FloorLevel": ""
+        }
+      ],
+      "ExteriorMapURLs": [
+        {
+          "MapName": "計程車",
+          "MapURL": "https://www.trc.com.tw/tra-tip-web/tip/img/",
+          "FloorLevel": "1"
+        },
+        {
+          "MapName": "公共自行車",
+          "MapURL": "https://www.trc.com.tw/tra-tip-web/tip/img/",
+          "FloorLevel": "1"
+        },
+        {
+          "MapName": "停車場",
+          "MapURL": "https://www.trc.com.tw/tra-tip-web/tip/img/",
+          "FloorLevel": "1"
+        },
+        {
+          "MapName": "公路運輸",
+          "MapURL": "https://www.trc.com.tw/tra-tip-web/tip/img/",
+          "FloorLevel": "1"
+        }
+      ],
+      "Transfers": [
+        {
+          "ExitID": "",
+          "ExitName": "",
+          "RailTransfers": [],
+          "BusTransfers": [],
+          "AirportTransfers": [],
+          "BikeTransfers": [],
+          "ParkingTransfers": [
+            {
+              "Mode": "Car",
+              "CarParkID": "445e85e7c2d74d42b1120d34a42f9aa2",
+              "CarParkName": {
+                "Zh_tw": "員林車站停車場"
+              },
+              "Description": "51041彰化縣員林市民權街 55 號"
+            }
+          ],
+          "TaxiTransfers": [
+            {
+              "Mode": "Taxi",
+              "TaxiStopID": "8ce1744e94b849acbb11ca8665bcd693",
+              "TaxiStopName": {
+                "Zh_tw": "員林車站計程車候車處"
+              },
+              "Description": "51041彰化縣員林市民權街 55 號"
+            }
+          ],
+          "FerryTransfers": []
+        }
+      ]
+    }
+  ]
+}

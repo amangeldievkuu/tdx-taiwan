@@ -1,0 +1,53 @@
+{
+  "UpdateTime": "2026-10-22T07:22:48+08:00",
+  "UpdateInterval": 14400,
+  "SrcUpdateTime": "2026-10-22T07:22:48+08:00",
+  "SrcUpdateInterval": 86400,
+  "AuthorityCode": "AFR",
+  "Routes": [
+    {
+      "LineNo": "M-1",
+      "LineID": "1",
+      "RouteID": "1",
+      "OperatorCode": "AFR",
+      "RouteName": {
+        "Zh_tw": "本線(嘉義-阿里山)",
+        "En": "Main Line(Chiayi-Alishan)"
+      },
+      "RouteType": 36,
+      "StartStationID": "360",
+      "StartStationName": {
+        "Zh_tw": "Chiayi",
+        "En": "嘉義"
+      },
+      "EndStationID": "378",
+      "EndStationName": {
+        "Zh_tw": "Alishan",
+        "En": "阿里山"
+      },
+      "RouteURL": "https://afrch.forest.gov.tw/0000115"
+    },
+    {
+      "LineNo": "B-2",
+      "LineID": "2",
+      "RouteID": "2",
+      "OperatorCode": "AFR",
+      "RouteName": {
+        "Zh_tw": "祝山線",
+        "En": "Zhushan Line"
+      },
+      "RouteType": 36,
+      "StartStationID": "378",
+      "StartStationName": {
+        "Zh_tw": "Alishan",
+        "En": "阿里山"
+      },
+      "EndStationID": "381",
+      "EndStationName": {
+        "Zh_tw": "Zhushan",
+        "En": "祝山"
+      },
+      "RouteURL": "https://afrch.forest.gov.tw/0000300"
+    }
+  ]
+}

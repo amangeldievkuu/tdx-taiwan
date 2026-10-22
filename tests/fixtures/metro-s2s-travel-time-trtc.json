@@ -1,0 +1,138 @@
+[
+  {
+    "LineNo": "BL",
+    "LineID": "BL",
+    "RouteID": "BL-1",
+    "TrainType": 1,
+    "TravelTimes": [
+      {
+        "Sequence": 1,
+        "FromStationID": "BL23",
+        "FromStationName": {
+          "Zh_tw": "南港展覽館",
+          "En": "Taipei Nangang Exhibition Center",
+          "Ja": "南港展覧館",
+          "Ko": "난강 전람관"
+        },
+        "ToStationID": "BL22",
+        "ToStationName": {
+          "Zh_tw": "南港",
+          "En": "Nangang",
+          "Ja": "南港",
+          "Ko": "난강"
+        },
+        "RunTime": 112,
+        "StopTime": 0
+      },
+      {
+        "Sequence": 2,
+        "FromStationID": "BL22",
+        "FromStationName": {
+          "Zh_tw": "南港",
+          "En": "Nangang",
+          "Ja": "南港",
+          "Ko": "난강"
+        },
+        "ToStationID": "BL21",
+        "ToStationName": {
+          "Zh_tw": "昆陽",
+          "En": "Kunyang",
+          "Ja": "昆陽",
+          "Ko": "쿤양"
+        },
+        "RunTime": 109,
+        "StopTime": 24
+      },
+      {
+        "Sequence": 3,
+        "FromStationID": "BL21",
+        "FromStationName": {
+          "Zh_tw": "昆陽",
+          "En": "Kunyang",
+          "Ja": "昆陽",
+          "Ko": "쿤양"
+        },
+        "ToStationID": "BL20",
+        "ToStationName": {
+          "Zh_tw": "後山埤",
+          "En": "Houshanpi",
+          "Ja": "後山埤",
+          "Ko": "허우산피"
+        },
+        "RunTime": 107,
+        "StopTime": 25
+      }
+    ],
+    "SrcUpdateTime": "2020-01-31T14:00:00+08:00",
+    "UpdateTime": "2020-05-20T12:00:00+08:00",
+    "VersionID": 2
+  },
+  {
+    "LineNo": "BL",
+    "LineID": "BL",
+    "RouteID": "BL-2",
+    "TrainType": 1,
+    "TravelTimes": [
+      {
+        "Sequence": 1,
+        "FromStationID": "BL23",
+        "FromStationName": {
+          "Zh_tw": "南港展覽館",
+          "En": "Taipei Nangang Exhibition Center",
+          "Ja": "南港展覧館",
+          "Ko": "난강 전람관"
+        },
+        "ToStationID": "BL22",
+        "ToStationName": {
+          "Zh_tw": "南港",
+          "En": "Nangang",
+          "Ja": "南港",
+          "Ko": "난강"
+        },
+        "RunTime": 112,
+        "StopTime": 0
+      },
+      {
+        "Sequence": 2,
+        "FromStationID": "BL22",
+        "FromStationName": {
+          "Zh_tw": "南港",
+          "En": "Nangang",
+          "Ja": "南港",
+          "Ko": "난강"
+        },
+        "ToStationID": "BL21",
+        "ToStationName": {
+          "Zh_tw": "昆陽",
+          "En": "Kunyang",
+          "Ja": "昆陽",
+          "Ko": "쿤양"
+        },
+        "RunTime": 109,
+        "StopTime": 24
+      },
+      {
+        "Sequence": 3,
+        "FromStationID": "BL21",
+        "FromStationName": {
+          "Zh_tw": "昆陽",
+          "En": "Kunyang",
+          "Ja": "昆陽",
+          "Ko": "쿤양"
+        },
+        "ToStationID": "BL20",
+        "ToStationName": {
+          "Zh_tw": "後山埤",
+          "En": "Houshanpi",
+          "Ja": "後山埤",
+          "Ko": "허우산피"
+        },
+        "RunTime": 107,
+        "StopTime": 25
+      }
+    ],
+    "SrcUpdateTime": "2020-01-31T14:00:00+08:00",
+    "UpdateTime": "2020-05-20T12:00:00+08:00",
+    "VersionID": 2
+  }
+]

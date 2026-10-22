@@ -3,15 +3,22 @@ import {
   type TraAlerts,
   type TraGeneralStationTimetables,
   type TraGeneralTimetables,
+  type TraLineNetworks,
+  type TraLineTransfers,
   type TraLines,
+  type TraNetworks,
   type TraNewsList,
   type TraODFares,
+  type TraOperators,
+  type TraShapes,
+  type TraSpecificTimetables,
   type TraStationLiveBoard,
   type TraStationExits,
   type TraStationFacilities,
   type TraStationLiveBoards,
   type TraStationOfLines,
   type TraStationTimetables,
+  type TraStationTransfers,
   type TraStations,
   type TraTimetable,
   type TraTrainDates,
@@ -42,6 +49,14 @@ const exitsFixture = loadFixture('tra-station-exit.json') as TraStationExits;
 const facilitiesFixture = loadFixture('tra-station-facility.json') as TraStationFacilities;
 const newsFixture = loadFixture('tra-news.json') as TraNewsList;
 const allLiveBoardsFixture = loadFixture('tra-station-live-board-all.json') as TraStationLiveBoards;
+const inclusiveFixture = loadFixture('tra-timetable-inclusive.json') as TraTimetable;
+const specificFixture = loadFixture('tra-specific-timetable.json') as TraSpecificTimetables;
+const lineNetworkFixture = loadFixture('tra-line-network.json') as TraLineNetworks;
+const lineTransfersFixture = loadFixture('tra-line-transfer.json') as TraLineTransfers;
+const stationTransfersFixture = loadFixture('tra-station-transfer.json') as TraStationTransfers;
+const networkFixture = loadFixture('tra-network.json') as TraNetworks;
+const operatorsFixture = loadFixture('tra-operator.json') as TraOperators;
+const shapesFixture = loadFixture('tra-shape.json') as TraShapes;
 
 describe('tdx.tra paths', () => {
   afterEach(() => {
@@ -390,5 +405,144 @@ describe('tdx.tra timetables, reference lists, station info and news', () => {
       ['1230', '2544'],
       [expect.any(String), expect.any(String)],
     ]);
+  });
+});
+
+describe('tdx.tra inclusive and special timetables, topology, transfers, operators and shapes', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('requests each endpoint as JSON, defaulting dates to today in Taiwan', async () => {
+    vi.useFakeTimers({ now: Date.parse('2026-10-21T16:30:00Z') }); // 2026-10-22 in Taipei
+    const { tdx, apiUrls } = clientWithResponse({});
+
+    await tdx.tra.timetableInclusive('1000', '1020');
+    await tdx.tra.timetableInclusive('1000', '1020', '2026-10-25', { top: 1 });
+    await tdx.tra.specificTimetable();
+    await tdx.tra.specificTimetable({ top: 1 });
+    await tdx.tra.specificTimetable('5148');
+    await tdx.tra.lineNetwork();
+    await tdx.tra.lineTransfers();
+    await tdx.tra.stationTransfers({ top: 1 });
+    await tdx.tra.network();
+    await tdx.tra.operators();
+    await tdx.tra.shapes();
+
+    expect(apiUrls).toEqual(
+      [
+        '/DailyTrainTimetable/OD/Inclusive/1000/to/1020/2026-10-22',
+        '/DailyTrainTimetable/OD/Inclusive/1000/to/1020/2026-10-25?$top=1',
+        '/SpecificTrainTimetable',
+        '/SpecificTrainTimetable?$top=1',
+        '/SpecificTrainTimetable/TrainNo/5148',
+        '/LineNetwork',
+        '/LineTransfer',
+        '/StationTransfer?$top=1',
+        '/Network',
+        '/Operator',
+        '/Shape',
+      ].map((p) => `${API}/v3/Rail/TRA${p}${p.includes('?') ? '&' : '?'}$format=JSON`),
+    );
+    expect(() => tdx.tra.timetableInclusive('', '1020')).toThrow(TypeError);
+    expect(() => tdx.tra.timetableInclusive('1000', '1020', 'tomorrow')).toThrow(TypeError);
+    expect(() => tdx.tra.specificTimetable(' ')).toThrow(TypeError);
+    await expect(clientWithResponse([]).tdx.tra.network()).rejects.toBeInstanceOf(TdxApiError);
+  });
+
+  it('parses the inclusive and special timetables', async () => {
+    const inclusive = await clientWithResponse(inclusiveFixture).tdx.tra.timetableInclusive(
+      '1000',
+      '1020',
+    );
+    const special = await clientWithResponse(specificFixture).tdx.tra.specificTimetable('5148');
+    expectTypeOf(inclusive).toEqualTypeOf<TraTimetable>();
+    expectTypeOf(special).toEqualTypeOf<TraSpecificTimetables>();
+
+    expect(inclusive.TrainDate).toBe('2026-10-22');
+    expect(inclusive.TrainTimetables?.[0]?.TrainInfo.TrainNo).toBe('1007');
+    expect(
+      inclusive.TrainTimetables?.[0]?.StopTimes.map((s) => [s.StopSequence, s.StationID]),
+    ).toEqual([
+      [8, '1000'],
+      [9, '1020'],
+    ]);
+    expect([special.ExpireDate, special.SrcVersion, special.ValidityDesciption]).toEqual([
+      '2026-11-07T00:00:00+08:00',
+      '',
+      '',
+    ]);
+    const train = special.TrainTimetables[0];
+    expect(train?.TrainInfo).toMatchObject({ TrainNo: '5148', ExtraTrainFlag: 1 });
+    expect(train?.SpecialDay).toEqual({
+      Dates: '',
+      StartDate: '2026-10-26T00:00:00+08:00',
+      EndDate: '2026-10-26T00:00:00+08:00',
+      ServiceStatus: 1,
+    });
+    expect(train?.StopTimes.map((s) => s.StationID)).toEqual(['3360', '3300', '3230']);
+  });
+
+  it('parses the line network, transfers, network, operators and shapes', async () => {
+    const lineNetwork = await clientWithResponse(lineNetworkFixture).tdx.tra.lineNetwork();
+    const lineTransfers = await clientWithResponse(lineTransfersFixture).tdx.tra.lineTransfers();
+    const stationTransfers =
+      await clientWithResponse(stationTransfersFixture).tdx.tra.stationTransfers();
+    const network = await clientWithResponse(networkFixture).tdx.tra.network();
+    const operators = await clientWithResponse(operatorsFixture).tdx.tra.operators();
+    const shapes = await clientWithResponse(shapesFixture).tdx.tra.shapes();
+    expectTypeOf(lineNetwork).toEqualTypeOf<TraLineNetworks>();
+    expectTypeOf(lineTransfers).toEqualTypeOf<TraLineTransfers>();
+    expectTypeOf(stationTransfers).toEqualTypeOf<TraStationTransfers>();
+    expectTypeOf(network).toEqualTypeOf<TraNetworks>();
+    expectTypeOf(operators).toEqualTypeOf<TraOperators>();
+    expectTypeOf(shapes).toEqualTypeOf<TraShapes>();
+
+    expect(
+      lineNetwork.LineNetworks.map((l) => [
+        l.LineID,
+        l.LineSegments?.map((s) => [s.LineSegmentID, s.SegmentType, s.Distance]),
+      ]),
+    ).toEqual([
+      ['CZ', [['2260-3350', 'B', 2.2]]],
+      [
+        'EL',
+        [
+          ['6000-6010', 'M', 8.2],
+          ['6010-6020', 'M', 6.1],
+        ],
+      ],
+    ]);
+    expect(
+      lineTransfers.LineTransfers.map((t) => [
+        t.FromLineID,
+        t.ToLineID,
+        t.MinTransferTime,
+        t.TransferDescription,
+      ]),
+    ).toEqual([
+      ['WL', 'JJ', 3, ''],
+      ['SL', 'EL', 3, ''],
+    ]);
+    const station = stationTransfers.StationTransfers[0];
+    expect(station?.StationID).toBe('3390');
+    expect(station?.InteriorMapURLs).toHaveLength(4);
+    expect(station?.Transfers[0]?.ExitID).toBe('');
+    expect(station?.Transfers[0]?.ParkingTransfers[0]).toMatchObject({
+      Mode: 'Car',
+      CarParkName: { Zh_tw: '員林車站停車場' },
+    });
+    expect(station?.Transfers[0]?.FerryTransfers).toEqual([]);
+    const net = network.Networks[0];
+    expect(net?.NetworkID).toBe('TRA-Network');
+    expect(net?.NetworkMapURL.MapName).toBe('臺灣鐵路營運路網');
+    expect(net?.NetworkMapURL.Zh_tw).toMatch(/^https:\/\/www\.trc\.com\.tw\//);
+    expect(net?.Lines).toHaveLength(12);
+    expect(net?.Lines[0]).toEqual({ LineID: 'CZ' });
+    expect(operators.Operators[0]?.OperatorCode).toBe('TRA');
+    expect(operators.Operators[0]?.OperatorLogoURL).toMatch(/^https:/);
+    expect(shapes.UpdateInterval).toBe(-1);
+    expect(shapes.Shapes[0]?.LineID).toBe('CZ');
+    expect(shapes.Shapes[0]?.Geometry).toMatch(/^LINESTRING \(/);
   });
 });

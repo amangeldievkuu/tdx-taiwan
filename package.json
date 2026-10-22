@@ -93,6 +93,7 @@
     "example:metro": "tsx examples/next-metro-train.ts",
     "example:thsr": "tsx examples/thsr-trains.ts",
     "example:tra": "tsx examples/tra-trains.ts",
+    "example:afr": "tsx examples/alishan-timetable.ts",
     "example:parking": "tsx examples/nearest-parking.ts",
     "example:ev": "tsx examples/nearest-ev-charger.ts",
     "example:flights": "tsx examples/flight-board.ts",

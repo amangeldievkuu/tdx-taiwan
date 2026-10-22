@@ -1,0 +1,52 @@
+{
+  "Origin": {
+    "StationID": "BL07",
+    "StationName": "板橋"
+  },
+  "Destination": {
+    "StationID": "BL11",
+    "StationName": "西門"
+  },
+  "ODFares": [
+    {
+      "TrainType": "",
+      "Direction": "",
+      "TicketType": "一般票(單程票)",
+      "FareClass": "成人",
+      "CabinClass": "",
+      "Price": 25
+    },
+    {
+      "TrainType": "",
+      "Direction": "",
+      "TicketType": "一般票(單程票)",
+      "FareClass": "孩童",
+      "CabinClass": "",
+      "Price": 10
+    },
+    {
+      "TrainType": "",
+      "Direction": "",
+      "TicketType": "一般票(單程票)",
+      "FareClass": "敬老",
+      "CabinClass": "",
+      "Price": 10
+    },
+    {
+      "TrainType": "",
+      "Direction": "",
+      "TicketType": "一般票(單程票)",
+      "FareClass": "愛心",
+      "CabinClass": "",
+      "Price": 10
+    },
+    {
+      "TrainType": "",
+      "Direction": "",
+      "TicketType": "一般票(單程票)",
+      "FareClass": "愛心優待/愛心陪伴",
+      "CabinClass": "",
+      "Price": 10
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+[
+  {
+    "SystemID": "TRTC_NTMC",
+    "TransferStationID": "BL07_Y16",
+    "Stations": [
+      {
+        "StationID": "BL07",
+        "StationName": "板橋"
+      },
+      {
+        "StationID": "Y16",
+        "StationName": "板橋"
+      }
+    ]
+  },
+  {
+    "SystemID": "TRTC_NTMC",
+    "TransferStationID": "BL11_G12",
+    "Stations": [
+      {
+        "StationID": "BL11",
+        "StationName": "西門"
+      },
+      {
+        "StationID": "G12",
+        "StationName": "西門"
+      }
+    ]
+  }
+]

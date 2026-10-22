@@ -27,6 +27,8 @@ export {
 export { MetroApi } from './resources/metro.js';
 export { ThsrApi } from './resources/thsr.js';
 export { TraApi } from './resources/tra.js';
+export { AfrApi } from './resources/afr.js';
+export { RailApi } from './resources/rail.js';
 export { ParkingApi } from './resources/parking.js';
 export { EvApi, EvFreewayApi } from './resources/ev.js';
 export { AirApi } from './resources/air.js';
@@ -45,6 +47,8 @@ export type * from './types/bus.js';
 export type * from './types/metro.js';
 export type * from './types/thsr.js';
 export type * from './types/tra.js';
+export type * from './types/afr.js';
+export type * from './types/rail.js';
 export type * from './types/parking.js';
 export type * from './types/ev.js';
 export type * from './types/air.js';

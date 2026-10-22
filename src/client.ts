@@ -5,12 +5,14 @@ import { TdxApiError } from './errors.js';
 import { HttpClient, type TdxHooks } from './http/http-client.js';
 import { RateLimiter } from './http/rate-limiter.js';
 import { type ODataOptions, ODataQuery } from './odata/query-builder.js';
+import { AfrApi } from './resources/afr.js';
 import { AirApi } from './resources/air.js';
 import { BikeApi } from './resources/bike.js';
 import { BusApi } from './resources/bus.js';
 import { EvApi } from './resources/ev.js';
 import { MetroApi } from './resources/metro.js';
 import { ParkingApi } from './resources/parking.js';
+import { RailApi } from './resources/rail.js';
 import { ShipApi } from './resources/ship.js';
 import { ThsrApi } from './resources/thsr.js';
 import { TraApi } from './resources/tra.js';
@@ -76,6 +78,10 @@ export class TdxClient {
   readonly thsr: ThsrApi;
   /** Taiwan Railway (臺鐵) endpoints. */
   readonly tra: TraApi;
+  /** Alishan Forest Railway (阿里山林業鐵路) endpoints. */
+  readonly afr: AfrApi;
+  /** Cross-system rail feeds: operators, station distances and fares looked up by station name. */
+  readonly rail: RailApi;
   /** Parking (停車資訊) endpoints. */
   readonly parking: ParkingApi;
   /** EV charging (充電樁) endpoints. */
@@ -136,6 +142,8 @@ export class TdxClient {
     this.metro = new MetroApi(list, object);
     this.thsr = new ThsrApi(list, object);
     this.tra = new TraApi(object);
+    this.afr = new AfrApi(object);
+    this.rail = new RailApi(list, object);
     this.parking = new ParkingApi(object);
     this.ev = new EvApi(object);
     this.air = new AirApi(list, object);

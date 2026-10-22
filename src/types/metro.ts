@@ -611,3 +611,137 @@ export interface MetroLivePosition {
 export interface MetroLivePositions extends WrapperHeader {
   LivePositions: MetroLivePosition[];
 }
+
+/** `RailSystem` values with a network record (adds the Maokong gondola). */
+export type MetroNetworkSystem = OpenString<MetroSystem | 'TRTCMG'>;
+
+/** `RailSystem` values with shapes (adds the 淡海 and 安坑 light rails and the gondola). */
+export type MetroShapeSystem = OpenString<MetroSystem | 'NTDLRT' | 'NTALRT' | 'TRTCMG'>;
+
+/** `RailSystem` values with platforms: only `KLRT`. */
+export type MetroPlatformSystem = OpenString<'KLRT'>;
+
+/** `RailSystem` values with stopping patterns: only `TYMC`. */
+export type MetroStoppingPatternSystem = OpenString<'TYMC'>;
+
+/** Combined systems for the shared-station list: `TRTC_NTMC` (Taipei + New Taipei) or `KRTC`. */
+export type MetroTransferStationSystem = OpenString<'TRTC_NTMC' | 'KRTC'>;
+
+/** Line of a network (Network.Line). */
+export interface MetroNetworkLine {
+  LineNo?: string | null;
+  LineID: string;
+}
+
+/** Network of an operator (Metro.Network) — `GET /v2/Rail/Metro/Network/{RailSystem}`. */
+export interface MetroNetwork extends MetroVersioned {
+  /** e.g. `TRTC-Network`. */
+  NetworkID: string;
+  NetworkName: NameType;
+  OperatorCode: string;
+  OperatorName: NameType;
+  NetworkMapURL: string;
+  Lines: MetroNetworkLine[];
+}
+
+/** Run time between two adjacent stations (S2STravelTime.TravelTime). */
+export interface MetroTravelTime {
+  Sequence: number;
+  FromStationID: string;
+  FromStationName: NameType;
+  ToStationID: string;
+  ToStationName: NameType;
+  /** Seconds. */
+  RunTime: number;
+  /** Dwell time at the origin station, seconds. */
+  StopTime?: number | null;
+}
+
+/**
+ * Station-to-station run times of a route (Metro.S2STravelTime) —
+ * `GET /v2/Rail/Metro/S2STravelTime/{RailSystem}`.
+ */
+export interface MetroS2STravelTime extends MetroVersioned {
+  LineNo?: string | null;
+  LineID: string;
+  RouteID: string;
+  TrainType?: MetroTrainType | null;
+  TravelTimes: MetroTravelTime[];
+}
+
+/**
+ * Line geometry (Metro.MetroShape) — `GET /v2/Rail/Metro/Shape/{RailSystem}`. `Geometry` is
+ * WKT (`MULTILINESTRING`); live data sends `EncodedPolyline: ""`.
+ */
+export interface MetroShape {
+  Geometry: string;
+  EncodedPolyline: string;
+  LineNo?: string | null;
+  LineID: string;
+  LineName: NameType;
+  UpdateTime: DateTimeString;
+}
+
+/** Platform of a station (StationPlatform). */
+export interface MetroStationPlatform {
+  StationID: string;
+  /** e.g. `C1-1`. */
+  PlatformID: string;
+  PlatformName: NameType;
+  Direction?: MetroDirection | null;
+  PlatformPosition?: PointType | null;
+}
+
+/**
+ * Platforms — `GET /v2/Rail/Metro/StationPlatform/{RailSystem}` (KLRT only). Live data omits
+ * `AuthorityCode` and sends `UpdateInterval: 0`.
+ */
+export interface MetroStationPlatforms extends Omit<WrapperHeader, 'AuthorityCode'> {
+  AuthorityCode?: string | null;
+  StationPlatforms: MetroStationPlatform[];
+}
+
+/** Station of a stopping pattern (StoppingPattern.Station). */
+export interface MetroStoppingPatternStation {
+  Sequence: number;
+  StationID: string;
+  StationName: NameType;
+  /** Kilometres from the start of the route (absent in live data). */
+  CumulativeDistance?: number | null;
+  /** Minutes from the start of the route (absent in live data). */
+  TravelTime?: number | null;
+}
+
+/** Stopping pattern of a route, e.g. 普通車 / 直達車 (StoppingPattern). */
+export interface MetroStoppingPattern {
+  /** e.g. `SP1`. */
+  StoppingPatternID: string;
+  StoppingPatternName: NameType;
+  RouteID: string;
+  Stations: MetroStoppingPatternStation[];
+}
+
+/** Stopping patterns — `GET /v2/Rail/Metro/StoppingPattern/{RailSystem}` (TYMC only). */
+export interface MetroStoppingPatterns extends WrapperHeader {
+  AuthorityCode: string;
+  StoppingPatterns: MetroStoppingPattern[];
+}
+
+/** One of the stations sharing a transfer station (TransferStation). */
+export interface MetroSharedStation {
+  StationID?: string | null;
+  /** Plain string, not a `NameType`. */
+  StationName?: string | null;
+}
+
+/**
+ * Stations shared by two lines or systems (MetroTransferStation) —
+ * `GET /v2/Rail/Metro/TransferStations/{RailSystem}`.
+ */
+export interface MetroTransferStation {
+  /** e.g. `TRTC_NTMC`. */
+  SystemID?: string | null;
+  /** Composite, e.g. `BL07_Y16`. */
+  TransferStationID?: string | null;
+  Stations?: MetroSharedStation[] | null;
+}

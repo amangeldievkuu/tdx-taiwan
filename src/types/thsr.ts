@@ -324,3 +324,128 @@ export interface ThsrStationExit {
   SrcUpdateTime: DateTimeString;
   UpdateTime: DateTimeString;
 }
+
+/** A train on a day (THSR.RailDailyTrainInfo) — `GET /v2/Rail/THSR/DailyTrainInfo/…`. */
+export interface ThsrTrainInfo extends ThsrDailyTrainInfo {
+  UpdateTime: DateTimeString;
+  VersionID: number;
+}
+
+/** Seat status for the leg from one stop to the next (THSR.StopStation). */
+export interface ThsrLegStopStation {
+  StopSequence: number;
+  StationID: string;
+  /** Booking-system code, e.g. `TPE`. */
+  StationCode: string;
+  StationName: NameType;
+  NextStationID: string;
+  NextStationCode: string;
+  NextStationName: NameType;
+  StandardSeatStatus: ThsrSeatStatus;
+  BusinessSeatStatus: ThsrSeatStatus;
+}
+
+/** Seat status of a train, leg by leg (THSR.AvailableSeat). */
+export interface ThsrLegSeat {
+  TrainNo: string;
+  Direction: ThsrDirection;
+  StartingStationID: string;
+  StartingStationCode: string;
+  StartingStationName: NameType;
+  EndingStationID: string;
+  EndingStationCode: string;
+  EndingStationName: NameType;
+  StopStations: ThsrLegStopStation[];
+}
+
+/**
+ * Leg-level seat status — `GET /v2/Rail/THSR/AvailableSeatStatus/Train/Leg/TrainDate/{d}`.
+ * Live data has no update intervals.
+ */
+export interface ThsrLegSeatStatus {
+  UpdateTime?: DateTimeString | null;
+  SrcUpdateTime?: DateTimeString | null;
+  Count?: number | null;
+  /** `yyyy-MM-dd`. */
+  TrainDate?: string | null;
+  AvailableSeats: ThsrLegSeat[];
+}
+
+/** Seat status of a train between two stations (THSR.OD.AvailableSeat). */
+export interface ThsrODSeat {
+  TrainNo: string;
+  Direction: ThsrDirection;
+  OriginStationID: string;
+  OriginStationCode: string;
+  OriginStationName: NameType;
+  DestinationStationID: string;
+  DestinationStationCode: string;
+  DestinationStationName: NameType;
+  StandardSeatStatus: ThsrSeatStatus;
+  BusinessSeatStatus: ThsrSeatStatus;
+}
+
+/**
+ * Origin-destination seat status — `GET /v2/Rail/THSR/AvailableSeatStatus/Train/OD/…`.
+ * A query with no matching train returns `AvailableSeats: []` without the update times.
+ */
+export interface ThsrODSeatStatus {
+  UpdateTime?: DateTimeString | null;
+  /** Seconds (600 live). */
+  UpdateInterval?: number | null;
+  SrcUpdateTime?: DateTimeString | null;
+  SrcUpdateInterval?: number | null;
+  Count?: number | null;
+  TrainDate?: string | null;
+  AvailableSeats: ThsrODSeat[];
+}
+
+/** Non-reserved cars of a train (THSR.FreeSeatingCar). */
+export interface ThsrFreeSeatingCar {
+  /** Without the leading zero, e.g. `108`. */
+  TrainNo?: string | null;
+  /** e.g. `3: 10-12`. */
+  CarConfig?: string | null;
+  /** Car numbers, e.g. `[10, 11, 12]`. */
+  Cars?: number[] | null;
+}
+
+/** Non-reserved cars per train on a day — `GET /v2/Rail/THSR/DailyFreeSeatingCar/TrainDate/{d}`. */
+export interface ThsrFreeSeatingCars {
+  UpdateTime: DateTimeString;
+  UpdateInterval: number;
+  AuthorityCode: string;
+  TrainDate: string;
+  FreeSeatingCars: ThsrFreeSeatingCar[];
+  Count?: number | null;
+}
+
+/**
+ * Line geometry (THSR.THSRShape) — `GET /v2/Rail/THSR/Shape`. One item of about 1 MB whose
+ * `Geometry` is WKT.
+ */
+export interface ThsrShape {
+  Geometry: string;
+  EncodedPolyline: string;
+  LineID: string;
+  LineName: NameType;
+  UpdateTime: DateTimeString;
+}
+
+/** Station of the line (THSR.Station). */
+export interface ThsrLineStation {
+  Sequence: number;
+  StationID: string;
+  StationName: NameType;
+  /** Kilometres from 南港. */
+  CumulativeDistance?: number | null;
+}
+
+/** Ordered stations of the line (THSR.StationOfLine) — `GET /v2/Rail/THSR/StationOfLine`. */
+export interface ThsrStationOfLine {
+  LineNo?: string | null;
+  /** `THSR`. */
+  LineID: string;
+  Stations: ThsrLineStation[];
+  UpdateTime: DateTimeString;
+}
