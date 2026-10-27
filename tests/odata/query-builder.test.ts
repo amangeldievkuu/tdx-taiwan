@@ -113,6 +113,27 @@ describe('ODataQuery', () => {
     );
   });
 
+  it('adds a nearby spatial filter, from the builder or options, and clones it', () => {
+    expect(decode(query().nearby(25.0478, 121.517, 300).top(5))).toBe(
+      '$top=5&$spatialFilter=nearby(25.0478,121.517,300)&$format=JSON',
+    );
+    const fromOptions = ODataQuery.from<Station>({
+      select: ['StationUID'],
+      nearby: { lat: 22.6394, lon: 120.3022, meters: 200 },
+    });
+    expect(decode(fromOptions)).toBe(
+      '$select=StationUID&$spatialFilter=nearby(22.6394,120.3022,200)&$format=JSON',
+    );
+    expect(decode(fromOptions.clone())).toBe(decode(fromOptions));
+  });
+
+  it('rejects an invalid nearby area', () => {
+    expect(() => query().nearby(91, 121, 100)).toThrow(RangeError);
+    expect(() => query().nearby(25, Number.NaN, 100)).toThrow(RangeError);
+    expect(() => query().nearby(25, 121, 0)).toThrow(RangeError);
+    expect(() => query().nearby(25, 121, 12.5)).toThrow(RangeError);
+  });
+
   it('types field names against the item type', () => {
     expectTypeOf<FieldPath<Station>>().toEqualTypeOf<
       | 'StationUID'

@@ -175,6 +175,14 @@ describe.skipIf(!hasCredentials)('live TDX API: 0.4.0 bus and metro additions', 
     expect(stops[0]?.StopUID).toMatch(/^TPE/);
   });
 
+  it('bus.stations finds the stations near Taipei Main Station, with their routes', async () => {
+    const stations = await tdx.bus.stations('Taipei', {
+      nearby: { lat: 25.0478, lon: 121.517, meters: 150 },
+    });
+    expect(stations.length).toBeGreaterThan(0);
+    expect(stations[0]?.Stops?.[0]?.RouteName.Zh_tw).toBeTruthy();
+  });
+
   it('bus.positions returns only route 307 vehicles', async () => {
     const positions = await tdx.bus.positions('Taipei', '307');
     expect(positions.every((p) => p.RouteName?.Zh_tw === '307')).toBe(true);

@@ -15,6 +15,14 @@ export type FieldPath<T> = {
 
 export type SortDirection = 'asc' | 'desc';
 
+/** A circle around a WGS84 point, for `$spatialFilter=nearby(...)`. */
+export interface NearbyArea {
+  lat: number;
+  lon: number;
+  /** Radius in metres. */
+  meters: number;
+}
+
 /** Plain-object form of a query, accepted anywhere an `ODataQuery` is. */
 export interface ODataOptions<T = Record<string, unknown>> {
   /** One expression, or several joined with `and`. */
@@ -23,6 +31,8 @@ export interface ODataOptions<T = Record<string, unknown>> {
   orderBy?: FieldPath<T> | [FieldPath<T>, SortDirection] | Array<[FieldPath<T>, SortDirection]>;
   top?: number;
   skip?: number;
+  /** Only items within `meters` of a point (`$spatialFilter=nearby(lat, lon, meters)`). */
+  nearby?: NearbyArea;
 }
 
 /**
@@ -42,6 +52,7 @@ export class ODataQuery<T = Record<string, unknown>> {
   private readonly orders: string[] = [];
   private topValue: number | undefined;
   private skipValue: number | undefined;
+  private area: NearbyArea | undefined;
 
   /** Adds a `$filter` expression. Multiple calls are combined with `and`. */
   filter(expression: string): this {
@@ -76,6 +87,26 @@ export class ODataQuery<T = Record<string, unknown>> {
     return this;
   }
 
+  /**
+   * Only items within `meters` of a WGS84 point (`$spatialFilter=nearby(lat, lon, meters)`).
+   * TDX supports it on endpoints whose items have a position, such as bus stops and stations.
+   */
+  nearby(lat: number, lon: number, meters: number): this {
+    if (!Number.isFinite(lat) || lat < -90 || lat > 90) {
+      throw new RangeError(`nearby latitude must be between -90 and 90, got ${lat}`);
+    }
+    if (!Number.isFinite(lon) || lon < -180 || lon > 180) {
+      throw new RangeError(`nearby longitude must be between -180 and 180, got ${lon}`);
+    }
+    if (!Number.isInteger(meters) || meters <= 0) {
+      throw new RangeError(
+        `nearby radius must be a positive whole number of metres, got ${meters}`,
+      );
+    }
+    this.area = { lat, lon, meters };
+    return this;
+  }
+
   /** Encoded query string, e.g. `$filter=...&$top=10&$format=JSON`. */
   toString(): string {
     const params: Array<[string, string]> = [];
@@ -84,6 +115,10 @@ export class ODataQuery<T = Record<string, unknown>> {
     if (this.orders.length) params.push(['$orderby', this.orders.join(',')]);
     if (this.topValue !== undefined) params.push(['$top', String(this.topValue)]);
     if (this.skipValue !== undefined) params.push(['$skip', String(this.skipValue)]);
+    if (this.area) {
+      const { lat, lon, meters } = this.area;
+      params.push(['$spatialFilter', `nearby(${lat},${lon},${meters})`]);
+    }
     params.push(['$format', 'JSON']);
     // Encode values with %20 rather than URLSearchParams' `+`, and keep `$` literal in keys.
     return params.map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join('&');
@@ -97,6 +132,7 @@ export class ODataQuery<T = Record<string, unknown>> {
     copy.orders.push(...this.orders);
     copy.topValue = this.topValue;
     copy.skipValue = this.skipValue;
+    copy.area = this.area;
     return copy;
   }
 
@@ -110,6 +146,7 @@ export class ODataQuery<T = Record<string, unknown>> {
     for (const [field, dir] of normalizeOrderBy(input.orderBy)) q.orderBy(field, dir);
     if (input.top !== undefined) q.top(input.top);
     if (input.skip !== undefined) q.skip(input.skip);
+    if (input.nearby) q.nearby(input.nearby.lat, input.nearby.lon, input.nearby.meters);
     return q;
   }
 }

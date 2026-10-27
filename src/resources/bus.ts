@@ -4,6 +4,7 @@ import type {
   BusEstimatedTimeOfArrival,
   BusPosition,
   BusRoute,
+  BusStation,
   BusStopInfo,
   BusStopOfRoute,
 } from '../types/bus.js';
@@ -37,6 +38,17 @@ export class BusApi {
    */
   stops(city: BusCity, query?: QueryInput<BusStopInfo>): Promise<BusStopInfo[]> {
     return this.list(`/v2/Bus/Stop/City/${segment(city, 'city')}`, query, 'static');
+  }
+
+  /**
+   * Every station in a city, each with the routes that stop there. Cached with the static TTL.
+   * The list is large, so pass `nearby` (TDX's `$spatialFilter`) for the stations around a
+   * point. `GET /v2/Bus/Station/City/{City}`
+   *
+   * @example tdx.bus.stations('Taipei', { nearby: { lat: 25.0478, lon: 121.517, meters: 300 } })
+   */
+  stations(city: BusCity, query?: QueryInput<BusStation>): Promise<BusStation[]> {
+    return this.list(`/v2/Bus/Station/City/${segment(city, 'city')}`, query, 'static');
   }
 
   /**
@@ -161,6 +173,14 @@ export class InterCityBusApi {
   positions(routeName: string, query?: RouteQueryInput<BusPosition>): Promise<BusPosition[]> {
     const base = '/v2/Bus/RealTimeByFrequency/InterCity';
     return this.list(...byRouteName(base, routeName, query), 'realtime');
+  }
+
+  /**
+   * InterCity stations, each with the coach routes that stop there. Cached with the static
+   * TTL. Pass `nearby` for the stations around a point. `GET /v2/Bus/Station/InterCity`
+   */
+  stations(query?: QueryInput<BusStation>): Promise<BusStation[]> {
+    return this.list('/v2/Bus/Station/InterCity', query, 'static');
   }
 }
 

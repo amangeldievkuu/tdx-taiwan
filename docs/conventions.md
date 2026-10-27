@@ -42,6 +42,8 @@ machine's time zone. `trainDate()` is exported for building `tdx.get` paths the 
 ## Large lists, billing and caching
 
 TDX bills usage in points by call count and by response size (per its Swagger pages, 1,500 calls
-or 150 MB per point). Prefer `$filter`, `$select` and `$top` on large lists, and turn on
+or 150 MB per point). Prefer `$filter`, `$select`, `$top` and, for lists with positions,
+`nearby` (`$spatialFilter=nearby(lat,lon,meters)`; checked on the bus stop and station lists,
+which the spec does not mark as supporting it) on large lists, and turn on
 `cache: true` for static data; the resource pages flag the large responses. See the
 [Options](../README.md#options) section of the README for the cache TTLs and rate limiting.

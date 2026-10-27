@@ -88,18 +88,20 @@ describe('TdxClient response cache', () => {
     expect(seats.apiUrls).toHaveLength(2);
   });
 
-  it('caches city stops as static, bus positions and metro alerts as real-time', async () => {
+  it('caches city stops and stations as static, bus positions and metro alerts as real-time', async () => {
     const lists = clientWithResponse([], { cache: true });
     const fetchLists = async () => {
       await lists.tdx.bus.stops('Taipei');
+      await lists.tdx.bus.stations('Taipei', { nearby: { lat: 25, lon: 121.5, meters: 300 } });
       await lists.tdx.bus.positions('Taipei', '307');
       await lists.tdx.bus.interCity.routes('1610');
+      await lists.tdx.bus.interCity.stations();
       await lists.tdx.bus.interCity.positions('1610');
     };
     await fetchLists();
     vi.advanceTimersByTime(15_000);
     await fetchLists();
-    expect(lists.apiUrls).toHaveLength(6); // only the two position requests repeat
+    expect(lists.apiUrls).toHaveLength(8); // only the two position requests repeat
 
     const alerts = clientWithResponse({ AuthorityCode: 'TRTC', Alerts: [] }, { cache: true });
     await alerts.tdx.metro.alerts('TRTC');

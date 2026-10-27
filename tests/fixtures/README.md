@@ -103,5 +103,10 @@ name); the 金門–石井 seat availability with cabin seats; a typhoon alert w
 news list; and three authorities. `ship-od-fare-between.json` is the plain array the
 `/ODFare/{O}/to/{D}` endpoint returns.
 
+The `bus-station-*.json` files (2026-10-27) were fetched with `nearby` around Taipei Main
+Station: two Taipei stations and one InterCity station (臺北轉運站), each cut to its first three
+stops and otherwise not edited. They show the Chinese-only station names and that only the
+InterCity station has the `StationGroupID` the spec requires.
+
 To compare against real data, add your keys to `.env` and run `npm run test:integration`,
 which exercises the same endpoints against the live API.

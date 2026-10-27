@@ -236,6 +236,41 @@ export interface BusStopInfo {
   VersionID: number;
 }
 
+/** A route's stop at a station (StationStop). */
+export interface BusStationStop {
+  StopUID: string;
+  StopID: string;
+  StopName: NameType;
+  RouteUID: string;
+  RouteID: string;
+  RouteName: NameType;
+}
+
+/**
+ * Station (V2.BusStation) — `GET /v2/Bus/Station/City/{City}` and `/v2/Bus/Station/InterCity`.
+ * A station is one place where buses stop, in one direction; `Stops` lists the stop of each
+ * route that serves it.
+ */
+export interface BusStation {
+  /** Unique station ID: {AuthorityCode} + {StationID}. */
+  StationUID: string;
+  StationID: string;
+  /** Live data has only `Zh_tw`; the stops carry English names. */
+  StationName: NameType;
+  StationPosition: PointType;
+  /** Missing for Kaohsiung stations. */
+  StationAddress?: string | null;
+  /** Required by the spec, but only InterCity stations have one. */
+  StationGroupID?: string;
+  Stops?: BusStationStop[];
+  /** ISO 3166-2 code of the city the station is in, e.g. `TPE`. */
+  LocationCityCode?: string | null;
+  /** Direction of travel at the station: E, W, S, N, SE, NE, SW or NW. */
+  Bearing?: string | null;
+  UpdateTime: DateTimeString;
+  VersionID: number;
+}
+
 /**
  * Live vehicle position, reported at regular intervals (BusA1Data) —
  * `GET /v2/Bus/RealTimeByFrequency/City/{City}/{RouteName}` and `…/InterCity/{RouteName}`.

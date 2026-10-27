@@ -15,6 +15,7 @@ export {
   type ODataOptions,
   type Field,
   type FieldPath,
+  type NearbyArea,
   type SortDirection,
 } from './odata/query-builder.js';
 export { BikeApi } from './resources/bike.js';

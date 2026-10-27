@@ -124,7 +124,9 @@ const stops = await tdx.bus.eta('Taipei', '307', {
 ```
 
 `$format=JSON` is always added. `$select` limits which fields TDX returns, but the result is
-still typed as the full item, so treat unselected fields as absent.
+still typed as the full item, so treat unselected fields as absent. `nearby: { lat, lon, meters }`
+(or `.nearby(lat, lon, meters)`) adds TDX's `$spatialFilter` for the items around a point, e.g.
+`tdx.bus.stations('Taipei', { nearby: { lat: 25.0478, lon: 121.517, meters: 300 } })`.
 
 ## Resources
 
@@ -137,7 +139,7 @@ they share are in [docs/conventions.md](https://github.com/amangeldievkuu/tdx-ta
 | Namespace     | Scope                                                           | Docs                                                                                         | Example                                                   |
 | ------------- | --------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
 | `tdx.bike`    | YouBike / Moovo stations and live availability                  | [Public bikes](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/bike.md)          | [`nearest-youbike.ts`](examples/nearest-youbike.ts)       |
-| `tdx.bus`     | City and InterCity routes, stops, ETAs and live positions       | [Buses](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/bus.md)                  | —                                                         |
+| `tdx.bus`     | City and InterCity routes, stops, stations, ETAs and positions  | [Buses](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/bus.md)                  | —                                                         |
 | `tdx.metro`   | Stations, lines, routes, timetables, live boards, fares, alerts | [Metro](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/metro.md)                | [`next-metro-train.ts`](examples/next-metro-train.ts)     |
 | `tdx.thsr`    | Stations, timetables, fares, seat availability, news, alerts    | [High speed rail](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/thsr.md)       | [`thsr-trains.ts`](examples/thsr-trains.ts)               |
 | `tdx.tra`     | Stations, lines, timetables, fares, live boards, news, alerts   | [Taiwan Railway](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/tra.md)         | [`tra-trains.ts`](examples/tra-trains.ts)                 |
