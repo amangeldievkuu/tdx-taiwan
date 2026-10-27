@@ -1,6 +1,6 @@
 // Bus types, transcribed from the TDX 公共運輸-公車 v2 OpenAPI spec
 // (PTX.Service.DTO.Bus.Specification.V2.*).
-import type { DateTimeString, NameType, OpenString, PointType } from './common.js';
+import type { DateTimeString, Flag, NameType, OpenString, PointType } from './common.js';
 
 /** `City` path values accepted by the city bus endpoints. */
 export type BusCity = OpenString<
@@ -303,5 +303,170 @@ export interface BusPosition {
   SrcTransTime?: DateTimeString | null;
   SrcUpdateTime?: DateTimeString | null;
   /** TDX update time. */
+  UpdateTime: DateTimeString;
+}
+
+/** Days of the week a trip or frequency band runs (ServiceDay); 1 = runs. */
+export interface BusServiceDay {
+  ServiceTag?: string;
+  Sunday: Flag;
+  Monday: Flag;
+  Tuesday: Flag;
+  Wednesday: Flag;
+  Thursday: Flag;
+  Friday: Flag;
+  Saturday: Flag;
+  /** In the spec but never sent in live data. */
+  NationalHolidays?: Flag;
+}
+
+/** A run of dates (DatePeriod), `yyyy-MM-dd`. */
+export interface BusDatePeriod {
+  StartDate?: string;
+  EndDate?: string;
+}
+
+/** 營運服務狀態: 0 = 正常營運 (normal), 1 = 加班營運 (extra), 2 = 取消/停駛 (cancelled). */
+export type BusSpecialDayStatus = 0 | 1 | 2;
+
+/** Dates that differ from the weekly pattern (SpecialDay). */
+export interface BusSpecialDay {
+  /** Separate dates, `yyyy-MM-dd`. */
+  Dates?: string[];
+  DatePeriod?: BusDatePeriod;
+  ServiceStatus?: BusSpecialDayStatus;
+  Description?: string;
+}
+
+/** A trip's call at a stop (BusStopTime). Times are `HH:mm`. */
+export interface BusScheduleStopTime {
+  StopSequence: number;
+  StopUID: string;
+  StopID: string;
+  StopName: NameType;
+  ArrivalTime: string;
+  DepartureTime: string;
+}
+
+/** One scheduled trip (BusTimetable). */
+export interface BusTimetable {
+  TripID?: string;
+  /** Sent by InterCity schedules only. */
+  IsLowFloor?: boolean;
+  ServiceDay?: BusServiceDay;
+  SpecialDays?: BusSpecialDay[];
+  StopTimes: BusScheduleStopTime[];
+}
+
+/** A headway band, for routes run by frequency rather than fixed trips (BusFrequency). */
+export interface BusFrequency {
+  /** `HH:mm`. */
+  StartTime: string;
+  EndTime: string;
+  MinHeadwayMins: number;
+  MaxHeadwayMins: number;
+  ServiceDay?: BusServiceDay;
+  SpecialDays?: BusSpecialDay[];
+}
+
+/**
+ * Schedule of a sub-route in one direction (V2.BusSchedule) — `GET /v2/Bus/Schedule/City/{City}`
+ * and `/v2/Bus/Schedule/InterCity`. A sub-route has fixed trips (`Timetables`, each with every
+ * stop's time) or headway bands (`Frequencys`, sic). Kaohsiung publishes no schedules.
+ */
+export interface BusSchedule {
+  RouteUID: string;
+  RouteID: string;
+  RouteName: NameType;
+  SubRouteUID: string;
+  SubRouteID: string;
+  SubRouteName: NameType;
+  Direction: BusDirection;
+  /** InterCity only. */
+  OperatorID?: string;
+  OperatorCode?: string;
+  OperatorNo?: string;
+  Timetables?: BusTimetable[];
+  /** The spec's spelling. */
+  Frequencys?: BusFrequency[];
+  UpdateTime: DateTimeString;
+  VersionID: number;
+}
+
+/** 營運狀況: 0 = 全部營運停止 (suspended), 1 = 全部營運正常 (normal), 2 = 有異常狀況 (disrupted). */
+export type BusAlertStatus = 0 | 1 | 2;
+
+/**
+ * 原因: 1 事故 accident, 2 維護檢修 maintenance, 3 技術問題 technical problem, 4 施工 construction,
+ * 5 醫療緊急狀況 medical emergency, 6 氣候 weather, 7 示威遊行 demonstration, 8 政治活動/維安
+ * police activity, 9 假日/節慶 holiday, 10 罷工 strike, 11 活動 event, 254 其他, 255 未知.
+ */
+export type BusAlertCause = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 254 | 255;
+
+/**
+ * 影響: 1 改道/站牌不停靠 detour, 2 班次增加 extra service, 3 班次減少 reduced service, 4 班次取消
+ * no service, 5 班次改變 modified service, 6 站點異動 stop moved, 7 重大延遲 significant delays,
+ * 254 其他, 255 未知.
+ */
+export type BusAlertEffect = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 254 | 255;
+
+/** What an alert affects (Scope). Every list is optional. */
+export interface BusAlertScope {
+  Operators?: Array<{ OperatorID?: string; OperatorName?: NameType }>;
+  Stops?: Array<{ StopID?: string; StopName?: NameType; StationID?: string }>;
+  Stations?: Array<{ StationID?: string; StationName?: NameType }>;
+  Routes?: Array<{ RouteID?: string; RouteName?: NameType; Direction?: BusDirection }>;
+  SubRoutes?: Array<{ SubRouteID?: string; SubRouteName?: NameType; Direction?: BusDirection }>;
+  Trips?: Array<{
+    TripID?: string;
+    RouteID?: string;
+    SubRouteID?: string;
+    Direction?: BusDirection;
+    /** `HH:mm` at the first stop. */
+    TripDepTime?: string;
+  }>;
+}
+
+/** Service alert (V2.BusAlert) — `GET /v2/Bus/Alert/City/{City}` and `/v2/Bus/Alert/InterCity`. */
+export interface BusAlert {
+  AlertID: string;
+  Title: string;
+  Description: string;
+  Department: string;
+  Status?: BusAlertStatus;
+  Cause?: BusAlertCause;
+  Effect?: BusAlertEffect;
+  Scope: BusAlertScope;
+  AlertURL?: string;
+  PublishTime?: DateTimeString;
+  StartTime: DateTimeString;
+  EndTime: DateTimeString;
+  SrcUpdateTime?: DateTimeString;
+  UpdateTime?: DateTimeString;
+}
+
+/**
+ * 消息類別: 1 最新消息 news, 2 新聞稿 press release, 3 營運資訊 operations, 4 轉乘資訊 transfers,
+ * 5 活動訊息 events, 6 系統公告 system notice, 7 通阻資訊 disruptions, 99 其他.
+ */
+export type BusNewsCategory = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 99;
+
+/** News item (V2.BusNews) — `GET /v2/Bus/News/City/{City}` and `/v2/Bus/News/InterCity`. */
+export interface BusNews {
+  NewsID: string;
+  Language: string;
+  Department?: string;
+  Title: string;
+  NewsCategory?: BusNewsCategory;
+  Description: string;
+  ContactName?: string;
+  /** `""` in Taipei's feed. */
+  ContactPhone?: string;
+  NewsURL?: string;
+  AttachmentURL?: string;
+  PublishTime: DateTimeString;
+  StartTime: DateTimeString;
+  EndTime: DateTimeString;
+  SrcUpdateTime?: DateTimeString;
   UpdateTime: DateTimeString;
 }

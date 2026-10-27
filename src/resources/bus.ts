@@ -1,9 +1,12 @@
 import { ODataQuery, odata, type ODataOptions } from '../odata/query-builder.js';
 import type {
+  BusAlert,
   BusCity,
   BusEstimatedTimeOfArrival,
+  BusNews,
   BusPosition,
   BusRoute,
+  BusSchedule,
   BusStation,
   BusStopInfo,
   BusStopOfRoute,
@@ -105,16 +108,71 @@ export class BusApi {
 
   /**
    * Estimated time of arrival (N1, batch-updated) at each stop of a route (matched exactly by
-   * default). Cached with the real-time TTL.
-   * `GET /v2/Bus/EstimatedTimeOfArrival/City/{City}/{RouteName}`
+   * default), or, without a route name, of every route at every stop in the city: filter that
+   * list (e.g. `StopUID eq 'TPE34726' or StopUID eq 'TPE35854'`) for one stop's arrivals in a
+   * single call. Cached with the real-time TTL.
+   * `GET /v2/Bus/EstimatedTimeOfArrival/City/{City}[/{RouteName}]`
+   *
+   * @example tdx.bus.eta('Taipei', { filter: "StopUID eq 'TPE34726'" }) // every route at one stop
    */
+  eta(
+    city: BusCity,
+    query?: QueryInput<BusEstimatedTimeOfArrival>,
+  ): Promise<BusEstimatedTimeOfArrival[]>;
   eta(
     city: BusCity,
     routeName: string,
     query?: RouteQueryInput<BusEstimatedTimeOfArrival>,
+  ): Promise<BusEstimatedTimeOfArrival[]>;
+  eta(
+    city: BusCity,
+    routeNameOrQuery?: string | QueryInput<BusEstimatedTimeOfArrival>,
+    query?: RouteQueryInput<BusEstimatedTimeOfArrival>,
   ): Promise<BusEstimatedTimeOfArrival[]> {
     const base = `/v2/Bus/EstimatedTimeOfArrival/City/${segment(city, 'city')}`;
-    return this.list(...byRouteName(base, routeName, query), 'realtime');
+    if (typeof routeNameOrQuery === 'string') {
+      return this.list(...byRouteName(base, routeNameOrQuery, query), 'realtime');
+    }
+    return this.list(base, routeNameOrQuery, 'realtime');
+  }
+
+  /**
+   * Scheduled trips or headways of each sub-route of a route (matched exactly by default), or
+   * of every route in the city. Cached with the static TTL. Kaohsiung publishes none.
+   * `GET /v2/Bus/Schedule/City/{City}[/{RouteName}]`
+   */
+  schedule(city: BusCity, query?: QueryInput<BusSchedule>): Promise<BusSchedule[]>;
+  schedule(
+    city: BusCity,
+    routeName: string,
+    query?: RouteQueryInput<BusSchedule>,
+  ): Promise<BusSchedule[]>;
+  schedule(
+    city: BusCity,
+    routeNameOrQuery?: string | QueryInput<BusSchedule>,
+    query?: RouteQueryInput<BusSchedule>,
+  ): Promise<BusSchedule[]> {
+    const base = `/v2/Bus/Schedule/City/${segment(city, 'city')}`;
+    if (typeof routeNameOrQuery === 'string') {
+      return this.list(...byRouteName(base, routeNameOrQuery, query), 'static');
+    }
+    return this.list(base, routeNameOrQuery, 'static');
+  }
+
+  /**
+   * Service alerts (detours, suspensions, moved stops) of a city's buses, with the routes and
+   * stops they affect. Cached with the real-time TTL. `GET /v2/Bus/Alert/City/{City}`
+   */
+  alerts(city: BusCity, query?: QueryInput<BusAlert>): Promise<BusAlert[]> {
+    return this.list(`/v2/Bus/Alert/City/${segment(city, 'city')}`, query, 'realtime');
+  }
+
+  /**
+   * News of a city's bus authority. Cached with the real-time TTL.
+   * `GET /v2/Bus/News/City/{City}`
+   */
+  news(city: BusCity, query?: QueryInput<BusNews>): Promise<BusNews[]> {
+    return this.list(`/v2/Bus/News/City/${segment(city, 'city')}`, query, 'realtime');
   }
 }
 
@@ -154,16 +212,58 @@ export class InterCityBusApi {
   }
 
   /**
-   * Estimated time of arrival (N1, batch-updated) at each stop of a route.
+   * Estimated time of arrival (N1, batch-updated) at each stop of a route, or, without a route
+   * name, of every coach route at every stop: filter it on `StopUID` for one stop.
    * Cached with the real-time TTL.
-   * `GET /v2/Bus/EstimatedTimeOfArrival/InterCity/{RouteName}`
+   * `GET /v2/Bus/EstimatedTimeOfArrival/InterCity[/{RouteName}]`
    */
+  eta(query?: QueryInput<BusEstimatedTimeOfArrival>): Promise<BusEstimatedTimeOfArrival[]>;
   eta(
     routeName: string,
     query?: RouteQueryInput<BusEstimatedTimeOfArrival>,
+  ): Promise<BusEstimatedTimeOfArrival[]>;
+  eta(
+    routeNameOrQuery?: string | QueryInput<BusEstimatedTimeOfArrival>,
+    query?: RouteQueryInput<BusEstimatedTimeOfArrival>,
   ): Promise<BusEstimatedTimeOfArrival[]> {
     const base = '/v2/Bus/EstimatedTimeOfArrival/InterCity';
-    return this.list(...byRouteName(base, routeName, query), 'realtime');
+    if (typeof routeNameOrQuery === 'string') {
+      return this.list(...byRouteName(base, routeNameOrQuery, query), 'realtime');
+    }
+    return this.list(base, routeNameOrQuery, 'realtime');
+  }
+
+  /**
+   * Scheduled trips of each sub-route of a coach route, or of every route. Cached with the
+   * static TTL. `GET /v2/Bus/Schedule/InterCity[/{RouteName}]`
+   */
+  schedule(query?: QueryInput<BusSchedule>): Promise<BusSchedule[]>;
+  schedule(routeName: string, query?: RouteQueryInput<BusSchedule>): Promise<BusSchedule[]>;
+  schedule(
+    routeNameOrQuery?: string | QueryInput<BusSchedule>,
+    query?: RouteQueryInput<BusSchedule>,
+  ): Promise<BusSchedule[]> {
+    const base = '/v2/Bus/Schedule/InterCity';
+    if (typeof routeNameOrQuery === 'string') {
+      return this.list(...byRouteName(base, routeNameOrQuery, query), 'static');
+    }
+    return this.list(base, routeNameOrQuery, 'static');
+  }
+
+  /**
+   * Coach service alerts, with the operators, routes and stops they affect. Cached with the
+   * real-time TTL. `GET /v2/Bus/Alert/InterCity`
+   */
+  alerts(query?: QueryInput<BusAlert>): Promise<BusAlert[]> {
+    return this.list('/v2/Bus/Alert/InterCity', query, 'realtime');
+  }
+
+  /**
+   * News of the coach authority (公路局). Cached with the real-time TTL.
+   * `GET /v2/Bus/News/InterCity`
+   */
+  news(query?: QueryInput<BusNews>): Promise<BusNews[]> {
+    return this.list('/v2/Bus/News/InterCity', query, 'realtime');
   }
 
   /**

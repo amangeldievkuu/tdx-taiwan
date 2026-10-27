@@ -6,6 +6,16 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Added
+
+- `tdx.bus.eta(city)` and `tdx.bus.interCity.eta()` without a route name: every route's arrival
+  at every stop, to filter on `StopUID` for one stop's arrivals in a single call.
+- `tdx.bus.schedule(city, routeName?)` and `tdx.bus.interCity.schedule(routeName?)`
+  (`/v2/Bus/Schedule/*`): fixed trips or headway bands per sub-route, typed as `BusSchedule`.
+- `tdx.bus.alerts(city)`, `tdx.bus.news(city)`, `tdx.bus.interCity.alerts()` and
+  `tdx.bus.interCity.news()` (`/v2/Bus/Alert/*`, `/v2/Bus/News/*`), typed as `BusAlert` (with
+  its `Scope`) and `BusNews`.
+
 ## [0.16.0] - 2026-10-27
 
 ### Added

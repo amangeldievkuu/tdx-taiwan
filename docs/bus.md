@@ -17,19 +17,25 @@ Names that contain `/` (a few Kinmen routes, such as `15A往烈嶼 (后頭進/�
 
 ## Methods
 
-| Method                                              | TDX endpoint                                                 | Returns                       |
-| --------------------------------------------------- | ------------------------------------------------------------ | ----------------------------- |
-| `tdx.bus.routes(city, routeName?, query?)`          | `GET /v2/Bus/Route/City/{City}[/{RouteName}]`                | `BusRoute[]`                  |
-| `tdx.bus.stopsOfRoute(city, routeName, query?)`     | `GET /v2/Bus/StopOfRoute/City/{City}/{RouteName}`            | `BusStopOfRoute[]`            |
-| `tdx.bus.eta(city, routeName, query?)`              | `GET /v2/Bus/EstimatedTimeOfArrival/City/{City}/{RouteName}` | `BusEstimatedTimeOfArrival[]` |
-| `tdx.bus.stops(city, query?)`                       | `GET /v2/Bus/Stop/City/{City}`                               | `BusStopInfo[]`               |
-| `tdx.bus.stations(city, query?)`                    | `GET /v2/Bus/Station/City/{City}`                            | `BusStation[]`                |
-| `tdx.bus.positions(city, routeName, query?)`        | `GET /v2/Bus/RealTimeByFrequency/City/{City}/{RouteName}`    | `BusPosition[]`               |
-| `tdx.bus.interCity.routes(routeName?, query?)`      | `GET /v2/Bus/Route/InterCity[/{RouteName}]`                  | `BusRoute[]`                  |
-| `tdx.bus.interCity.stopsOfRoute(routeName, query?)` | `GET /v2/Bus/StopOfRoute/InterCity/{RouteName}`              | `BusStopOfRoute[]`            |
-| `tdx.bus.interCity.eta(routeName, query?)`          | `GET /v2/Bus/EstimatedTimeOfArrival/InterCity/{RouteName}`   | `BusEstimatedTimeOfArrival[]` |
-| `tdx.bus.interCity.positions(routeName, query?)`    | `GET /v2/Bus/RealTimeByFrequency/InterCity/{RouteName}`      | `BusPosition[]`               |
-| `tdx.bus.interCity.stations(query?)`                | `GET /v2/Bus/Station/InterCity`                              | `BusStation[]`                |
+| Method                                              | TDX endpoint                                                   | Returns                       |
+| --------------------------------------------------- | -------------------------------------------------------------- | ----------------------------- |
+| `tdx.bus.routes(city, routeName?, query?)`          | `GET /v2/Bus/Route/City/{City}[/{RouteName}]`                  | `BusRoute[]`                  |
+| `tdx.bus.stopsOfRoute(city, routeName, query?)`     | `GET /v2/Bus/StopOfRoute/City/{City}/{RouteName}`              | `BusStopOfRoute[]`            |
+| `tdx.bus.eta(city, routeName?, query?)`             | `GET /v2/Bus/EstimatedTimeOfArrival/City/{City}[/{RouteName}]` | `BusEstimatedTimeOfArrival[]` |
+| `tdx.bus.schedule(city, routeName?, query?)`        | `GET /v2/Bus/Schedule/City/{City}[/{RouteName}]`               | `BusSchedule[]`               |
+| `tdx.bus.alerts(city, query?)`                      | `GET /v2/Bus/Alert/City/{City}`                                | `BusAlert[]`                  |
+| `tdx.bus.news(city, query?)`                        | `GET /v2/Bus/News/City/{City}`                                 | `BusNews[]`                   |
+| `tdx.bus.stops(city, query?)`                       | `GET /v2/Bus/Stop/City/{City}`                                 | `BusStopInfo[]`               |
+| `tdx.bus.stations(city, query?)`                    | `GET /v2/Bus/Station/City/{City}`                              | `BusStation[]`                |
+| `tdx.bus.positions(city, routeName, query?)`        | `GET /v2/Bus/RealTimeByFrequency/City/{City}/{RouteName}`      | `BusPosition[]`               |
+| `tdx.bus.interCity.routes(routeName?, query?)`      | `GET /v2/Bus/Route/InterCity[/{RouteName}]`                    | `BusRoute[]`                  |
+| `tdx.bus.interCity.stopsOfRoute(routeName, query?)` | `GET /v2/Bus/StopOfRoute/InterCity/{RouteName}`                | `BusStopOfRoute[]`            |
+| `tdx.bus.interCity.eta(routeName?, query?)`         | `GET /v2/Bus/EstimatedTimeOfArrival/InterCity[/{RouteName}]`   | `BusEstimatedTimeOfArrival[]` |
+| `tdx.bus.interCity.schedule(routeName?, query?)`    | `GET /v2/Bus/Schedule/InterCity[/{RouteName}]`                 | `BusSchedule[]`               |
+| `tdx.bus.interCity.alerts(query?)`                  | `GET /v2/Bus/Alert/InterCity`                                  | `BusAlert[]`                  |
+| `tdx.bus.interCity.news(query?)`                    | `GET /v2/Bus/News/InterCity`                                   | `BusNews[]`                   |
+| `tdx.bus.interCity.positions(routeName, query?)`    | `GET /v2/Bus/RealTimeByFrequency/InterCity/{RouteName}`        | `BusPosition[]`               |
+| `tdx.bus.interCity.stations(query?)`                | `GET /v2/Bus/Station/InterCity`                                | `BusStation[]`                |
 
 ## Example
 
@@ -59,12 +65,35 @@ for (const s of [...cityStations, ...coachStations]) {
   );
 }
 
+// Every bus due at one stop, all routes in one call: eta without a route name, filtered on
+// the stops of a station (the stop UIDs come from `stations`)
+const atStop = await tdx.bus.eta('Taipei', {
+  filter: cityStations[0]?.Stops?.map((s) => `StopUID eq '${s.StopUID}'`).join(' or '),
+});
+
+// The timetable or headways of route 307, and current detours
+const [schedule, alerts] = await Promise.all([
+  tdx.bus.schedule('Taipei', '307'),
+  tdx.bus.alerts('Taipei'),
+]);
+
 // InterCity coaches (公路客運) have the same methods without a city
 const coaches = await tdx.bus.interCity.eta('1610');
 const where = await tdx.bus.interCity.positions('1610');
 ```
 
 ## Notes
+
+- `eta(city)` without a route name lists every route at every stop of the city, which is
+  large; filter it on `StopUID` (or `RouteName/Zh_tw`) as above. `interCity.eta()` works the
+  same way for coaches.
+- `schedule` gives each sub-route and direction either fixed trips (`Timetables`, each with every
+  stop's time and a `ServiceDay` week pattern) or headway bands (`Frequencys`, the spec's
+  spelling); Taipei route 307 has only bands, coach 1610 only trips. Kaohsiung publishes no
+  schedules (an empty list). `ServiceDay.NationalHolidays` is never sent.
+- `alerts` carry what they affect in `Scope` (operators, stops with their `StationID`, routes);
+  `Cause` and `Effect` are codes listed on `BusAlertCause` and `BusAlertEffect`. Taipei's news
+  sends `ContactPhone: ""`; Kaohsiung publishes alerts but no news.
 
 - `stations(city)` lists the city's stations: one place where buses stop in one direction, with
   the stop of each route that serves it in `Stops` (route names included). The whole list is
@@ -89,4 +118,4 @@ const where = await tdx.bus.interCity.positions('1610');
 
 ## 繁體中文
 
-公車：`tdx.bus.positions('Taipei', '307')` 取得公車即時位置（A1）、`tdx.bus.stops('Taipei')` 取得縣市全部站牌（資料量大，建議篩選）、`tdx.bus.stations('Taipei', { nearby: { lat, lon, meters } })` 取得指定位置附近的站位與停靠路線；公路客運使用 `tdx.bus.interCity.routes('1610')`、`eta`、`positions` 等，路線名稱同樣預設完全比對。捷運另有 `tdx.metro.alerts('TRTC')` 營運通阻資料。
+公車：`tdx.bus.positions('Taipei', '307')` 取得公車即時位置（A1）、`tdx.bus.stops('Taipei')` 取得縣市全部站牌（資料量大，建議篩選）、`tdx.bus.stations('Taipei', { nearby: { lat, lon, meters } })` 取得指定位置附近的站位與停靠路線、`tdx.bus.eta('Taipei', { filter: "StopUID eq '…'" })` 不指定路線即可取得單一站牌所有路線的預估到站、`schedule`（班表或班距）、`alerts`（通阻）與 `news`；公路客運使用 `tdx.bus.interCity.routes('1610')`、`eta`、`positions` 等，路線名稱同樣預設完全比對。捷運另有 `tdx.metro.alerts('TRTC')` 營運通阻資料。

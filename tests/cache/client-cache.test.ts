@@ -96,12 +96,14 @@ describe('TdxClient response cache', () => {
       await lists.tdx.bus.positions('Taipei', '307');
       await lists.tdx.bus.interCity.routes('1610');
       await lists.tdx.bus.interCity.stations();
+      await lists.tdx.bus.schedule('Taipei', '307');
       await lists.tdx.bus.interCity.positions('1610');
+      await lists.tdx.bus.alerts('Taipei');
     };
     await fetchLists();
     vi.advanceTimersByTime(15_000);
     await fetchLists();
-    expect(lists.apiUrls).toHaveLength(8); // only the two position requests repeat
+    expect(lists.apiUrls).toHaveLength(11); // the positions and alerts requests repeat
 
     const alerts = clientWithResponse({ AuthorityCode: 'TRTC', Alerts: [] }, { cache: true });
     await alerts.tdx.metro.alerts('TRTC');

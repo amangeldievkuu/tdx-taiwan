@@ -108,5 +108,11 @@ Station: two Taipei stations and one InterCity station (臺北轉運站), each c
 stops and otherwise not edited. They show the Chinese-only station names and that only the
 InterCity station has the `StationGroupID` the spec requires.
 
+The 0.17.0 bus files (2026-10-27) were fetched through the SDK and cut down: two arrivals at
+臺北車站(忠孝) from the city-wide ETA list filtered on `StopUID`; Taipei route 307's schedule (two
+sub-routes, three headway bands each, no trips); coach 1610's schedule (one sub-route, two trips,
+three stops each); one Taipei alert (three of its stops) and one coach alert with its operator;
+and one Taipei news item with the empty `ContactPhone`.
+
 To compare against real data, add your keys to `.env` and run `npm run test:integration`,
 which exercises the same endpoints against the live API.

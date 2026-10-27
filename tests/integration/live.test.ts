@@ -183,6 +183,12 @@ describe.skipIf(!hasCredentials)('live TDX API: 0.4.0 bus and metro additions', 
     expect(stations[0]?.Stops?.[0]?.RouteName.Zh_tw).toBeTruthy();
   });
 
+  it('bus.eta without a route returns every route at one stop', async () => {
+    const etas = await tdx.bus.eta('Taipei', { filter: "StopUID eq 'TPE34726'" });
+    expect(etas.length).toBeGreaterThan(0);
+    expect(etas.every((e) => e.StopUID === 'TPE34726')).toBe(true);
+  });
+
   it('bus.positions returns only route 307 vehicles', async () => {
     const positions = await tdx.bus.positions('Taipei', '307');
     expect(positions.every((p) => p.RouteName?.Zh_tw === '307')).toBe(true);
