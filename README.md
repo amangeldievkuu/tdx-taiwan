@@ -211,30 +211,10 @@ TDX also bills usage in points by call count and by response size (per its Swagg
 1,500 calls or 150 MB per point), so prefer `$filter` / `$select` on large lists such as city
 stops, bus ETAs of busy routes, whole-city live traffic and metro fares, and consider `cache: true`.
 
-**Caching.** With `cache: true`, responses are cached in memory per URL: static data (stations,
-routes, timetables, fares, reference lists) for 1 hour and real-time data (availability, ETAs,
-live boards, positions, alerts) for 15 seconds. Identical concurrent requests share one HTTP
-call, failures are never cached, and every caller receives its own copy of the data.
-
-**Keeping static data across restarts.** Give the cache a `store` and static responses are also
-written there, for 24 hours by default (`storeTtlMs`), so a new process reads them instead of
-calling TDX again. This helps short-lived processes (CLIs, serverless functions, MCP servers)
-that would otherwise refetch the same station and route lists on every start. Real-time data is
-never stored. `FileCacheStore` keeps one JSON file per URL in a directory (Node.js only):
-
-```ts
-import { TdxClient } from 'tdx-taiwan';
-import { FileCacheStore } from 'tdx-taiwan/file-cache';
-
-const store = new FileCacheStore('.cache/tdx');
-const tdx = new TdxClient({ clientId, clientSecret, cache: { store } });
-await store.prune(); // optional: delete expired files
-```
-
-Any object with `get(key)` and `set(key, value, ttlMs)` returning promises works as a store
-(`TdxCacheStore`), e.g. one backed by Redis. Store errors are ignored: a failed read is a miss
-and a failed write is skipped. `tdx.clearCache()` empties the in-memory cache only; use
-`store.clear()` for the files.
+**Caching.** With `cache: true`, responses are cached in memory per URL: static data for 1 hour
+and real-time data for 15 seconds; failures are never cached. `cache: { store }` also keeps
+static data on disk across restarts (`tdx-taiwan/file-cache`). See
+[docs/caching.md](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/caching.md).
 
 ## Errors
 

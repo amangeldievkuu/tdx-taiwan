@@ -19,5 +19,7 @@ auth, the query builder, client options and errors.
 | [Ferries](./ship.md)               | `tdx.ship`    | Ports, routes, timetables, fares, live boards, AIS positions      | [`ferry-departures.ts`](../examples/ferry-departures.ts)     |
 
 - [Conventions](./conventions.md) — field names, wrapper objects, cities, dates, large lists.
+- [Caching](./caching.md) — the in-memory cache and keeping static data on disk
+  (`tdx-taiwan/file-cache`).
 - [NestJS](./nestjs.md) — the `tdx-taiwan/nestjs` module.
 - [Contributing](../CONTRIBUTING.md) — scripts, fetching a TDX spec, fixtures, releases.
