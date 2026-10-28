@@ -6,7 +6,10 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
-## [0.18.0] - 2026-10-28
+## [0.18.1] - 2026-10-28
+
+The first release with these changes: 0.18.0 was tagged but not published, as a check on the
+README failed in the release job. The store is documented in `docs/caching.md`.
 
 ### Added
 
@@ -344,8 +347,8 @@ to?)`, `odFare(system, from, to)` (by station name, Chinese labels) and `s2sDist
   - CI runs the dist tests against each NestJS major and smoke-tests the packed tarball on
     Node 20, 22 and 24.
 
-[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.18.0...HEAD
-[0.18.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.17.0...v0.18.0
+[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.18.1...HEAD
+[0.18.1]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.17.0...v0.18.1
 [0.17.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.14.0...v0.15.0
