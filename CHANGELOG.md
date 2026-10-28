@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.18.0] - 2026-10-28
+
 ### Added
 
 - `cache.store`: a persistent second level for static responses, read when the in-memory cache
@@ -342,7 +344,8 @@ to?)`, `odFare(system, from, to)` (by station name, Chinese labels) and `s2sDist
   - CI runs the dist tests against each NestJS major and smoke-tests the packed tarball on
     Node 20, 22 and 24.
 
-[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.17.0...HEAD
+[Unreleased]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.18.0...HEAD
+[0.18.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.17.0...v0.18.0
 [0.17.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/amangeldievkuu/tdx-taiwan/compare/v0.14.0...v0.15.0
