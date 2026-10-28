@@ -1,4 +1,5 @@
 export { TdxClient, type TdxClientOptions, type TdxCacheOptions } from './client.js';
+export type { TdxCacheStore } from './cache/store.js';
 export type { TdxHooks, TdxRequestEvent, TdxRetryEvent } from './http/http-client.js';
 export { TokenManager, type TokenManagerOptions, type FetchLike } from './auth/token-manager.js';
 export {

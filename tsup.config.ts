@@ -4,6 +4,7 @@ export default defineConfig({
   entry: {
     index: 'src/index.ts',
     'nestjs/index': 'src/nestjs/index.ts',
+    'file-cache/index': 'src/file-cache/index.ts',
   },
   format: ['esm', 'cjs'],
   target: 'node20',

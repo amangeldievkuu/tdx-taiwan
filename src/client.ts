@@ -1,4 +1,5 @@
 import { type FetchLike, TokenManager } from './auth/token-manager.js';
+import type { TdxCacheStore } from './cache/store.js';
 import { TtlCache } from './cache/ttl-cache.js';
 import { DEFAULT_BASE_URL, DEFAULT_REQUESTS_PER_SECOND } from './constants.js';
 import { TdxApiError } from './errors.js';
@@ -32,6 +33,13 @@ export interface TdxCacheOptions {
   realtimeTtlMs?: number;
   /** Maximum number of cached responses (one per distinct URL). Default: 500. */
   maxEntries?: number;
+  /**
+   * A persistent store for static responses, read when the in-memory cache misses, so they
+   * survive restarts: e.g. `new FileCacheStore(dir)` from `tdx-taiwan/file-cache`.
+   */
+  store?: TdxCacheStore;
+  /** How long static responses stay in `store`. Default: 24 hours. */
+  storeTtlMs?: number;
 }
 
 export interface TdxClientOptions extends TdxHooks {
@@ -61,10 +69,13 @@ export interface TdxClientOptions extends TdxHooks {
   cache?: boolean | TdxCacheOptions;
 }
 
-const DEFAULT_CACHE: Required<TdxCacheOptions> = {
+type CacheConfig = Required<Omit<TdxCacheOptions, 'store'>> & Pick<TdxCacheOptions, 'store'>;
+
+const DEFAULT_CACHE: CacheConfig = {
   staticTtlMs: 60 * 60 * 1000,
   realtimeTtlMs: 15 * 1000,
   maxEntries: 500,
+  storeTtlMs: 24 * 60 * 60 * 1000,
 };
 
 export class TdxClient {
@@ -98,7 +109,7 @@ export class TdxClient {
 
   private readonly tokens: TokenManager;
   private readonly http: HttpClient;
-  private readonly cacheConfig: Required<TdxCacheOptions> | undefined;
+  private readonly cacheConfig: CacheConfig | undefined;
   private readonly cache: TtlCache<Promise<unknown>> | undefined;
 
   constructor(options: TdxClientOptions) {
@@ -175,6 +186,15 @@ export class TdxClient {
     this.cache?.clear();
   }
 
+  /** A static response from the persistent store, or fetched and then stored. */
+  private async fromStore(store: TdxCacheStore, url: string, shape: Shape): Promise<unknown> {
+    const stored = await store.get(url).catch(() => undefined);
+    if (stored !== undefined) return stored;
+    const value = await this.fetchShape(url, shape);
+    await store.set(url, value, this.cacheConfig?.storeTtlMs ?? 0).catch(() => undefined);
+    return value;
+  }
+
   private async request<T>(
     path: string,
     query: ODataQuery<T> | ODataOptions<T> | undefined,
@@ -188,7 +208,11 @@ export class TdxClient {
     if (!pending) {
       const ttl =
         cacheClass === 'static' ? this.cacheConfig.staticTtlMs : this.cacheConfig.realtimeTtlMs;
-      pending = this.fetchShape(url, shape);
+      const { store } = this.cacheConfig;
+      pending =
+        store && cacheClass === 'static'
+          ? this.fromStore(store, url, shape)
+          : this.fetchShape(url, shape);
       this.cache.set(url, pending, ttl);
       // Never cache failures.
       pending.catch(() => this.cache?.delete(url, pending));

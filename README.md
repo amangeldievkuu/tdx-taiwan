@@ -17,7 +17,7 @@ ferry routes, timetables, fares and live port boards.
 - Retries with exponential backoff + jitter on 429, 5xx and network errors, and a client-side rate limiter
 - Typed OData query builder (`$filter`, `$select`, `$orderby`, `$top`, `$skip`)
 - Response types transcribed from the official TDX OpenAPI specs
-- Optional in-memory response cache
+- Optional response cache, in memory and optionally on disk (`tdx-taiwan/file-cache`)
 - Optional NestJS module (`tdx-taiwan/nestjs`)
 - Zero runtime dependencies; native `fetch`; ESM + CommonJS; Node.js 20+
 
@@ -169,7 +169,7 @@ new TdxClient({
   requestsPerSecond: 5, // client-side rate limit; 0 disables it
   maxRetries: 3, // retries for 429, 5xx and network errors (API and token endpoint)
   timeoutMs: 30_000, // per request, including reading the response body
-  cache: false, // true, or { staticTtlMs, realtimeTtlMs, maxEntries }
+  cache: false, // true, or { staticTtlMs, realtimeTtlMs, maxEntries, store, storeTtlMs }
   baseUrl: 'https://tdx.transportdata.tw/api/basic',
   fetch: globalThis.fetch, // inject a custom fetch (proxies, tests)
   onRequest: ({ url }) => {}, // before every HTTP attempt to the API
@@ -215,6 +215,26 @@ stops, bus ETAs of busy routes, whole-city live traffic and metro fares, and con
 routes, timetables, fares, reference lists) for 1 hour and real-time data (availability, ETAs,
 live boards, positions, alerts) for 15 seconds. Identical concurrent requests share one HTTP
 call, failures are never cached, and every caller receives its own copy of the data.
+
+**Keeping static data across restarts.** Give the cache a `store` and static responses are also
+written there, for 24 hours by default (`storeTtlMs`), so a new process reads them instead of
+calling TDX again. This helps short-lived processes (CLIs, serverless functions, MCP servers)
+that would otherwise refetch the same station and route lists on every start. Real-time data is
+never stored. `FileCacheStore` keeps one JSON file per URL in a directory (Node.js only):
+
+```ts
+import { TdxClient } from 'tdx-taiwan';
+import { FileCacheStore } from 'tdx-taiwan/file-cache';
+
+const store = new FileCacheStore('.cache/tdx');
+const tdx = new TdxClient({ clientId, clientSecret, cache: { store } });
+await store.prune(); // optional: delete expired files
+```
+
+Any object with `get(key)` and `set(key, value, ttlMs)` returning promises works as a store
+(`TdxCacheStore`), e.g. one backed by Redis. Store errors are ignored: a failed read is a miss
+and a failed write is skipped. `tdx.clearCache()` empties the in-memory cache only; use
+`store.clear()` for the files.
 
 ## Errors
 
@@ -303,7 +323,7 @@ const top = await tdx.bike.availability(
 - 存取權杖（access token）會快取於記憶體，並於到期前 60 秒自動更新；同時多個請求只會發出一次權杖請求。
 - 遇到 429、5xx 或網路錯誤會以指數退避（含隨機抖動）重試最多 3 次，並內建用戶端限流（預設每秒 5 次，請依您的 TDX 方案調整）。
 - 路線名稱預設以中文名稱（`RouteName/Zh_tw`）完全比對：`tdx.bus.eta('Taipei', '307')` 只回傳 307，不含「307西藏三民」。若要使用 TDX 原本的前綴比對，請傳入 `{ exact: false }`。
-- 回應快取：設定 `cache: true` 後，靜態資料（站點、路線、時刻表、票價）快取 1 小時，即時資料（車位、到站、看板、位置）快取 15 秒；可用 `tdx.clearCache()` 清除。
+- 回應快取：設定 `cache: true` 後，靜態資料（站點、路線、時刻表、票價）快取 1 小時，即時資料（車位、到站、看板、位置）快取 15 秒；可用 `tdx.clearCache()` 清除。另可設定 `cache: { store: new FileCacheStore(dir) }`（`tdx-taiwan/file-cache`）將靜態資料存到磁碟 24 小時，重新啟動後不必再呼叫 TDX。
 - 觀測鉤子 `onRequest`／`onRetry`，以及 `TdxAuthError`／`TdxApiError`／`TdxRateLimitError`／`TdxNetworkError` 錯誤類別，詳見上方 Options 與 Errors。
 - 尚未包裝的端點可用 `tdx.get(path, query?)` 呼叫（同樣套用認證、限流與重試）；`trainDate()` 可將 `Date` 轉為臺灣日期 `YYYY-MM-DD`。
 - TDX 依呼叫次數與回應大小計點收費，大量清單請以 `$filter`／`$select` 篩選。

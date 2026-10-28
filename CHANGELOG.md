@@ -6,6 +6,15 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Added
+
+- `cache.store`: a persistent second level for static responses, read when the in-memory cache
+  misses and written for `cache.storeTtlMs` (default 24 hours), so they survive restarts.
+  Real-time responses are never stored, and store errors are ignored.
+- `tdx-taiwan/file-cache`: `FileCacheStore`, a store keeping one JSON file per URL in a
+  directory, with `prune()` and `clear()`. The `TdxCacheStore` interface is exported for other
+  backends.
+
 ## [0.17.0] - 2026-10-27
 
 ### Added

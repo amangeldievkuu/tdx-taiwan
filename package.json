@@ -69,6 +69,16 @@
         "default": "./dist/nestjs/index.cjs"
       }
     },
+    "./file-cache": {
+      "import": {
+        "types": "./dist/file-cache/index.d.ts",
+        "default": "./dist/file-cache/index.js"
+      },
+      "require": {
+        "types": "./dist/file-cache/index.d.cts",
+        "default": "./dist/file-cache/index.cjs"
+      }
+    },
     "./package.json": "./package.json"
   },
   "files": [
