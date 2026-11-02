@@ -2,6 +2,7 @@ import { describe, expect, expectTypeOf, it } from 'vitest';
 import {
   type BikeAvailability,
   type BikeStation,
+  type CyclingShape,
   TdxApiError,
   odata,
   query,
@@ -10,6 +11,7 @@ import { API, clientWithResponse, loadFixture } from '../helpers.js';
 
 const stationsFixture = loadFixture('bike-station-taipei.json') as BikeStation[];
 const availabilityFixture = loadFixture('bike-availability-taipei.json') as BikeAvailability[];
+const cyclingFixture = loadFixture('bike-cycling-shape-taipei.json') as CyclingShape[];
 
 describe('tdx.bike.stations', () => {
   it('requests the city station list as JSON', async () => {
@@ -92,5 +94,43 @@ describe('tdx.bike.availability', () => {
     const { tdx } = clientWithResponse([]);
 
     expect(() => tdx.bike.stations('')).toThrow(TypeError);
+  });
+});
+
+describe('tdx.bike.cyclingRoutes', () => {
+  it('requests the cycle paths of a city', async () => {
+    const { tdx, apiUrls } = clientWithResponse([]);
+
+    await tdx.bike.cyclingRoutes('Taipei');
+    await tdx.bike.cyclingRoutes('YilanCounty', { select: ['RouteName', 'CyclingLength'] });
+
+    expect(apiUrls.map((u) => decodeURIComponent(u))).toEqual([
+      `${API}/v2/Cycling/Shape/City/Taipei?$format=JSON`,
+      `${API}/v2/Cycling/Shape/City/YilanCounty?$select=RouteName,CyclingLength&$format=JSON`,
+    ]);
+    expect(() => tdx.bike.cyclingRoutes(' ')).toThrow(TypeError);
+  });
+
+  it('parses cycle paths, with the ROC completion date and empty polyline', async () => {
+    const { tdx } = clientWithResponse(cyclingFixture);
+
+    const routes = await tdx.bike.cyclingRoutes('Taipei');
+    expectTypeOf(routes).toEqualTypeOf<CyclingShape[]>();
+
+    expect(routes[0]).toMatchObject({
+      RouteName: '三元街(東北側2)',
+      CityCode: 'TPE',
+      City: '台北市',
+      CyclingLength: 267,
+      FinishedTime: '1021231',
+      EncodedPolyline: '',
+    });
+    expect(routes[0]?.Geometry).toMatch(/^MULTILINESTRING/);
+  });
+
+  it('rejects a non-array response', async () => {
+    const { tdx } = clientWithResponse({ Message: 'unexpected' });
+
+    await expect(tdx.bike.cyclingRoutes('Taipei')).rejects.toBeInstanceOf(TdxApiError);
   });
 });

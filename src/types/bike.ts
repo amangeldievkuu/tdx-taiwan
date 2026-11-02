@@ -75,3 +75,54 @@ export interface BikeAvailability {
   UpdateTime: DateTimeString;
   AvailableRentBikesDetail?: AvailableRentBikesDetail | null;
 }
+
+/** `City` path values accepted by the cycling route endpoint, a wider list than {@link BikeCity}. */
+export type CyclingCity = OpenString<
+  | 'Taipei'
+  | 'NewTaipei'
+  | 'Taoyuan'
+  | 'Taichung'
+  | 'Tainan'
+  | 'Kaohsiung'
+  | 'Keelung'
+  | 'HsinchuCounty'
+  | 'MiaoliCounty'
+  | 'ChanghuaCounty'
+  | 'NantouCounty'
+  | 'YunlinCounty'
+  | 'Chiayi'
+  | 'ChiayiCounty'
+  | 'PingtungCounty'
+  | 'YilanCounty'
+  | 'HualienCounty'
+  | 'TaitungCounty'
+  | 'KinmenCounty'
+  | 'PenghuCounty'
+>;
+
+/** A cycle path (BikeShape) — `GET /v2/Cycling/Shape/City/{City}`. */
+export interface CyclingShape {
+  RouteName: string;
+  /** Authorities in charge (may list several). */
+  AuthorityName?: string | null;
+  /** City code, e.g. `TPE`. */
+  CityCode: string;
+  /** City name in Chinese, e.g. `台北市`. */
+  City: string;
+  /** Districts the path runs through (may list several). */
+  Town?: string | null;
+  RoadSectionStart?: string | null;
+  RoadSectionEnd?: string | null;
+  /** Direction of travel. */
+  Direction?: string | null;
+  CyclingType?: string | null;
+  /** Length in metres. */
+  CyclingLength?: number | null;
+  /** Completion date as TDX sends it, e.g. `1021231` (ROC year 102 = 2013-12-31). */
+  FinishedTime?: string | null;
+  /** The path as well-known text, e.g. `MULTILINESTRING ((121.5 25.0, …))`. */
+  Geometry: string;
+  /** The path as an encoded polyline; `""` in Taipei's feed. */
+  EncodedPolyline: string;
+  UpdateTime: DateTimeString;
+}

@@ -210,6 +210,34 @@ describe.skipIf(!hasCredentials)('live TDX API: 0.4.0 bus and metro additions', 
   });
 });
 
+describe.skipIf(!hasCredentials)('live TDX API: 0.19.0 bus and bike additions', () => {
+  let tdx: TdxClient;
+
+  beforeAll(() => {
+    tdx = new TdxClient({
+      clientId: clientId ?? '',
+      clientSecret: clientSecret ?? '',
+      requestsPerSecond: 2,
+    });
+  });
+
+  it('bus.fares matches the plain-string route name 307 exactly', async () => {
+    const fares = await tdx.bus.fares('Taipei', '307');
+    expect(fares.length).toBeGreaterThan(0);
+    expect(fares.every((f) => f.RouteName === '307')).toBe(true);
+  });
+
+  it('bus.firstLastTrips returns Taichung first and last departures', async () => {
+    const trips = await tdx.bus.firstLastTrips('Taichung', { top: 1 });
+    expect(trips[0]?.FirstLastTrips[0]?.FirstTripDepTime).toMatch(/^\d\d:\d\d$/);
+  });
+
+  it('bike.cyclingRoutes returns Taipei cycle paths with geometry', async () => {
+    const routes = await tdx.bike.cyclingRoutes('Taipei', { top: 1 });
+    expect(routes[0]?.Geometry).toMatch(/LINESTRING/);
+  });
+});
+
 describe.skipIf(!hasCredentials)('live TDX API: TRA', () => {
   let tdx: TdxClient;
 

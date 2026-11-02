@@ -2,14 +2,17 @@
 
 YouBike and Moovo rental stations and their live bike and dock counts, by city (`BikeCity`:
 Taipei, NewTaipei, Taoyuan, Taichung, Tainan, Kaohsiung, Hsinchu, HsinchuCounty, MiaoliCounty,
-ChanghuaCounty, YunlinCounty, Chiayi, ChiayiCounty, PingtungCounty, TaitungCounty).
+ChanghuaCounty, YunlinCounty, Chiayi, ChiayiCounty, PingtungCounty, TaitungCounty), and the
+cycle path network (`CyclingCity`, which adds Keelung, NantouCounty, YilanCounty,
+HualienCounty, KinmenCounty and PenghuCounty but not Hsinchu city).
 
 ## Methods
 
-| Method                                | TDX endpoint                            | Returns              |
-| ------------------------------------- | --------------------------------------- | -------------------- |
-| `tdx.bike.stations(city, query?)`     | `GET /v2/Bike/Station/City/{City}`      | `BikeStation[]`      |
-| `tdx.bike.availability(city, query?)` | `GET /v2/Bike/Availability/City/{City}` | `BikeAvailability[]` |
+| Method                                 | TDX endpoint                            | Returns              |
+| -------------------------------------- | --------------------------------------- | -------------------- |
+| `tdx.bike.stations(city, query?)`      | `GET /v2/Bike/Station/City/{City}`      | `BikeStation[]`      |
+| `tdx.bike.availability(city, query?)`  | `GET /v2/Bike/Availability/City/{City}` | `BikeAvailability[]` |
+| `tdx.bike.cyclingRoutes(city, query?)` | `GET /v2/Cycling/Shape/City/{City}`     | `CyclingShape[]`     |
 
 ## Example
 
@@ -33,6 +36,13 @@ const top = await tdx.bike.availability(
 
 // Station details (name, position, capacity) to join on StationUID
 const stations = await tdx.bike.stations('Taipei');
+
+// The longest cycle paths in Yilan, without their geometry
+const paths = await tdx.bike.cyclingRoutes('YilanCounty', {
+  select: ['RouteName', 'Town', 'CyclingLength'],
+  orderBy: ['CyclingLength', 'desc'],
+  top: 5,
+});
 ```
 
 ## Notes
@@ -43,6 +53,10 @@ const stations = await tdx.bike.stations('Taipei');
 - `ServiceType`: 1 = YouBike 1.0, 2 = YouBike 2.0, 3 = Moovo. `ServiceStatus`: 0 = out of
   service, 1 = operating, 2 = suspended. `AvailableRentBikesDetail` splits the count into
   `GeneralBikes` and `ElectricBikes`.
+- `cyclingRoutes` (cached with the static TTL) returns each path's `Geometry` as well-known
+  text (`MULTILINESTRING (…)`), its `CyclingLength` in metres and its end points.
+  `EncodedPolyline` is required by the spec but `""` in Taipei's feed, and `FinishedTime` comes
+  as TDX sends it, a ROC date such as `1021231` (2013-12-31).
 - Most fields are optional and nullable in the spec (a suspended station reports `null`
   availability); the types say so.
 
@@ -53,4 +67,4 @@ const stations = await tdx.bike.stations('Taipei');
 
 ## 繁體中文
 
-公共自行車：`tdx.bike.stations('Taipei')` 取得站點（名稱、座標、車柱數），`availability('Taipei')` 取得即時可借／可還車數；兩者以 `StationUID` 對應。`ServiceType` 1 = YouBike 1.0、2 = YouBike 2.0、3 = Moovo；`ServiceStatus` 0 = 停止營運、1 = 正常營運、2 = 暫停營運。
+公共自行車：`tdx.bike.stations('Taipei')` 取得站點（名稱、座標、車柱數），`availability('Taipei')` 取得即時可借／可還車數；兩者以 `StationUID` 對應。`cyclingRoutes('Taipei')` 取得自行車道路網（WKT 線型、長度、起訖點；完工日期為民國年格式）。`ServiceType` 1 = YouBike 1.0、2 = YouBike 2.0、3 = Moovo；`ServiceStatus` 0 = 停止營運、1 = 正常營運、2 = 暫停營運。

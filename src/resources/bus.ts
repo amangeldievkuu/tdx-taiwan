@@ -2,14 +2,21 @@ import { ODataQuery, odata, type ODataOptions } from '../odata/query-builder.js'
 import type {
   BusAlert,
   BusCity,
+  BusDisplayStopOfRoute,
   BusEstimatedTimeOfArrival,
+  BusFirstLastTripInfo,
+  BusNearStop,
   BusNews,
+  BusOperator,
   BusPosition,
   BusRoute,
+  BusRouteFare,
   BusSchedule,
+  BusShape,
   BusStation,
   BusStopInfo,
   BusStopOfRoute,
+  BusVehicle,
 } from '../types/bus.js';
 import { type ListRequester, type QueryInput, segment } from './requester.js';
 
@@ -174,6 +181,125 @@ export class BusApi {
   news(city: BusCity, query?: QueryInput<BusNews>): Promise<BusNews[]> {
     return this.list(`/v2/Bus/News/City/${segment(city, 'city')}`, query, 'realtime');
   }
+
+  /**
+   * The stop each vehicle last arrived at or left (A2, batch-updated), for one route (matched
+   * exactly by default) or every route in the city. Cached with the real-time TTL.
+   * `GET /v2/Bus/RealTimeNearStop/City/{City}[/{RouteName}]`
+   */
+  nearStop(city: BusCity, query?: QueryInput<BusNearStop>): Promise<BusNearStop[]>;
+  nearStop(
+    city: BusCity,
+    routeName: string,
+    query?: RouteQueryInput<BusNearStop>,
+  ): Promise<BusNearStop[]>;
+  nearStop(
+    city: BusCity,
+    routeNameOrQuery?: string | QueryInput<BusNearStop>,
+    query?: RouteQueryInput<BusNearStop>,
+  ): Promise<BusNearStop[]> {
+    const base = `/v2/Bus/RealTimeNearStop/City/${segment(city, 'city')}`;
+    return this.list(...routeOrAll(base, routeNameOrQuery, query), 'realtime');
+  }
+
+  /**
+   * Route geometry (WKT and encoded polyline) per direction, for one route (matched exactly by
+   * default) or every route in the city. Cached with the static TTL.
+   * `GET /v2/Bus/Shape/City/{City}[/{RouteName}]`
+   */
+  shapes(city: BusCity, query?: QueryInput<BusShape>): Promise<BusShape[]>;
+  shapes(city: BusCity, routeName: string, query?: RouteQueryInput<BusShape>): Promise<BusShape[]>;
+  shapes(
+    city: BusCity,
+    routeNameOrQuery?: string | QueryInput<BusShape>,
+    query?: RouteQueryInput<BusShape>,
+  ): Promise<BusShape[]> {
+    const base = `/v2/Bus/Shape/City/${segment(city, 'city')}`;
+    return this.list(...routeOrAll(base, routeNameOrQuery, query), 'static');
+  }
+
+  /**
+   * Bus operators of a city, with their contact details. Cached with the static TTL.
+   * `GET /v2/Bus/Operator/City/{City}`
+   */
+  operators(city: BusCity, query?: QueryInput<BusOperator>): Promise<BusOperator[]> {
+    return this.list(`/v2/Bus/Operator/City/${segment(city, 'city')}`, query, 'static');
+  }
+
+  /**
+   * A city's bus fleet: class, low floor, electric, ramp, Wi-Fi, keyed by plate number. Only
+   * Taipei, NewTaipei, Taoyuan, Taichung, Tainan and Kaohsiung publish it. Cached with the
+   * static TTL. `GET /v2/Bus/Vehicle/City/{City}`
+   */
+  vehicles(city: BusCity, query?: QueryInput<BusVehicle>): Promise<BusVehicle[]> {
+    return this.list(`/v2/Bus/Vehicle/City/${segment(city, 'city')}`, query, 'static');
+  }
+
+  /**
+   * Fares of each sub-route, for one route (matched exactly by default) or every route in the
+   * city. Cached with the static TTL. `GET /v2/Bus/RouteFare/City/{City}[/{RouteName}]`
+   */
+  fares(city: BusCity, query?: QueryInput<BusRouteFare>): Promise<BusRouteFare[]>;
+  fares(
+    city: BusCity,
+    routeName: string,
+    query?: RouteQueryInput<BusRouteFare>,
+  ): Promise<BusRouteFare[]>;
+  fares(
+    city: BusCity,
+    routeNameOrQuery?: string | QueryInput<BusRouteFare>,
+    query?: RouteQueryInput<BusRouteFare>,
+  ): Promise<BusRouteFare[]> {
+    const base = `/v2/Bus/RouteFare/City/${segment(city, 'city')}`;
+    return this.list(...routeOrAll(base, routeNameOrQuery, query, 'RouteName'), 'static');
+  }
+
+  /**
+   * First and last departures of each sub-route per day type, for one route (matched exactly
+   * by default) or every route in the city. Taipei, NewTaipei and Tainan do not publish them
+   * (TDX answers 400). Cached with the static TTL.
+   * `GET /v2/Bus/FirstLastTripInfo/City/{City}[/{RouteName}]`
+   */
+  firstLastTrips(
+    city: BusCity,
+    query?: QueryInput<BusFirstLastTripInfo>,
+  ): Promise<BusFirstLastTripInfo[]>;
+  firstLastTrips(
+    city: BusCity,
+    routeName: string,
+    query?: RouteQueryInput<BusFirstLastTripInfo>,
+  ): Promise<BusFirstLastTripInfo[]>;
+  firstLastTrips(
+    city: BusCity,
+    routeNameOrQuery?: string | QueryInput<BusFirstLastTripInfo>,
+    query?: RouteQueryInput<BusFirstLastTripInfo>,
+  ): Promise<BusFirstLastTripInfo[]> {
+    const base = `/v2/Bus/FirstLastTripInfo/City/${segment(city, 'city')}`;
+    return this.list(...routeOrAll(base, routeNameOrQuery, query), 'static');
+  }
+
+  /**
+   * Stops of each direction of a route as the operator shows them on route maps, without
+   * sub-routes, for one route (matched exactly by default) or every route in the city. Cached
+   * with the static TTL. `GET /v2/Bus/DisplayStopOfRoute/City/{City}[/{RouteName}]`
+   */
+  displayStopsOfRoute(
+    city: BusCity,
+    query?: QueryInput<BusDisplayStopOfRoute>,
+  ): Promise<BusDisplayStopOfRoute[]>;
+  displayStopsOfRoute(
+    city: BusCity,
+    routeName: string,
+    query?: RouteQueryInput<BusDisplayStopOfRoute>,
+  ): Promise<BusDisplayStopOfRoute[]>;
+  displayStopsOfRoute(
+    city: BusCity,
+    routeNameOrQuery?: string | QueryInput<BusDisplayStopOfRoute>,
+    query?: RouteQueryInput<BusDisplayStopOfRoute>,
+  ): Promise<BusDisplayStopOfRoute[]> {
+    const base = `/v2/Bus/DisplayStopOfRoute/City/${segment(city, 'city')}`;
+    return this.list(...routeOrAll(base, routeNameOrQuery, query), 'static');
+  }
 }
 
 /**
@@ -282,17 +408,79 @@ export class InterCityBusApi {
   stations(query?: QueryInput<BusStation>): Promise<BusStation[]> {
     return this.list('/v2/Bus/Station/InterCity', query, 'static');
   }
+
+  /**
+   * The stop each coach last arrived at or left (A2, batch-updated), for one route or every
+   * coach route. Cached with the real-time TTL.
+   * `GET /v2/Bus/RealTimeNearStop/InterCity[/{RouteName}]`
+   */
+  nearStop(query?: QueryInput<BusNearStop>): Promise<BusNearStop[]>;
+  nearStop(routeName: string, query?: RouteQueryInput<BusNearStop>): Promise<BusNearStop[]>;
+  nearStop(
+    routeNameOrQuery?: string | QueryInput<BusNearStop>,
+    query?: RouteQueryInput<BusNearStop>,
+  ): Promise<BusNearStop[]> {
+    const base = '/v2/Bus/RealTimeNearStop/InterCity';
+    return this.list(...routeOrAll(base, routeNameOrQuery, query), 'realtime');
+  }
+
+  /**
+   * Route geometry per sub-route and direction, for one coach route or every route. Cached
+   * with the static TTL. `GET /v2/Bus/Shape/InterCity[/{RouteName}]`
+   */
+  shapes(query?: QueryInput<BusShape>): Promise<BusShape[]>;
+  shapes(routeName: string, query?: RouteQueryInput<BusShape>): Promise<BusShape[]>;
+  shapes(
+    routeNameOrQuery?: string | QueryInput<BusShape>,
+    query?: RouteQueryInput<BusShape>,
+  ): Promise<BusShape[]> {
+    return this.list(...routeOrAll('/v2/Bus/Shape/InterCity', routeNameOrQuery, query), 'static');
+  }
+
+  /**
+   * Coach operators, with their contact and booking details. Cached with the static TTL.
+   * `GET /v2/Bus/Operator/InterCity`
+   */
+  operators(query?: QueryInput<BusOperator>): Promise<BusOperator[]> {
+    return this.list('/v2/Bus/Operator/InterCity', query, 'static');
+  }
+
+  /**
+   * Fares of each sub-route of a coach route, or of every route. Coach fares are usually
+   * charged by stage (`StageFares`), so the list is long. Cached with the static TTL.
+   * `GET /v2/Bus/RouteFare/InterCity[/{RouteName}]`
+   */
+  fares(query?: QueryInput<BusRouteFare>): Promise<BusRouteFare[]>;
+  fares(routeName: string, query?: RouteQueryInput<BusRouteFare>): Promise<BusRouteFare[]>;
+  fares(
+    routeNameOrQuery?: string | QueryInput<BusRouteFare>,
+    query?: RouteQueryInput<BusRouteFare>,
+  ): Promise<BusRouteFare[]> {
+    const base = '/v2/Bus/RouteFare/InterCity';
+    return this.list(...routeOrAll(base, routeNameOrQuery, query, 'RouteName'), 'static');
+  }
+
+  /**
+   * First and last departures of every coach sub-route per day type. TDX has no per-route
+   * path here, so filter on `RouteName/Zh_tw`. Cached with the static TTL.
+   * `GET /v2/Bus/FirstLastTripInfo/InterCity`
+   */
+  firstLastTrips(query?: QueryInput<BusFirstLastTripInfo>): Promise<BusFirstLastTripInfo[]> {
+    return this.list('/v2/Bus/FirstLastTripInfo/InterCity', query, 'static');
+  }
 }
 
 /**
  * Builds the path and query for a route-name endpoint. TDX matches the `{RouteName}` segment as
  * a prefix of `RouteName/Zh_tw` and returns 404 for names containing `/` (some Kinmen routes), so
- * an exact match requests the part before any `/` and filters on the full name.
+ * an exact match requests the part before any `/` and filters `field` on the full name
+ * (`RouteName` where it is a plain string, as in fares).
  */
 function byRouteName<T>(
   base: string,
   routeName: string,
   query: RouteQueryInput<T> | undefined,
+  field = 'RouteName/Zh_tw',
 ): [string, QueryInput<T> | undefined] {
   if (query && !(query instanceof ODataQuery) && query.exact === false) {
     return [`${base}/${segment(routeName, 'routeName')}`, query];
@@ -300,6 +488,18 @@ function byRouteName<T>(
   segment(routeName, 'routeName'); // validates
   const name = routeName.trim();
   const exact = query instanceof ODataQuery ? query.clone() : ODataQuery.from(query);
-  exact.filter(`RouteName/Zh_tw eq ${odata.str(name)}`);
+  exact.filter(`${field} eq ${odata.str(name)}`);
   return [`${base}/${segment(name.split('/')[0] ?? '', 'routeName')}`, exact];
+}
+
+/** Path and query for `method(routeName, query?)` / `method(query?)` overloads. */
+function routeOrAll<T>(
+  base: string,
+  routeNameOrQuery: string | QueryInput<T> | undefined,
+  query: RouteQueryInput<T> | undefined,
+  field?: string,
+): [string, QueryInput<T> | undefined] {
+  if (typeof routeNameOrQuery === 'string')
+    return byRouteName(base, routeNameOrQuery, query, field);
+  return [base, routeNameOrQuery ?? query];
 }

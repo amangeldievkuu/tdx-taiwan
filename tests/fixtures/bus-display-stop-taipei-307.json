@@ -1,0 +1,63 @@
+[
+  {
+    "RouteUID": "TPE16111",
+    "RouteID": "16111",
+    "RouteName": {
+      "Zh_tw": "307",
+      "En": "307"
+    },
+    "Direction": 0,
+    "Stops": [
+      {
+        "StopUID": "TPE194687",
+        "StopID": "194687",
+        "StopName": {
+          "Zh_tw": "臺北客運板橋前站(藝文)",
+          "En": "Taipei Bus Banqiao Station (Art)"
+        },
+        "StopBoarding": 0,
+        "StopSequence": 1,
+        "StopPosition": {
+          "PositionLon": 121.452109,
+          "PositionLat": 25.022559,
+          "GeoHash": "wsqq7enwz"
+        },
+        "StationID": "1165604697"
+      },
+      {
+        "StopUID": "TPE194688",
+        "StopID": "194688",
+        "StopName": {
+          "Zh_tw": "新月橋",
+          "En": "Xinyue Bridge"
+        },
+        "StopBoarding": -1,
+        "StopSequence": 2,
+        "StopPosition": {
+          "PositionLon": 121.452324,
+          "PositionLat": 25.026206,
+          "GeoHash": "wsqq7eyuh"
+        },
+        "StationID": "1165603914"
+      },
+      {
+        "StopUID": "TPE221716",
+        "StopID": "221716",
+        "StopName": {
+          "Zh_tw": "新月一街",
+          "En": "Xinyue 1st St."
+        },
+        "StopBoarding": 0,
+        "StopSequence": 3,
+        "StopPosition": {
+          "PositionLon": 121.453808034732,
+          "PositionLat": 25.0258419392865,
+          "GeoHash": "wsqq7ezfn"
+        },
+        "StationID": "1165610351"
+      }
+    ],
+    "UpdateTime": "2026-11-02T09:36:22+08:00",
+    "VersionID": 8318
+  }
+]

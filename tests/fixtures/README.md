@@ -1,7 +1,7 @@
 # Test fixtures
 
 > 資料來源：交通部運輸資料流通服務平臺 (MOTC Transport Data eXchange, TDX). The `metro-*.json`,
-> `thsr-*.json`, `tra-*.json`, `parking-*.json`, `ev-*.json`, `air-*.json`, `traffic-*.json`, `ship-*.json`, the 0.14.0 and 0.15.0 `metro-*`, `thsr-*` and `tra-*` additions, `rail-*.json`, `afr-*.json`, `bus-stop-taipei.json`, `bus-position-taipei-307.json` and
+> `thsr-*.json`, `tra-*.json`, `parking-*.json`, `ev-*.json`, `air-*.json`, `traffic-*.json`, `ship-*.json`, the 0.14.0 and 0.15.0 `metro-*`, `thsr-*` and `tra-*` additions, `rail-*.json`, `afr-*.json`, `bus-stop-taipei.json`, `bus-position-taipei-307.json`, the 0.19.0 `bus-*` and `bike-cycling-*` additions and
 > `bus-intercity-*.json` files contain TDX data and are used under the
 > [TDX 資料授權利用條款](https://tdx.transportdata.tw/term), not this repository's MIT license.
 
@@ -113,6 +113,16 @@ The 0.17.0 bus files (2026-10-27) were fetched through the SDK and cut down: two
 sub-routes, three headway bands each, no trips); coach 1610's schedule (one sub-route, two trips,
 three stops each); one Taipei alert (three of its stops) and one coach alert with its operator;
 and one Taipei news item with the empty `ContactPhone`.
+
+The 0.19.0 files (2026-11-02) were fetched through the SDK and cut down, not edited otherwise:
+two route 307 vehicles from `RealTimeNearStop` (city data with `SrcUpdateTime`) and one coach
+1610 record (with `SrcTransTime` and `MessageType`); one route 307 shape (Taipei sends no
+sub-route, and `SubRouteName: {}`); one Taipei operator and two coach operators (one with an
+empty `OperatorCode`); two Taipei vehicles; one route 307 section fare and coach 1610's stage
+fares cut to two of fifteen; one Taichung and one coach first/last-trip record (Taipei does not
+publish them); route 307's display stops cut to three (without `StationGroupID`); and two Taipei
+cycle paths with a ROC `FinishedTime` and an empty `EncodedPolyline`. Coach shapes run to
+tens of kilobytes, so none is kept.
 
 To compare against real data, add your keys to `.env` and run `npm run test:integration`,
 which exercises the same endpoints against the live API.

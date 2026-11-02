@@ -1,0 +1,32 @@
+[
+  {
+    "ProviderID": "010",
+    "OperatorID": "11",
+    "OperatorName": {
+      "Zh_tw": "中壢客運",
+      "En": "Chungli Bus"
+    },
+    "OperatorPhone": "03-4255722",
+    "OperatorEmail": "cl.bus@msa.hinet.net",
+    "OperatorUrl": "http://www.chunglibus.com.tw",
+    "OperatorCode": "ChungliBus",
+    "AuthorityCode": "THB",
+    "SubAuthorityCode": "THB-VO18-1",
+    "OperatorNo": "0404",
+    "UpdateTime": "2026-11-02T09:37:40+08:00"
+  },
+  {
+    "ProviderID": "010",
+    "OperatorID": "113",
+    "OperatorName": {
+      "Zh_tw": "東台灣客運",
+      "En": "Easterntop Bus"
+    },
+    "OperatorUrl": "http://ett333023.com.tw/index.htm",
+    "OperatorCode": "",
+    "AuthorityCode": "THB",
+    "SubAuthorityCode": "THB-VO14-2",
+    "OperatorNo": "0816",
+    "UpdateTime": "2026-11-02T09:37:40+08:00"
+  }
+]

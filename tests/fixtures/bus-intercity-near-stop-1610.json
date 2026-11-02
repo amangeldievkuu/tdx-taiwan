@@ -1,0 +1,37 @@
+[
+  {
+    "PlateNumb": "KKA-1172",
+    "OperatorID": "34",
+    "OperatorNo": "1201",
+    "RouteUID": "THB1610",
+    "RouteID": "1610",
+    "RouteName": {
+      "Zh_tw": "1610",
+      "En": "1610"
+    },
+    "SubRouteUID": "THB1610B1",
+    "SubRouteID": "1610B1",
+    "SubRouteName": {
+      "Zh_tw": "1610B",
+      "En": "1610B"
+    },
+    "Direction": 0,
+    "StopUID": "THB289792",
+    "StopID": "289792",
+    "StopName": {
+      "Zh_tw": "臺北轉運站",
+      "En": "Taipei Bus Station"
+    },
+    "StopSequence": 1,
+    "MessageType": 2,
+    "DutyStatus": 0,
+    "BusStatus": 0,
+    "A2EventType": 1,
+    "GPSTime": "2026-11-02T11:11:02+08:00",
+    "TripStartTimeType": 0,
+    "TripStartTime": "2026-11-02T11:11:02+08:00",
+    "SrcRecTime": "2026-11-02T11:11:02+08:00",
+    "SrcTransTime": "2026-11-02T11:11:02+08:00",
+    "UpdateTime": "2026-11-02T11:11:05+08:00"
+  }
+]

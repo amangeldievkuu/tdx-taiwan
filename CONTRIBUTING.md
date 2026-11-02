@@ -21,7 +21,7 @@ cp .env.example .env   # only needed for the live tests and the examples
 | `npm run typecheck`        | `tsc --noEmit`                                                                                                                                       |
 | `npm run build`            | `tsup` → ESM + CJS + declarations in `dist/`.                                                                                                        |
 | `npm run check:exports`    | `publint` and `are-the-types-wrong` on the packed tarball.                                                                                           |
-| `npm run example:<name>`   | One of `youbike`, `metro`, `thsr`, `tra`, `parking`, `ev`, `flights`, `traffic`, `ferry`.                                                            |
+| `npm run example:<name>`   | One of `youbike`, `bus`, `metro`, `thsr`, `tra`, `parking`, `ev`, `flights`, `traffic`, `ferry`.                                                     |
 
 ## Adding or changing an endpoint
 

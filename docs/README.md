@@ -5,8 +5,8 @@ auth, the query builder, client options and errors.
 
 | Resource                           | Namespace     | Scope                                                             | Example                                                      |
 | ---------------------------------- | ------------- | ----------------------------------------------------------------- | ------------------------------------------------------------ |
-| [Public bikes](./bike.md)          | `tdx.bike`    | YouBike / Moovo stations and live availability                    | [`nearest-youbike.ts`](../examples/nearest-youbike.ts)       |
-| [Buses](./bus.md)                  | `tdx.bus`     | City and InterCity routes, stops, ETAs and live positions         | —                                                            |
+| [Public bikes](./bike.md)          | `tdx.bike`    | YouBike / Moovo stations, live availability and cycle paths       | [`nearest-youbike.ts`](../examples/nearest-youbike.ts)       |
+| [Buses](./bus.md)                  | `tdx.bus`     | City and InterCity routes, stops, ETAs, positions, fares, shapes  | [`bus-arrivals.ts`](../examples/bus-arrivals.ts)             |
 | [Metro](./metro.md)                | `tdx.metro`   | Stations, lines, live boards, first/last trains, fares, alerts    | [`next-metro-train.ts`](../examples/next-metro-train.ts)     |
 | [High speed rail](./thsr.md)       | `tdx.thsr`    | Stations, timetables, fares, seat availability, alerts            | [`thsr-trains.ts`](../examples/thsr-trains.ts)               |
 | [Taiwan Railway](./tra.md)         | `tdx.tra`     | Stations, timetables, fares, live boards, train positions, alerts | [`tra-trains.ts`](../examples/tra-trains.ts)                 |

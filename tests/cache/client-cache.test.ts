@@ -113,6 +113,30 @@ describe('TdxClient response cache', () => {
     expect(alerts.apiUrls).toHaveLength(2);
   });
 
+  it('caches bus shapes, operators, vehicles, fares, first/last trips and cycle paths as static, A2 data as real-time', async () => {
+    const { tdx, apiUrls } = clientWithResponse([], { cache: true });
+    const fetchAll = async () => {
+      await tdx.bus.nearStop('Taipei', '307');
+      await tdx.bus.interCity.nearStop('1610');
+      await tdx.bus.shapes('Taipei', '307');
+      await tdx.bus.operators('Taipei');
+      await tdx.bus.vehicles('Taipei');
+      await tdx.bus.fares('Taipei', '307');
+      await tdx.bus.firstLastTrips('Taichung');
+      await tdx.bus.displayStopsOfRoute('Taipei', '307');
+      await tdx.bus.interCity.shapes('1610');
+      await tdx.bus.interCity.operators();
+      await tdx.bus.interCity.fares('1610');
+      await tdx.bus.interCity.firstLastTrips();
+      await tdx.bike.cyclingRoutes('Taipei');
+    };
+    await fetchAll();
+    vi.advanceTimersByTime(15_000);
+    await fetchAll();
+
+    expect(apiUrls).toHaveLength(15); // only the two A2 requests repeat
+  });
+
   it('caches TRA stations, timetables and fares as static, live boards and alerts as real-time', async () => {
     const { tdx, apiUrls } = clientWithResponse({}, { cache: true });
     const fetchAll = async () => {

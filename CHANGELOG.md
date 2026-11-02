@@ -6,6 +6,31 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Added
+
+- `tdx.bus.nearStop(city, routeName?)` and `tdx.bus.interCity.nearStop(routeName?)`
+  (`/v2/Bus/RealTimeNearStop/*`): the stop each vehicle last arrived at or left (A2), typed as
+  `BusNearStop`.
+- `tdx.bus.fares(city, routeName?)` and `tdx.bus.interCity.fares(routeName?)`
+  (`/v2/Bus/RouteFare/*`): section, origin–destination and stage fares, typed as
+  `BusRouteFare`. The exact route match filters on the plain-string `RouteName`.
+- `tdx.bus.firstLastTrips(city, routeName?)` and `tdx.bus.interCity.firstLastTrips()`
+  (`/v2/Bus/FirstLastTripInfo/*`), typed as `BusFirstLastTripInfo`.
+- `tdx.bus.shapes(city, routeName?)` and `tdx.bus.interCity.shapes(routeName?)`
+  (`/v2/Bus/Shape/*`): route geometry as WKT and encoded polyline, typed as `BusShape`.
+- `tdx.bus.displayStopsOfRoute(city, routeName?)` (`/v2/Bus/DisplayStopOfRoute/City/*`), typed
+  as `BusDisplayStopOfRoute`.
+- `tdx.bus.operators(city)`, `tdx.bus.interCity.operators()` (`BusOperator`) and
+  `tdx.bus.vehicles(city)` (`BusVehicle`, the fleet, to join on `PlateNumb`).
+- `tdx.bike.cyclingRoutes(city)` (`/v2/Cycling/Shape/City/{City}`): cycle paths, typed as
+  `CyclingShape`, with their own `CyclingCity` list.
+- `examples/bus-arrivals.ts` (`npm run example:bus`): the buses due at the nearest bus station.
+
+### Changed
+
+- `BusVehicleStatus` adds 100 (客滿 full), 101 (包車出租 chartered) and 255 (unknown), as in the
+  current spec.
+
 ## [0.18.1] - 2026-10-28
 
 The first release with these changes: 0.18.0 was tagged but not published, as a check on the

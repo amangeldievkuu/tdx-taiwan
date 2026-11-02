@@ -138,8 +138,8 @@ they share are in [docs/conventions.md](https://github.com/amangeldievkuu/tdx-ta
 
 | Namespace     | Scope                                                           | Docs                                                                                         | Example                                                   |
 | ------------- | --------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| `tdx.bike`    | YouBike / Moovo stations and live availability                  | [Public bikes](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/bike.md)          | [`nearest-youbike.ts`](examples/nearest-youbike.ts)       |
-| `tdx.bus`     | Routes, stops, stations, ETAs, schedules, alerts and positions  | [Buses](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/bus.md)                  | —                                                         |
+| `tdx.bike`    | YouBike / Moovo stations, live availability and cycle paths     | [Public bikes](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/bike.md)          | [`nearest-youbike.ts`](examples/nearest-youbike.ts)       |
+| `tdx.bus`     | Routes, stops, ETAs, positions, schedules, fares, shapes, fleet | [Buses](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/bus.md)                  | [`bus-arrivals.ts`](examples/bus-arrivals.ts)             |
 | `tdx.metro`   | Stations, lines, routes, timetables, live boards, fares, alerts | [Metro](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/metro.md)                | [`next-metro-train.ts`](examples/next-metro-train.ts)     |
 | `tdx.thsr`    | Stations, timetables, fares, seat availability, news, alerts    | [High speed rail](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/thsr.md)       | [`thsr-trains.ts`](examples/thsr-trains.ts)               |
 | `tdx.tra`     | Stations, lines, timetables, fares, live boards, news, alerts   | [Taiwan Railway](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/tra.md)         | [`tra-trains.ts`](examples/tra-trains.ts)                 |
@@ -251,7 +251,7 @@ npm run format
 npm run typecheck
 npm run build
 npm run check:exports     # publint + are-the-types-wrong
-npm run example:<name>    # youbike, metro, thsr, tra, parking, ev, flights, traffic, ferry
+npm run example:<name>    # youbike, bus, metro, thsr, tra, parking, ev, flights, traffic, ferry
 ```
 
 Development tooling requires Node.js 22+; the published package supports Node.js 20+. See
@@ -311,8 +311,8 @@ const top = await tdx.bike.availability(
 
 各資源的方法、範例與資料注意事項見下列說明頁（英文，每頁末附中文摘要）：
 
-- 公共自行車：`tdx.bike.stations('Taipei')`（站點）、`availability`（即時可借／可還車數）。[說明](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/bike.md)
-- 公車：`tdx.bus.eta('Taipei', '307')`（預估到站）、`routes`、`stopsOfRoute`、`positions`（即時位置）、`stops`（縣市全部站牌）；公路客運使用 `tdx.bus.interCity.*`。[說明](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/bus.md)
+- 公共自行車：`tdx.bike.stations('Taipei')`（站點）、`availability`（即時可借／可還車數）、`cyclingRoutes`（自行車道路網）。[說明](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/bike.md)
+- 公車：`tdx.bus.eta('Taipei', '307')`（預估到站）、`routes`、`stopsOfRoute`、`positions`（即時位置）、`stops`（縣市全部站牌）、`nearStop`（定點到離站 A2）、`fares`（票價）、`firstLastTrips`（首末班車）、`shapes`（線型）、`vehicles`（車輛）；公路客運使用 `tdx.bus.interCity.*`。[說明](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/bus.md)
 - 捷運：`tdx.metro.liveBoard('TRTC')`（即時到站看板，`EstimateTime` 單位為分鐘）、`stations`、`lines`、`stationsOfLine`、`firstLastTimetable`、`odFare`、`alerts`，以軌道系統代碼查詢。[說明](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/metro.md)
 - 高鐵：`tdx.thsr.timetable('1000', '1070', date)`（起迄站時刻表）、`odFare`、`availableSeats`（對號座剩餘座位）、`alerts`。[說明](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/thsr.md)
 - 臺鐵（TDX v3）：`tdx.tra.timetable('1000', '4400', date)`、`stations`、`odFare`（依車種及行駛方向）、`liveBoard`、`trainLiveBoard`、`alerts`。[說明](https://github.com/amangeldievkuu/tdx-taiwan/blob/main/docs/tra.md)
